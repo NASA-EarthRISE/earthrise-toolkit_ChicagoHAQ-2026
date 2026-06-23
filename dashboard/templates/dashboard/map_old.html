@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TEMPO Dashboard — Map</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Leaflet Draw CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0e1117;
+      color: #e2e8f0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      height: 56px;
+      background: #161b27;
+      border-bottom: 1px solid #2d3748;
+      flex-shrink: 0;
+    }
+    .nav-brand {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      color: #63b3ed;
+    }
+    .nav-links a {
+      color: #a0aec0;
+      text-decoration: none;
+      margin-left: 1.25rem;
+      font-size: .875rem;
+      transition: color .2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: #63b3ed; }
+
+    /* ── MAIN LAYOUT ── */
+    .app-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── SIDEBAR ── */
+    aside {
+      width: 280px;
+      background: #161b27;
+      border-right: 1px solid #2d3748;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .sidebar-section {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #2d3748;
+    }
+    .sidebar-section h3 {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #718096;
+      margin-bottom: .75rem;
+    }
+
+    /* Layer toggles */
+    .layer-item {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .35rem 0;
+      cursor: pointer;
+      font-size: .85rem;
+      color: #cbd5e0;
+    }
+    .layer-item input[type=checkbox] { accent-color: #63b3ed; width: 15px; height: 15px; }
+
+    /* Basemap buttons */
+    .basemap-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .5rem;
+    }
+    .basemap-btn {
+      padding: .45rem .5rem;
+      border: 1px solid #2d3748;
+      border-radius: 6px;
+      background: #1a2035;
+      color: #a0aec0;
+      font-size: .78rem;
+      cursor: pointer;
+      text-align: center;
+      transition: all .2s;
+    }
+    .basemap-btn:hover { background: #2d3748; color: #e2e8f0; }
+    .basemap-btn.active { border-color: #63b3ed; color: #63b3ed; background: #1a2a40; }
+
+    /* Search */
+    .search-wrap {
+      display: flex;
+      gap: .5rem;
+    }
+    .search-wrap input {
+      flex: 1;
+      padding: .45rem .7rem;
+      border-radius: 6px;
+      border: 1px solid #2d3748;
+      background: #1a2035;
+      color: #e2e8f0;
+      font-size: .85rem;
+      outline: none;
+    }
+    .search-wrap input::placeholder { color: #4a5568; }
+    .search-wrap input:focus { border-color: #63b3ed; }
+    .search-wrap button {
+      padding: .45rem .8rem;
+      border-radius: 6px;
+      border: none;
+      background: #3182ce;
+      color: #fff;
+      cursor: pointer;
+      font-size: .85rem;
+      transition: background .2s;
+    }
+    .search-wrap button:hover { background: #2b6cb0; }
+
+    /* Markers list */
+    #marker-list { list-style: none; }
+    #marker-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .4rem .3rem;
+      border-radius: 5px;
+      font-size: .82rem;
+      color: #a0aec0;
+      transition: background .15s;
+    }
+    #marker-list li:hover { background: #1e2a3a; }
+    #marker-list li .loc-name { flex: 1; cursor: pointer; }
+    #marker-list li .loc-name:hover { color: #63b3ed; }
+    #marker-list li button {
+      background: none; border: none; color: #fc8181;
+      cursor: pointer; font-size: .8rem; padding: 0 .3rem;
+    }
+    .empty-note { color: #4a5568; font-size: .82rem; font-style: italic; }
+
+    /* Info panel */
+    #info-panel {
+      background: #1a2035;
+      border-radius: 8px;
+      padding: .75rem;
+      font-size: .8rem;
+      color: #a0aec0;
+      min-height: 60px;
+    }
+    #info-panel strong { color: #e2e8f0; }
+
+    /* ── MAP ── */
+    #map {
+      flex: 1;
+      z-index: 0;
+    }
+
+    /* Leaflet popup dark theme */
+    .leaflet-popup-content-wrapper {
+      background: #1a2035 !important;
+      color: #e2e8f0 !important;
+      border: 1px solid #2d3748 !important;
+      box-shadow: 0 4px 20px rgba(0,0,0,.5) !important;
+    }
+    .leaflet-popup-tip { background: #1a2035 !important; }
+    .leaflet-popup-content { font-size: .85rem !important; line-height: 1.5 !important; }
+    .popup-title { font-weight: 700; color: #63b3ed; margin-bottom: .3rem; }
+    .popup-coords { font-family: monospace; font-size: .78rem; color: #718096; }
+
+    /* Coords bar */
+    #coords-bar {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(22,27,39,.85);
+      border-top: 1px solid #2d3748;
+      padding: .3rem 1rem;
+      font-size: .75rem;
+      color: #718096;
+      z-index: 1000;
+      pointer-events: none;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #2d3748;
+      color: #e2e8f0;
+      padding: .5rem 1.2rem;
+      border-radius: 20px;
+      font-size: .83rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s, transform .3s;
+      z-index: 9999;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">⚡ TEMPO Dashboard</span>
+  <div class="nav-links">
+    <a href="/">Status</a>
+    <a href="/map/" class="active">Map</a>
+  </div>
+</nav>
+
+<div class="app-body">
+
+  <!-- SIDEBAR -->
+  <aside>
+
+    <div class="sidebar-section">
+      <h3>Search Location</h3>
+      <div class="search-wrap">
+        <input id="search-input" type="text" placeholder="City, address, coords…" />
+        <button id="search-btn">Go</button>
+      </div>
+      <div id="search-results" style="margin-top:.5rem;"></div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Basemap</h3>
+      <div class="basemap-grid">
+        <button class="basemap-btn active" data-layer="osm">Street</button>
+        <button class="basemap-btn" data-layer="satellite">Satellite</button>
+        <button class="basemap-btn" data-layer="terrain">Terrain</button>
+        <button class="basemap-btn" data-layer="dark">Dark</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Overlays</h3>
+      <label class="layer-item">
+        <input type="checkbox" id="toggle-grid" /> Degree Grid
+      </label>
+      <label class="layer-item">
+        <input type="checkbox" id="toggle-markers" checked /> Saved Markers
+      </label>
+    </div>
+
+    <div class="sidebar-section" style="flex:1;">
+      <h3>Saved Markers <span id="marker-count" style="color:#63b3ed;"></span></h3>
+      <ul id="marker-list"><li class="empty-note">Click map to add markers</li></ul>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Cursor Info</h3>
+      <div id="info-panel">Hover the map…</div>
+    </div>
+
+  </aside>
+
+  <!-- MAP CONTAINER -->
+  <div style="position:relative;flex:1;display:flex;flex-direction:column;">
+    <div id="map"></div>
+    <div id="coords-bar">
+      <span id="coords-text">Lat: — Lng: —</span>
+      <span id="zoom-text">Zoom: —</span>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet Draw -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+<script>
+// ── BASEMAP TILE LAYERS ──────────────────────────────────────────────────────
+const tileLayers = {
+  osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors', maxZoom: 19
+  }),
+  satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: '© Esri', maxZoom: 19
+  }),
+  terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenTopoMap', maxZoom: 17
+  }),
+  dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© CartoDB', maxZoom: 19
+  }),
+};
+
+// ── MAP INIT ─────────────────────────────────────────────────────────────────
+const map = L.map('map', {
+  center: [34.73, -86.59],   // Huntsville, AL default
+  zoom: 10,
+  layers: [tileLayers.osm],
+  zoomControl: true,
+});
+
+// ── LAYER GROUPS ─────────────────────────────────────────────────────────────
+const markerGroup = L.layerGroup().addTo(map);
+let gridLayer = null;
+let savedMarkers = [];
+let markerIdSeq = 0;
+
+// ── DRAW CONTROL ─────────────────────────────────────────────────────────────
+const drawnItems = new L.FeatureGroup().addTo(map);
+const drawControl = new L.Control.Draw({
+  edit: { featureGroup: drawnItems },
+  draw: {
+    polygon: { shapeOptions: { color: '#63b3ed', weight: 2 } },
+    polyline: { shapeOptions: { color: '#68d391', weight: 3 } },
+    rectangle: { shapeOptions: { color: '#f6ad55', weight: 2 } },
+    circle: { shapeOptions: { color: '#fc8181', weight: 2 } },
+    marker: false,   // we handle markers ourselves
+    circlemarker: false,
+  }
+});
+map.addControl(drawControl);
+
+map.on(L.Draw.Event.CREATED, e => {
+  drawnItems.addLayer(e.layer);
+  showToast('Shape added to map');
+});
+
+// ── COORDS BAR ───────────────────────────────────────────────────────────────
+map.on('mousemove', e => {
+  document.getElementById('coords-text').textContent =
+    `Lat: ${e.latlng.lat.toFixed(5)}  Lng: ${e.latlng.lng.toFixed(5)}`;
+});
+map.on('zoomend', () => {
+  document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
+});
+document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
+
+// ── INFO PANEL ───────────────────────────────────────────────────────────────
+map.on('mousemove', e => {
+  document.getElementById('info-panel').innerHTML =
+    `<strong>Lat:</strong> ${e.latlng.lat.toFixed(6)}<br>
+     <strong>Lng:</strong> ${e.latlng.lng.toFixed(6)}<br>
+     <strong>Zoom:</strong> ${map.getZoom()}`;
+});
+
+// ── CLICK → ADD MARKER ───────────────────────────────────────────────────────
+const pinIcon = L.divIcon({
+  className: '',
+  html: `<svg width="24" height="36" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 24 12 24s12-15 12-24C24 5.37 18.63 0 12 0z"
+      fill="#3182ce" stroke="#1a5276" stroke-width="1.5"/>
+    <circle cx="12" cy="12" r="5" fill="white"/>
+  </svg>`,
+  iconSize: [24, 36],
+  iconAnchor: [12, 36],
+  popupAnchor: [0, -38],
+});
+
+map.on('click', e => {
+  const { lat, lng } = e.latlng;
+  const id = ++markerIdSeq;
+  const label = `Pin #${id}`;
+
+  const marker = L.marker([lat, lng], { icon: pinIcon })
+    .bindPopup(`
+      <div class="popup-title">${label}</div>
+      <div class="popup-coords">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
+    `)
+    .addTo(markerGroup);
+
+  savedMarkers.push({ id, label, lat, lng, marker });
+  renderMarkerList();
+  showToast(`${label} added`);
+});
+
+// ── MARKER LIST ──────────────────────────────────────────────────────────────
+function renderMarkerList() {
+  const ul = document.getElementById('marker-list');
+  const mc = document.getElementById('marker-count');
+  mc.textContent = savedMarkers.length ? `(${savedMarkers.length})` : '';
+
+  if (!savedMarkers.length) {
+    ul.innerHTML = '<li class="empty-note">Click map to add markers</li>';
+    return;
+  }
+  ul.innerHTML = savedMarkers.map(m =>
+    `<li>
+       <span class="loc-name" onclick="flyTo(${m.id})">📍 ${m.label}</span>
+       <button onclick="removeMarker(${m.id})" title="Remove">✕</button>
+     </li>`
+  ).join('');
+}
+
+function flyTo(id) {
+  const m = savedMarkers.find(x => x.id === id);
+  if (m) { map.flyTo([m.lat, m.lng], 14); m.marker.openPopup(); }
+}
+
+function removeMarker(id) {
+  const idx = savedMarkers.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  markerGroup.removeLayer(savedMarkers[idx].marker);
+  savedMarkers.splice(idx, 1);
+  renderMarkerList();
+}
+
+// expose to inline onclick
+window.flyTo = flyTo;
+window.removeMarker = removeMarker;
+
+// ── BASEMAP SWITCHER ─────────────────────────────────────────────────────────
+let activeBasemap = 'osm';
+document.querySelectorAll('.basemap-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.layer;
+    if (key === activeBasemap) return;
+    map.removeLayer(tileLayers[activeBasemap]);
+    tileLayers[key].addTo(map);
+    tileLayers[key].bringToBack();
+    activeBasemap = key;
+    document.querySelectorAll('.basemap-btn').forEach(b => b.classList.toggle('active', b.dataset.layer === key));
+  });
+});
+
+// ── OVERLAY TOGGLES ──────────────────────────────────────────────────────────
+document.getElementById('toggle-markers').addEventListener('change', e => {
+  e.target.checked ? markerGroup.addTo(map) : map.removeLayer(markerGroup);
+});
+
+document.getElementById('toggle-grid').addEventListener('change', e => {
+  if (e.target.checked) {
+    gridLayer = buildDegreeGrid();
+    gridLayer.addTo(map);
+  } else if (gridLayer) {
+    map.removeLayer(gridLayer);
+    gridLayer = null;
+  }
+});
+
+function buildDegreeGrid() {
+  const lines = [];
+  for (let lat = -80; lat <= 80; lat += 10) {
+    lines.push(L.polyline([[-90, lat], [90, lat]], { // oops swap later
+      weight: .4, color: '#4a5568', dashArray: '4 6', opacity: .7
+    }));
+  }
+  // lat lines
+  for (let lat = -80; lat <= 80; lat += 10) {
+    lines.push(L.polyline([[lat, -180], [lat, 180]], {
+      weight: .4, color: '#4a5568', dashArray: '4 6', opacity: .7
+    }));
+  }
+  // lng lines
+  for (let lng = -180; lng <= 180; lng += 10) {
+    lines.push(L.polyline([[-80, lng], [80, lng]], {
+      weight: .4, color: '#4a5568', dashArray: '4 6', opacity: .7
+    }));
+  }
+  return L.layerGroup(lines);
+}
+
+// ── GEOCODE SEARCH (Nominatim) ───────────────────────────────────────────────
+document.getElementById('search-btn').addEventListener('click', doSearch);
+document.getElementById('search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+function doSearch() {
+  const q = document.getElementById('search-input').value.trim();
+  if (!q) return;
+  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5`)
+    .then(r => r.json())
+    .then(results => {
+      const div = document.getElementById('search-results');
+      if (!results.length) { div.innerHTML = '<p style="color:#fc8181;font-size:.8rem;">No results.</p>'; return; }
+      div.innerHTML = results.map((r, i) =>
+        `<div class="search-result-item"
+              style="padding:.3rem .4rem;border-radius:5px;cursor:pointer;font-size:.8rem;color:#a0aec0;margin-top:.25rem;"
+              onmouseover="this.style.background='#1e2a3a'" onmouseout="this.style.background=''"
+              onclick="goToResult(${r.lat},${r.lon},'${r.display_name.replace(/'/g,"\\'")}')">
+          📍 ${r.display_name.length > 50 ? r.display_name.slice(0,50)+'…' : r.display_name}
+        </div>`
+      ).join('');
+    })
+    .catch(() => showToast('Search failed'));
+}
+
+function goToResult(lat, lng, name) {
+  map.flyTo([lat, lng], 13);
+  document.getElementById('search-results').innerHTML = '';
+  document.getElementById('search-input').value = '';
+  showToast(`Flying to ${name.slice(0,40)}…`);
+}
+window.goToResult = goToResult;
+
+// ── TOAST ────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
