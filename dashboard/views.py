@@ -28,8 +28,8 @@ def home(request):
 def about(request):
     return render(request, "dashboard/about.html")
 
-def contact(request):
-    return render(request, "dashboard/contact.html")
+def info(request):
+    return render(request, "dashboard/info.html")
 
 
 def statushome(request):
@@ -40,6 +40,9 @@ def statushome(request):
             "map": "/map/",
         }
     })
+
+def tutorial(request):
+    return render(request, 'dashboard/userguide.html')
 
 def map_view(request):
     return render(request, 'dashboard/map.html')

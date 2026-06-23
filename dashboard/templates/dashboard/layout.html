@@ -5,16 +5,114 @@
     <title>{% block title %}{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'dashboard/site.css' %}"/>
-</head>
+    <style>
+    
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0e1117;
+      color: #e2e8f0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      height: 56px;
+      background: #005a9e;
+      border-bottom: 1px solid #005a9e;
+      flex-shrink: 0;
+    }
+    .nav-brand {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      color: #f6f6f6;
+    }
+    .nav-links a {
+      color: #f6f6f6;
+      text-decoration: none;
+      margin-left: 1.25rem;
+      font-size: .875rem;
+      transition: color .2s;
+    }
+    .nav-links a:hover, .nav-links a.active { font-weight: 700; }
+
+    /* ── MAIN LAYOUT ── */
+    .app-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── SIDEBAR ── */
+    aside {
+      width: 280px;
+      background: #f6f6f6;
+      border-right: 1px solid #2d3748;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .sidebar-section {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #2d3748;
+    }
+    .sidebar-section h3 {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #718096;
+      margin-bottom: .75rem;
+    }
+
+    .sidebar.collapsed{
+      width: 60px;
+      min-width: 60px;
+    }
+
+    .togglebtn{
+      position: absolute;
+      top: 15px;
+      left: 260px;
+      background: black;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: left 0.3s ease;
+    }
+
+    .sidebar.collapsed+.togglebtn{
+      left: 70px;
+    }
+    </style>
+</head>
 <body>
-<div class="navbar">
-    <a href="{% url 'home' %}" class="navbar-brand">Home</a>
-    <a href="{% url 'about' %}" class="navbar-item">About</a>
-    <a href="{% url 'contact' %}" class="navbar-item">Contact</a>
-    <a href="{% url 'map' %}" class="navbar-item">Map</a>
-    <a href="{% url 'status' %}" class="navbar-item">Status</a>
-</div>
+
+<nav><!--Navbar Tab-->
+  <span class="nav-brand"> Regional Ozone Precoursor Map</span>
+  <div class="nav-links">
+    <a href="/map/" class="active">Map</a>
+    <a href ="/info/">Info</a>
+    <a href="/tutorial/">User Guide</a>
+    <a href="/">Export Figure</a>
+    <a href="/admin">Sign In</a>
+    <a href="/about/">About</a>
+    <!--Clickable Nasa Logo-->
+    <a href="/">
+      <img class= "logo" src = "templates/dashboard/nasalogo.png" alt="Nasa Logo"></a>
+    
+  </div>
+</nav>
 
 <div class="body-content">
     {% block content %}

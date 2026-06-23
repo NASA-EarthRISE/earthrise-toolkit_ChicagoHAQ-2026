@@ -12,9 +12,10 @@ urlpatterns = [
     path("", views.home, name = "home"),
     path("status/", views.statushome, name = "status"),
     path("about/", views.about, name="about"),
-    path("contact/", views.contact, name="contact"),
+    path("info/", views.info, name="info"),
     path('map/', views.map_view, name='map'),
     path('api/markers/', views.map_markers_api, name='markers-api'),
+    path('tutorial/', views.tutorial, name="tutorial"),
 
 ]
 
