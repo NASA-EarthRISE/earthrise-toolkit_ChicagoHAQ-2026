@@ -1,0 +1,72 @@
+{% load static %}
+<!-- Map-specific sidebar with controls -->
+<div class="sidebar-section">
+    <h3>Search Region</h3>
+    <div class="search-wrap">
+        <input id="search-input" type="text" placeholder="Search location..." />
+        <button id="search-btn">Go</button>
+    </div>
+    <div id="search-results" style="margin-top:.5rem;"></div>
+</div>
+
+<div class="sidebar-section">
+    <h3>Time Scale</h3>
+    <div class="basemap-grid">
+        <a href="{% url 'map_hourly' %}" class="basemap-btn {% if time_scale == 'hourly' %}active{% endif %}">Hourly</a>
+        <a href="{% url 'map_daily' %}" class="basemap-btn {% if time_scale == 'daily' %}active{% endif %}">Daily</a>
+        <a href="{% url 'map_monthly' %}" class="basemap-btn {% if time_scale == 'monthly' %}active{% endif %}">Monthly</a>
+    </div>
+</div>
+
+<div class="sidebar-section">
+    <h3>Basemap Style</h3>
+    <div class="basemap-grid">
+        <button class="basemap-btn active" data-layer="osm">Street</button>
+        <button class="basemap-btn" data-layer="satellite">Satellite</button>
+        <button class="basemap-btn" data-layer="terrain">Terrain</button>
+    </div>
+</div>
+
+<!-- Time slider (only shown on hourly view) -->
+<div class="sidebar-section time-slider-section" id="time-slider-container" style="display:none;">
+    <h3>Observation Window</h3>
+    <label for="time-slider">Scroll through observation hours</label>
+    <input type="range" id="time-slider" min="0" max="23" value="0" step="1" />
+    <div id="time-display">00:00 UTC</div>
+    <div class="time-controls">
+        <button id="time-play" title="Auto-play">▶</button>
+        <button id="time-prev" title="Previous hour">◀</button>
+        <button id="time-next" title="Next hour">▶</button>
+    </div>
+</div>
+
+<div class="sidebar-section">
+    <h3>Data Products</h3>
+
+    <div style="margin-bottom:.75rem;">
+        <strong style="font-size:.82rem; color:var(--text-muted);">NO2 Concentration</strong>
+        <label class="layer-item">
+            <input type="checkbox" class="layer-toggle" data-layer="tempo" checked /> TEMPO
+        </label>
+        <label class="layer-item">
+            <input type="checkbox" class="layer-toggle" data-layer="openaq" /> OpenAQ
+        </label>
+        <label class="layer-item">
+            <input type="checkbox" class="layer-toggle" data-layer="fusion" /> Fusion (TEMPO + OpenAQ)
+        </label>
+    </div>
+
+    <div style="margin-bottom:.75rem;">
+        <strong style="font-size:.82rem; color:var(--text-muted);">Wind</strong>
+        <label class="layer-item">
+            <input type="checkbox" class="layer-toggle" data-layer="wind" /> Wind Speed & Direction
+        </label>
+    </div>
+</div>
+
+<div class="sidebar-section">
+    <h3>Markers <span id="marker-count"></span></h3>
+    <ul id="marker-list">
+        <li class="empty-note">Click map to add markers</li>
+    </ul>
+</div>

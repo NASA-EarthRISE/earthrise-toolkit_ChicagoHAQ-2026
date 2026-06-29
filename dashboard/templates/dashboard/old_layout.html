@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'dashboard/site.css' %}"/>
+    <style>
+    
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0e1117;
+      color: #e2e8f0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      height: 56px;
+      background: #005a9e;
+      border-bottom: 1px solid #005a9e;
+      flex-shrink: 0;
+    }
+    .nav-brand {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      color: #f6f6f6;
+    }
+    .nav-links a {
+      color: #f6f6f6;
+      text-decoration: none;
+      margin-left: 1.25rem;
+      font-size: .875rem;
+      transition: color .2s;
+    }
+    .nav-links a:hover, .nav-links a.active { font-weight: 700; }
+    
+    .nav button{
+      background:#005a9e;
+      color:#e2e8f0;
+      padding: 10px 14px;
+      border: none;
+      cursor: pointer;
+      border-radius:4px;
+    }
+
+    .nav button:hover{ background:#718096;}
+
+    .container {
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    .bar1, .bar2, .bar3 {
+      width: 35px;
+      height: 5px;
+      background-color: #333;
+      margin: 6px 0;
+      transition: 0.4s;
+    }
+
+    /* Rotate first bar */
+    .change .bar1 {
+      transform: translate(0, 11px) rotate(-45deg);
+    }
+
+    /* Fade out the second bar */
+    .change .bar2 {opacity: 0;}
+
+    /* Rotate last bar */
+    .change .bar3 {
+      transform: translate(0, -11px) rotate(45deg);
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .app-body {
+      margin-left: 0;
+      transition: margin-left 0.3s ease;
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      height:100%;
+      width: 0;
+      position: fixed;
+      z-index: 1;
+      top: 0;
+      left: 0 px; /* Hidden by deafault*/
+      background-color: #f6f6f6;
+      border-right: 1px solid #2d3748;
+      overflow-x: hidden;
+      padding-top: 60px;
+      transition: 0.5s ease;
+    
+    }
+
+    .sidebar a{
+      display: block;
+      padding: 12px 20px;
+      text-decoration: none;
+      color:#005a9e;
+      transition: 0.3s;
+    }
+
+    .sidebar a:hover{
+      background-color: #e2e8f0;
+      color:#0e1117
+    }
+    .sidebar-section {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #2d3748;
+    }
+    .sidebar-section h3 {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #718096;
+      margin-bottom: .75rem;
+    }
+    .sidebar .closebtn{
+      position: absolute;
+      top:0;
+      right:25px;
+      font-size: 36px;
+      margin-left:50px;
+    }
+
+  </style>
+</head>
+<body>
+
+<nav><!--Navbar Tab-->
+  <!--<button id="openSideBarbtn">☰</button>-->
+  <div class="container" onclick="Menu(this)">
+  <div class="bar1"></div>
+  <div class="bar2"></div>
+  <div class="bar3"></div>
+</div>
+
+  <span class="nav-brand"> Regional Ozone Precoursor Map</span>
+  <div class="nav-links">
+    <a href="/map/">Map</a>
+    <a href ="/info/">Info</a>
+    <a href="/tutorial/">User Guide</a>
+    <a href="/">Export Figure</a>
+    <a href="/admin">Sign In</a>
+    <a href="/about/">About</a>
+    <!--Clickable Nasa Logo-->
+    <a href="/">
+      <img class= "logo" src = "templates/dashboard/nasalogo.png" alt="Nasa Logo"></a>
+    
+  </div>
+</nav>
+
+<div id="sidebar" class="sidebar">
+  <a href="javascript:void(0)" class="closebtn" onclick="closeSidebar()">&times;</a>
+  <a href="/map/">Explore Data</a>
+  <a href="/info/">Community Tools</a>
+  <a href="/tutorial/">User Guide</a>
+</div>
+
+<!--<div id="overlay" class="overlay"></div>-->
+
+<div class="body-content">
+  
+  <div id="sidebar" class="sidebar">
+  <a href="javascript:void(0)" class="closebtn" onclick="closeSidebar()">&times;</a>
+  <a href="/map/">Explore Data</a>
+  <a href="/info/">Community Tools</a>
+  <a href="/tutorial/">User Guide</a>
+  </div>
+
+  <div id="app-body">
+    {% block content %}
+    <p> Put content Here</p>
+    {% endblock %}
+    <hr/>
+    <footer>
+        <p>&copy; 2018</p>
+    </footer>
+  </div>
+</div>
+
+PREVIOUS LAYOUT FORMAT
+/*<div class="body">*/
+        <div id = "app-body">
+            {% block content %}
+            
+            {% endblock %}
+            <hr/>
+            <footer>
+                <p>&copy; 2018</p>
+            </footer>
+        </div>  
+    </div>
+
+<script>
+  // ────── Sidebar Open and Close ──────//
+  function openSideBar(){
+    document.getElementById("sidebar").style.width="250px";
+    document.getElementById("app-body").style.marginLeft="250px";
+  }
+  function closeSidebar(){
+    document.getElementById("sidebar").style.width="0";
+    document.getElementById("app-body").style.marginLeft="0";
+  }
+  function Menu(x) {
+  x.classList.toggle("change");
+}
+</script>
+
+</body>
+</html>

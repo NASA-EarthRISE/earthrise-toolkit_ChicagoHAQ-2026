@@ -1,0 +1,128 @@
+{% extends "dashboard/layout.html" %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <!-- Stat Card 1 -->
+    <div class="stat-card">
+        <div class="stat-label">Latest NO₂ Reading</div>
+        <div class="stat-value">3.2</div>
+        <div class="stat-sub">×10¹⁵ molec/cm²</div>
+    </div>
+
+    <!-- Stat Card 2 -->
+    <div class="stat-card">
+        <div class="stat-label">AQI Status</div>
+        <div class="stat-value" style="color: var(--success);">Good</div>
+        <div class="stat-sub">Files/Points Loaded: 42</div>
+    </div>
+
+    <!-- Stat Card 3 -->
+    <div class="stat-card">
+        <div class="stat-label">Sensor Network</div>
+        <div class="stat-value">271</div>
+        <div class="stat-sub">TEMPO + OpenAir Clarity</div>
+    </div>
+
+    <!-- Stat Card 4 -->
+    <div class="stat-card">
+        <div class="stat-label">Last Server Update</div>
+        <div class="stat-value" style="font-size:1.25rem;">{% now "H:i" %}</div>
+        <div class="stat-sub">{% now "M d, Y" %}</div>
+    </div>
+</div>
+
+<!-- Quick Actions Section -->
+<div class="dashboard-section">
+    <h2>Quick Actions</h2>
+    <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+        <a href="{% url 'map_hourly' %}" style="
+            display:inline-block;
+            padding:0.75rem 1.5rem;
+            background:var(--accent);
+            color:#fff;
+            text-decoration:none;
+            border-radius:8px;
+            font-weight:600;
+            font-size:0.9rem;
+            transition:background .2s;
+        " onmouseover="this.style.background='var(--primary)'" onmouseout="this.style.background='var(--accent)'">
+            Explore Hourly Data
+        </a>
+        <a href="{% url 'map_daily' %}" style="
+            display:inline-block;
+            padding:0.75rem 1.5rem;
+            background:var(--bg-card);
+            color:var(--text);
+            text-decoration:none;
+            border:2px solid var(--border);
+            border-radius:8px;
+            font-weight:600;
+            font-size:0.9rem;
+            transition:all .2s;
+        " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+            Explore Daily Averages
+        </a>
+        <a href="{% url 'map_monthly' %}" style="
+            display:inline-block;
+            padding:0.75rem 1.5rem;
+            background:var(--bg-card);
+            color:var(--text);
+            text-decoration:none;
+            border:2px solid var(--border);
+            border-radius:8px;
+            font-weight:600;
+            font-size:0.9rem;
+            transition:all .2s;
+        " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+            Explore Monthly Patterns
+        </a>
+    </div>
+</div>
+
+<!-- Data Sources Section -->
+<div class="dashboard-section">
+    <h2>Data Sources</h2>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
+        <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--accent);">
+            <strong style="color:var(--primary);">NASA TEMPO</strong>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
+                Tropospheric Emissions: Monitoring of Pollution. Geostationary satellite providing hourly NO₂, O₃, and AOD measurements over North America.
+            </p>
+        </div>
+        <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--success);">
+            <strong style="color:var(--success);">OpenAir Chicago</strong>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
+                Ground-based air quality monitoring network. Surface NO₂ and PM 2.5 concentrations from air quality sensors around the Cook County, Chicago region.
+            </p>
+        </div>
+        <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--warning);">
+            <strong style="color:#b7791f;">Fusion Layer</strong>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
+                Combined TEMPO satellite + OpenAir Chicago ground sensor data for higher resolution air quality estimates.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity Section -->
+<div class="dashboard-section">
+    <h2>Recent Activity</h2>
+    <div style="font-size:0.85rem; color:var(--text-muted);">
+        <div style="padding:0.5rem 0; border-bottom:1px solid var(--border);">
+            <strong style="color:var(--text);">{% now "H:i" %}</strong> — Dashboard Loaded
+        </div>
+        <div style="padding:0.5rem 0; border-bottom:1px solid var(--border);">
+            <strong style="color:var(--text);">{% now "H:i" %}</strong> — TEMPO Data Ingestion Complete
+        </div>
+        <div style="padding:0.5rem 0; border-bottom:1px solid var(--border);">
+            <strong style="color:var(--text);">{% now "H:i" %}</strong> — OpenAir CLARITY Data Ingestion Complete
+        </div>
+        <div style="padding:0.5rem 0;">
+            <strong style="color:var(--text);">{% now "H:i" %}</strong> — System Status: <span style="color:var(--success);">All Services Operational</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
