@@ -1,8 +1,11 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseNotFound
+from django.conf import settings
 
 import re
 import json
+import os
+import folium
 from django.utils.timezone import datetime
 
 # libraries for site/html render
@@ -17,7 +20,7 @@ from dashboard.models import LogMessage
 from django.views.generic import ListView
 
 # Terminal command for running/updating server: python manage.py runserver
-# Website url for browser: http://127.0.0.1:8000/hello/VSCode
+# Website url for browser: http://127.0.0.1:8000/
 
 # Create your views here.
 # Views are what the user sees when they interact with buttons and widgets
@@ -39,19 +42,28 @@ def tutorial(request):
 
 def map_view(request):
     """Default map view — redirects to hourly."""
-    return render(request, 'dashboard/pages/map.html', {'time_scale': 'hourly'})
+    return render(request, 'dashboard/pages/map.html', {
+        'time_scale': 'hourly'
+    })
 
 def map_hourly(request):
     """Hourly TEMPO data view with time slider."""
-    return render(request, 'dashboard/pages/map.html', {'time_scale': 'hourly'})
+    return render(request, 'dashboard/pages/map.html', {
+        'time_scale': 'hourly'
+    })
 
 def map_daily(request):
     """Daily aggregated/averaged data view."""
-    return render(request, 'dashboard/pages/map.html', {'time_scale': 'daily'})
+
+    return render(request, 'dashboard/pages/map.html', {
+        'time_scale': 'daily'
+    })
 
 def map_monthly(request):
     """Monthly climatology/averages view."""
-    return render(request, 'dashboard/pages/map.html', {'time_scale': 'monthly'})
+    return render(request, 'dashboard/pages/map.html', {
+        'time_scale': 'monthly'
+    })
 
 # ── COMMUNITY ─────────────────────────────────────────────────────────────────
 

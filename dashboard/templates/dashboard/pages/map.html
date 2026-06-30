@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
   <!-- Leaflet Heat CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet.heat.css" />
+
 {% endblock %}
 
 {% block content %}
@@ -44,13 +45,14 @@
 {% endblock %}
 
 {% block extra_js %}
+
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Leaflet Draw -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
   <!-- Leaflet Heat -->
   <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet.heat.js"></script>
-
+  
   <script>
   // EDIT for TEMPO & Clairty Data Sources── CONFIGURATION ──────────────────────────────────────────────────────────
   const TIME_SCALE = '{{ time_scale|default:"hourly" }}';  // hourly, daily, monthly
@@ -64,17 +66,9 @@
 
   // ── BASEMAP TILE LAYERS ────────────────────────────────────────────────────
   const tileLayers = {
-    osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
+    osm: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom',
       maxZoom: 19
-    }),
-    satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: '© Esri',
-      maxZoom: 19
-    }),
-    terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenTopoMap',
-      maxZoom: 17
     }),
   };
 
@@ -245,25 +239,6 @@
   // Load demo data on init
   loadDemoData();
 
-  // ── DRAW CONTROL ───────────────────────────────────────────────────────────
-  const drawnItems = new L.FeatureGroup().addTo(map);
-  const drawControl = new L.Control.Draw({
-    edit: { featureGroup: drawnItems },
-    draw: {
-      polygon: { shapeOptions: { color: '#63b3ed', weight: 2 } },
-      polyline: { shapeOptions: { color: '#48bb78', weight: 3 } },
-      rectangle: { shapeOptions: { color: '#ed8936', weight: 2 } },
-      circle: { shapeOptions: { color: '#fc8181', weight: 2 } },
-      marker: false,
-      circlemarker: false
-    }
-  });
-  map.addControl(drawControl);
-
-  map.on(L.Draw.Event.CREATED, e => {
-    drawnItems.addLayer(e.layer);
-    showToast('Shape added to map');
-  });
 
   // ── COORDS BAR ─────────────────────────────────────────────────────────────
   const coordsText = document.getElementById('coords-text');
@@ -276,15 +251,9 @@
   map.on('mousemove', e => {
     if (coordsText) {
       coordsText.textContent =
-        `Lat: ${e.latlng.lat.toFixed(5)}  Lng: ${e.latlng.lng.toFixed(5)}`;
-    }
-    // Also update info panel
-    if (infoPanelContent) {
-      infoPanelContent.innerHTML =
         `<strong>Lat:</strong> ${e.latlng.lat.toFixed(6)}<br/>
-         <strong>Lng:</strong> ${e.latlng.lng.toFixed(6)}<br/>
-         <strong>Zoom:</strong> ${map.getZoom()}`;
-    }
+         <strong>Lng:</strong> ${e.latlng.lng.toFixed(6)}<br/>`;
+      } 
   });
 
   map.on('zoomend', () => {

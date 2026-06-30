@@ -3,7 +3,7 @@
 <div class="sidebar-section">
     <h3>Search Region</h3>
     <div class="search-wrap">
-        <input id="search-input" type="text" placeholder="Search location..." />
+        <input id="search-input" type="text" placeholder="Select location..." />
         <button id="search-btn">Go</button>
     </div>
     <div id="search-results" style="margin-top:.5rem;"></div>
@@ -18,19 +18,11 @@
     </div>
 </div>
 
-<div class="sidebar-section">
-    <h3>Basemap Style</h3>
-    <div class="basemap-grid">
-        <button class="basemap-btn active" data-layer="osm">Street</button>
-        <button class="basemap-btn" data-layer="satellite">Satellite</button>
-        <button class="basemap-btn" data-layer="terrain">Terrain</button>
-    </div>
-</div>
 
 <!-- Time slider (only shown on hourly view) -->
 <div class="sidebar-section time-slider-section" id="time-slider-container" style="display:none;">
     <h3>Observation Window</h3>
-    <label for="time-slider">Scroll through observation hours</label>
+    <label for="time-slider">Scroll through observation window</label>
     <input type="range" id="time-slider" min="0" max="23" value="0" step="1" />
     <div id="time-display">00:00 UTC</div>
     <div class="time-controls">
@@ -64,9 +56,3 @@
     </div>
 </div>
 
-<div class="sidebar-section">
-    <h3>Markers <span id="marker-count"></span></h3>
-    <ul id="marker-list">
-        <li class="empty-note">Click map to add markers</li>
-    </ul>
-</div>
