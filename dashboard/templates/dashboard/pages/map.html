@@ -84,25 +84,31 @@
    fetch("{% static 'dashboard/layers/Chicago.geojson' %}")
             .then(response => response.json())
             .then(data => {
-                L.geoJSON(data, {
+                var ChicagoBounds = L.geoJSON(data, {
                     style: {
                         color: "#000000", // Outline color
-                        weight: 2
+                        weight: 2,
+                        fillColor: "#00000000"
                     }
                 }).addTo(map);
+
+                map.fitBounds(ChicagoBounds.getBounds())
               })
     
    // community areas
    fetch("{% static 'dashboard/layers/ChicagoCommunityAreas.geojson' %}")
             .then(response => response.json())
             .then(data => {
-                L.geoJSON(data, {
+                var CommunityAreas = L.geoJSON(data, {
                     style: {
                         color: "#00000077", // Outline color
                         weight: 1
                     }
                 }).addTo(map);
+
+                map.fitBounds(ChicagoBounds.getBounds())
               })
+
 
   // ── GEOCODE SEARCH (Nominatim) ─────────────────────────────────────────────
   const searchBtn = document.getElementById('search-btn');
