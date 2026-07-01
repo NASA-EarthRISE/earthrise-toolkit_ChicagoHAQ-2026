@@ -36,7 +36,7 @@ def info(request):
     return render(request, "dashboard/pages/info.html")
 
 def tutorial(request):
-    return render(request, 'dashboard/pages/userguide.html')
+    return render(request, "dashboard/pages/userguide.html")
 
 # ── MAP VIEWS (hourly, daily, monthly) ────────────────────────────────────────
 
@@ -48,16 +48,12 @@ def map_view(request):
 
 def map_hourly(request):
     """Hourly TEMPO data view with time slider."""
-    return render(request, 'dashboard/pages/map.html', {
-        'time_scale': 'hourly'
-    })
+    return render(request, 'dashboard/pages/map.html', {'time_scale': 'hourly'})
 
 def map_daily(request):
     """Daily aggregated/averaged data view."""
 
-    return render(request, 'dashboard/pages/map.html', {
-        'time_scale': 'daily'
-    })
+    return render(request, 'dashboard/pages/map.html', {'time_scale': 'daily'})
 
 def map_monthly(request):
     """Monthly climatology/averages view."""
@@ -69,6 +65,13 @@ def map_monthly(request):
 
 def community(request):
     return render(request, 'dashboard/pages/community.html')
+
+# ── EXPORT ────────────────────────────────────────────────────────────────────
+
+def export(request):
+    return render(request, 'dashboard/pages/export.html', {
+        'today': datetime.now().date()
+    })
 
 # ── API ENDPOINTS ─────────────────────────────────────────────────────────────
 

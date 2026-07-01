@@ -26,12 +26,12 @@
   <div class="map-container">
     <div id="map"></div>
 
-    <!-- Info panel overlay — retractable circle with "!" -->
-    <div id="info-panel">
-      <button id="info-panel-toggle" class="info-panel-toggle" title="Toggle info panel" aria-label="Toggle info panel">!</button>
-      <div id="info-panel-body">
+    <!-- Explore panel overlay — retractable circle with "!" -->
+    <div id="explore-panel">
+      <button id="explore-panel-toggle" class="explore-panel-toggle" title="Toggle explore panel" aria-label="Toggle explore panel">!</button>
+      <div id="explore-panel-body">
         <strong>Explore The Map </strong><br/>
-        <span id="info-panel-content">Click and drag to Shift your view</span>
+        <span id="explore-panel-content">Click and drag to shift your view</span>
       </div>
     </div>
 
@@ -237,38 +237,36 @@
   }
 
   // Load demo data on init
-  loadDemoData();
+  // loadDemoData();
 
 
   // ── COORDS BAR ─────────────────────────────────────────────────────────────
-  const coordsText = document.getElementById('coords-text');
-  const zoomText = document.getElementById('zoom-text');
-  const infoPanelContent = document.getElementById('info-panel-content');
-
-  // Set initial zoom
-  if (zoomText) zoomText.textContent = `Zoom: ${map.getZoom()}`;
-
   map.on('mousemove', e => {
-    if (coordsText) {
-      coordsText.textContent =
-        `<strong>Lat:</strong> ${e.latlng.lat.toFixed(6)}<br/>
-         <strong>Lng:</strong> ${e.latlng.lng.toFixed(6)}<br/>`;
-      } 
+  document.getElementById('coords-text').textContent =
+    `Lat: ${e.latlng.lat.toFixed(5)}  Lng: ${e.latlng.lng.toFixed(5)}`;
   });
-
   map.on('zoomend', () => {
-    if (zoomText) zoomText.textContent = `Zoom: ${map.getZoom()}`;
+    document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
+  });
+  document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
+
+  // ── coords PANEL ───────────────────────────────────────────────────────────────
+  map.on('mousemove', e => {
+  document.getElementById('coords-panel').innerHTML =
+    `<strong>Lat:</strong> ${e.latlng.lat.toFixed(6)}<br>
+     <strong>Lng:</strong> ${e.latlng.lng.toFixed(6)}<br>
+     <strong>Zoom:</strong> ${map.getZoom()}`;
   });
 
-  // ── INFO PANEL TOGGLE ────────────────────────────────────────────────────
-  const infoPanel = document.getElementById('info-panel');
-  const infoPanelToggle = document.getElementById('info-panel-toggle');
-  if (infoPanelToggle && infoPanel) {
-    infoPanel.classList.add('retracted'); // start retracted
-    infoPanelToggle.addEventListener('click', (e) => {
+  // ── EXPLORE PANEL TOGGLE ────────────────────────────────────────────────────
+  const explorePanel = document.getElementById('explore-panel');
+  const explorePanelToggle = document.getElementById('explore-panel-toggle');
+  if (explorePanelToggle && explorePanel) {
+    explorePanel.classList.add('retracted'); // start retracted
+    explorePanelToggle.addEventListener('click', (e) => {
       e.stopPropagation();
-      infoPanel.classList.toggle('retracted');
-      infoPanel.classList.toggle('expanded');
+      explorePanel.classList.toggle('retracted');
+      explorePanel.classList.toggle('expanded');
     });
   }
 
@@ -418,64 +416,37 @@
   }
 
   // ── GEOCODE SEARCH (Nominatim) ─────────────────────────────────────────────
-  const searchBtn = document.getElementById('search-btn');
-  const searchInput = document.getElementById('search-input');
-  const searchResults = document.getElementById('search-results');
-
-  if (searchBtn) {
-    searchBtn.addEventListener('click', doSearch);
-  }
-  if (searchInput) {
-    searchInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') doSearch();
-    });
-  }
+  document.getElementById('search-btn').addEventListener('click', doSearch);
+  document.getElementById('search-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSearch();
+  });
 
   function doSearch() {
-    if (!searchInput) return;
-    const q = searchInput.value.trim();
-    if (!q) { showToast('Please enter a location'); return; }
-
-    showToast('Searching...');
-
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5`, {
-      headers: { 'Accept-Language': 'en' }
-    })
-      .then(r => {
-        if (!r.ok) throw new Error('Network error');
-        return r.json();
-      })
+    const q = document.getElementById('search-input').value.trim();
+    if (!q) return;
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5`)
+      .then(r => r.json())
       .then(results => {
-        if (!searchResults) return;
-        if (!results.length) {
-          searchResults.innerHTML = '<p style="color:var(--danger);font-size:.8rem;">No results found.</p>';
-          return;
-        }
-        searchResults.innerHTML = results.map((r, i) => {
-          const name = (r.display_name || '').replace(/'/g, "\\'").replace(/"/g, '"');
-          const short = r.display_name.length > 60 ? r.display_name.slice(0, 60) + '…' : r.display_name;
-          return `<div style="padding:.4rem .5rem;border-radius:5px;cursor:pointer;font-size:.8rem;color:var(--text);margin-top:.25rem;border:1px solid transparent;"
-                   onmouseover="this.style.background='var(--bg)';this.style.borderColor='var(--primary-light)'"
-                   onmouseout="this.style.background='';this.style.borderColor='transparent'"
-                   onclick="window.goToResult(${parseFloat(r.lat)},${parseFloat(r.lon)},'${name}')">
-             📍 ${short}
-           </div>`;
-        }).join('');
+        const div = document.getElementById('search-results');
+        if (!results.length) { div.innerHTML = '<p style="color:#fc8181;font-size:.8rem;">No results.</p>'; return; }
+        div.innerHTML = results.map((r, i) =>
+          `<div class="search-result-item"
+                style="padding:.3rem .4rem;border-radius:5px;cursor:pointer;font-size:.8rem;color:#a0aec0;margin-top:.25rem;"
+                onmouseover="this.style.background='#1e2a3a'" onmouseout="this.style.background=''"
+                onclick="goToResult(${r.lat},${r.lon},'${r.display_name.replace(/'/g,"\\'")}')">
+            📍 ${r.display_name.length > 50 ? r.display_name.slice(0,50)+'…' : r.display_name}
+          </div>`
+        ).join('');
       })
-      .catch(err => {
-        console.error('Search error:', err);
-        if (searchResults) searchResults.innerHTML = '<p style="color:var(--danger);font-size:.8rem;">Search failed. Try again.</p>';
-        showToast('Search failed');
-      });
+      .catch(() => showToast('Search failed'));
   }
 
   function goToResult(lat, lng, name) {
     map.flyTo([lat, lng], 13);
-    if (searchResults) searchResults.innerHTML = '';
-    if (searchInput) searchInput.value = '';
-    showToast(`Flying to ${name.slice(0, 40)}…`);
+    document.getElementById('search-results').innerHTML = '';
+    document.getElementById('search-input').value = '';
+    showToast(`Flying to ${name.slice(0,40)}…`);
   }
-
   window.goToResult = goToResult;
   </script>
 {% endblock %}

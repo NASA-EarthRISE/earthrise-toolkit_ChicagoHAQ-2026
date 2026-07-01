@@ -231,12 +231,104 @@ nav {
 }
 
 .sidebar-section h3 {
-  font-size: .7rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: .1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: .75rem;
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+}
+
+/* ── FORM GROUPS (consistent spacing like export sidebar) ─────────────────── */
+
+.form-group {
+  margin-bottom: 0.75rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
+
+.form-group input[type="date"],
+.form-group input[type="month"],
+.form-group input[type="number"],
+.form-group input[type="text"],
+.form-group select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
+}
+
+.form-group .hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+/* ── CHECKBOX GROUP (matches export sidebar style) ───────────────────────── */
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.checkbox-group label {
+  font-size: 0.82rem;
+  color: var(--text);
+  cursor: pointer;
+  margin-bottom: 0;
+}
+
+/* ── DATA PRODUCT GROUPS (matches export sidebar h3 sub-sections) ────────── */
+
+.data-product-group {
+  margin-bottom: 1rem;
+}
+
+.data-product-group:last-child {
+  margin-bottom: 0;
+}
+
+.data-product-group h4 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+}
+
+/* ── SEARCH RESULTS ──────────────────────────────────────────────────────── */
+
+.search-results {
+  margin-top: 0.5rem;
 }
 
 .sidebar.collapsed {
@@ -362,14 +454,15 @@ nav {
 }
 
 .map-layout .sidebar {
-  width: var(--sidebar-width);
+  width: 320px;
   flex-shrink: 0;
-  min-width: var(--sidebar-width);
-  max-width: var(--sidebar-width);
-  display: flex;
-  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   overflow-y: auto;
-  overflow-x: hidden;
+  max-height: calc(100vh - var(--nav-height) - 100px);
 }
 
 .map-container {
@@ -404,19 +497,32 @@ nav {
   justify-content: space-between;
 }
 
-/* Info panel — retractable overlay on map */
-#info-panel {
+/* coords panel */
+#coords-panel {
+  background: #1a2035;
+  border-radius: 8px;
+  padding: .75rem;
+  font-size: .8rem;
+  color: #a0aec0;
+  min-height: 60px;
+}
+#coords-panel strong { color: #e2e8f0; }
+
+
+/* Explore panel — retractable overlay on map */
+#explore-panel {
   position: absolute;
   top: 1rem;
-  right: 1rem;
+  right: 0.5rem;
   z-index: 999;
   display: flex;
+  flex-direction: row-reverse;
   align-items: flex-start;
   transition: all 0.3s ease;
 }
 
 /* Toggle button — circular "!" button */
-.info-panel-toggle {
+.explore-panel-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -436,13 +542,12 @@ nav {
   padding: 0;
 }
 
-.info-panel-toggle:hover {
+.explore-panel-toggle:hover {
   background: var(--primary-dark);
   transform: scale(1.1);
 }
 
-/* Panel body — semi-transparent */
-#info-panel-body {
+#explore-panel-body {
   background: rgba(255, 255, 255, 0.75);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -452,21 +557,21 @@ nav {
   min-width: 180px;
   max-width: 220px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  margin-left: .5rem;
+  margin-right: .5rem;
   transition: opacity 0.3s ease, transform 0.3s ease, max-width 0.3s ease, padding 0.3s ease;
 }
 
-#info-panel-body strong {
+#explore-panel-body strong {
   color: var(--primary);
 }
 
 /* Retracted state — only show the circle button */
-#info-panel.retracted #info-panel-body {
+#explore-panel.retracted #explore-panel-body {
   opacity: 0;
-  transform: translateX(10px) scale(0.95);
+  transform: translateX(-10px) scale(0.95);
   max-width: 0;
   padding: 0;
-  margin-left: 0;
+  margin-right: 0;
   overflow: hidden;
   border: none;
   box-shadow: none;
@@ -474,12 +579,12 @@ nav {
 }
 
 /* Expanded state — show full panel */
-#info-panel.expanded #info-panel-body {
+#explore-panel.expanded #explore-panel-body {
   opacity: 1;
   transform: translateX(0) scale(1);
   max-width: 220px;
   padding: .75rem 1rem;
-  margin-left: .5rem;
+  margin-right: .5rem;
 }
 
 
