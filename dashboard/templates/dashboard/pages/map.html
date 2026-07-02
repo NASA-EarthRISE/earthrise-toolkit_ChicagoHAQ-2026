@@ -86,13 +86,13 @@
             .then(data => {
                 var ChicagoBounds = L.geoJSON(data, {
                     style: {
-                        color: "#000000", // Outline color
-                        weight: 2,
-                        fillColor: "#00000000"
+                        color: "#000000", // outline color
+                        weight: 2, //outline weight
+                        fillColor: "#00000000" //make fill transparent
                     }
                 }).addTo(map);
 
-                map.fitBounds(ChicagoBounds.getBounds())
+                map.fitBounds(ChicagoBounds.getBounds()) //stay zoomed to Chicago boundary
               })
     
    // community areas
@@ -101,12 +101,12 @@
             .then(data => {
                 var CommunityAreas = L.geoJSON(data, {
                     style: {
-                        color: "#00000077", // Outline color
-                        weight: 1
+                        color: "#00000077", // outline color
+                        weight: 1 // outline weight
                     }
                 }).addTo(map);
 
-                map.fitBounds(ChicagoBounds.getBounds())
+                map.fitBounds(ChicagoBounds.getBounds()) //stay zoomed to Chicago boundary
               })
 
 
