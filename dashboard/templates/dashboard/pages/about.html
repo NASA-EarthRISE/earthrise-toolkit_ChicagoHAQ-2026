@@ -5,28 +5,22 @@
 
 {% block extra_css %}
 <style>
-  /* ── ABOUT PAGE LAYOUT ─────────────────────────────── */
-  .about-page {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 1rem 0;
-  }
 
-  /* Hero banner */
-  .about-hero {
+  /* Hero (Heading) banner */
+  .hero {
     text-align: center;
     padding: 2rem 1rem;
     margin-bottom: 1.5rem;
   }
 
-  .about-hero h1 {
+  .hero h1 {
     font-size: 1.75rem;
     font-weight: 700;
     color: var(--primary);
     margin-bottom: 0.5rem;
   }
 
-  .about-hero .subtitle {
+  .hero .subtitle {
     font-size: 1rem;
     color: var(--text-muted);
     max-width: 640px;
@@ -34,6 +28,11 @@
     line-height: 1.6;
   }
 
+  @media (max-width: 600px) {
+    .hero h1 {
+      font-size: 1.4rem;
+    }
+  }
   /* Section cards */
   .about-section {
     background: var(--bg-card);
@@ -116,109 +115,93 @@
     height: 140px;
   }
 
-  /* Responsive */
-  @media (max-width: 600px) {
-    .portrait-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .portrait-grid.three-col {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .about-hero h1 {
-      font-size: 1.4rem;
-    }
-  }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="about-page">
+<!-- ── HERO ──────────────────────────────────────────── -->
+<div class="hero">
+  <h1>About the Dashboard</h1>
+  <p class="subtitle">
+    The Regional Ozone Precoursor Dashboard is a real-time visualization tool for TEMPO satellite and Open Air Clarity ground sensor NO₂ data, developed by the
+    EarthRISE Developers Academy in collaboration with NASA LaRC and community partners.
+  </p>
+</div>
 
-  <!-- ── HERO ──────────────────────────────────────────── -->
-  <div class="about-hero">
-    <h1>About the Dashboard</h1>
-    <p class="subtitle">
-      The Regional Ozone Precoursor Dashboard is a real-time visualization tool for TEMPO satellite and Open Air Clarity ground sensor NO₂ data, developed by the
-      EarthRISE Developers Academy in collaboration with NASA LaRC and community partners.
-    </p>
-  </div>
+<!-- ── PROJECT OVERVIEW ─────────────────────────────── -->
+<div class="about-section">
+  <h2>Project Overview</h2>
+  <p class="section-blurb">
+    [Insert project overview.]
+  </p>
+  <p class="section-blurb" style="margin-bottom:0;">
+    [Paragaph two.]
+  </p>
+</div>
 
-  <!-- ── PROJECT OVERVIEW ─────────────────────────────── -->
-  <div class="about-section">
-    <h2>Project Overview</h2>
-    <p class="section-blurb">
-      [Insert project overview.]
-    </p>
-    <p class="section-blurb" style="margin-bottom:0;">
-      [Paragaph two.]
-    </p>
-  </div>
+<!-- ── MEET THE DEVELOPERS ──────────────────────────── -->
+<div class="about-section">
+  <h2>Meet the Developers</h2>
+  <p class="section-blurb">
+    These dedicated Developers designed, built, and tested every component
+    of the dashboard to deliver a seamless experience for exploring satellite air-quality data.
+  </p>
 
-  <!-- ── MEET THE DEVELOPERS ──────────────────────────── -->
-  <div class="about-section">
-    <h2>Meet the Developers</h2>
-    <p class="section-blurb">
-      These dedicated Developers designed, built, and tested every component
-      of the dashboard to deliver a seamless experience for exploring satellite air-quality data.
-    </p>
-
-    <div class="portrait-grid">
-      <div class="portrait-card">
-        <img class="portrait-image" src="{% static 'dashboard/images/placeholder.png' %}" alt="Picture of Anya" />
-        <span class="portrait-name">Anya Desai</span>
-        <span class="portrait-role">[Role]</span>
-      </div>
-      <div class="portrait-card">
-        <img class="portrait-image" src="{% static 'dashboard/images/placeholder.png' %}" alt="Picture of Margot" />
-        <span class="portrait-name">Margot Langenbach</span>
-        <span class="portrait-role">[Role]</span>
-      </div>
-      <div class="portrait-card">
-        <img class="portrait-image" src="{% static 'dashboard/images/placeholder.png' %}" alt="Picture of Caitlyn" />
-        <span class="portrait-name">Caitlyn McClanahan</span>
-        <span class="portrait-role">[Role]</span>
-      </div>
-      <div class="portrait-card">
-        <img class="portrait-image" src="{% static 'dashboard/images/placeholder.png' %}" alt="Picture of Kathryn" />
-        <span class="portrait-name">Kathryn Phung</span>
-        <span class="portrait-role">[Role]</span>
-      </div>
-      <div class="portrait-card">
-        <img class="portrait-image" src="{% static 'dashboard/images/placeholder.png' %}" alt="Picture of Noah" />
-        <span class="portrait-name">Noah Ring</span>
-        <span class="portrait-role">[Role]</span>
-      </div>
+  <div class="portrait-grid">
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Picture of Anya" />
+      <span class="portrait-name">Anya Desai</span>
+      <span class="portrait-role">[Role]</span>
+    </div>
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Picture of Margot" />
+      <span class="portrait-name">Margot Langenbach</span>
+      <span class="portrait-role">[Role]</span>
+    </div>
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Picture of Caitlyn" />
+      <span class="portrait-name">Caitlyn McClanahan</span>
+      <span class="portrait-role">[Role]</span>
+    </div>
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Picture of Kathryn" />
+      <span class="portrait-name">Kathryn Phung</span>
+      <span class="portrait-role">[Role]</span>
+    </div>
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Picture of Noah" />
+      <span class="portrait-name">Noah Ring</span>
+      <span class="portrait-role">[Role]</span>
     </div>
   </div>
+</div>
 
-  <!-- ── MEET THE PARTNERS ────────────────────────────── -->
-  <div class="about-section">
-    <h2>Meet the Partners</h2>
-    <p class="section-blurb">
-      About LADCO. These organizations provide scientific guidance, data
-      resources, and domain expertise that make this dashboard possible.
-    </p>
+<!-- ── MEET THE PARTNERS ────────────────────────────── -->
+<div class="about-section">
+  <h2>Meet the Partners</h2>
+  <p class="section-blurb">
+    About LADCO. These organizations provide scientific guidance, data
+    resources, and domain expertise that make this dashboard possible.
+  </p>
 
-    <div class="portrait-grid three-col">
-      <div class="portrait-card">
-        <img class="portrait-image" src="{% static 'dashboard/images/placeholder.png' %}" alt="Portrait of Partner One" />
-        <span class="portrait-name">Zac Adelman</span>
-        <span class="portrait-role">[Role]</span>
-      </div>
-      <div class="portrait-card">
-        <img class="portrait-image" src="{% static 'dashboard/images/placeholder.png' %}" alt="Portrait of Partner Two" />
-        <span class="portrait-name">Angie Dickens</span>
-        <span class="portrait-role">[Role]</span>
-      </div>
-      <div class="portrait-card">
-        <img class="portrait-image" src="{% static 'dashboard/images/placeholder.png' %}" alt="Portrait of Partner Three" />
-        <span class="portrait-name">Grant Coleman</span>
-        <span class="portrait-role">[Role]</span>
-      </div>
+  <div class="portrait-grid three-col">
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Portrait of Partner One" />
+      <span class="portrait-name">Zac Adelman</span>
+      <span class="portrait-role">[Role]</span>
+    </div>
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Portrait of Partner Two" />
+      <span class="portrait-name">Angie Dickens</span>
+      <span class="portrait-role">[Role]</span>
+    </div>
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Portrait of Partner Three" />
+      <span class="portrait-name">Grant Coleman</span>
+      <span class="portrait-role">[Role]</span>
     </div>
   </div>
+</div>
 
 </div>
 {% endblock %}

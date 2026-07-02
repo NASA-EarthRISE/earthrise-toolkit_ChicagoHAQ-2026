@@ -3,7 +3,49 @@
 
 {% block title %}Home{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Hero (Heading) banner */
+    .hero {
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+    }
+
+    .hero .subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    max-width: 640px;
+    margin: 0 auto;
+    line-height: 1.6;
+    }
+
+    @media (max-width: 600px) {
+    .hero h1 {
+        font-size: 1.4rem;
+    }
+    }
+</style>
+
+{% endblock %}
+
 {% block content %}
+
+<div class="hero">
+    <h1>Welcome to the Regional Ozone Precoursor Dashboard</h1>
+    <p class="subtitle">
+      The Regional Ozone Precoursor Dashboard is a real-time visualization tool for TEMPO satellite and Open Air Clarity ground sensor NO₂ data, developed by the
+      EarthRISE Developers Academy in collaboration with NASA LaRC and community partners.
+    </p>
+  </div>
+
 <div class="dashboard-grid">
     <!-- Stat Card 1 -->
     <div class="stat-card">
@@ -78,6 +120,34 @@
             transition:all .2s;
         " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
             Explore Monthly Patterns
+        </a>
+        <a href="{% url 'tutorial' %}" style="
+            display:inline-block;
+            padding:0.75rem 1.5rem;
+            background:var(--bg-card);
+            color:var(--text);
+            text-decoration:none;
+            border:2px solid var(--border);
+            border-radius:8px;
+            font-weight:600;
+            font-size:0.9rem;
+            transition:all .2s;
+        " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+            User Guide
+        </a>
+        <a href="{% url 'export' %}" style="
+            display:inline-block;
+            padding:0.75rem 1.5rem;
+            background:var(--bg-card);
+            color:var(--text);
+            text-decoration:none;
+            border:2px solid var(--border);
+            border-radius:8px;
+            font-weight:600;
+            font-size:0.9rem;
+            transition:all .2s;
+        " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+            Export a Map
         </a>
     </div>
 </div>

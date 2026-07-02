@@ -1,7 +1,41 @@
 {% extends "dashboard/layout.html" %}
-{%block title%}
-Community Tools
+{%block title%} Community Tools {% endblock %}
+{% block extra_css %}
+<style>
+    /* Hero (Heading) banner */
+    .hero {
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+    }
+
+    .hero .subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    max-width: 640px;
+    margin: 0 auto;
+    line-height: 1.6;
+    }
+
+    @media (max-width: 600px) {
+    .hero h1 {
+        font-size: 1.4rem;
+    }
+    }
+</style>
 {% endblock %}
 {% block content %}
-<p>Community tools page.</p>
+<div class="hero">
+  <h1>Community Tools</h1>
+  <p class="subtitle">
+    Welcome to the community tools page. 
+  </p>
+</div>
 {% endblock %}

@@ -64,7 +64,7 @@
       timeSliderContainer.style.display = 'block';
   }
 
-  // ── BASEMAP TILE LAYERS ────────────────────────────────────────────────────
+  // ── BASEMAP LAYERS ────────────────────────────────────────────────────
   const tileLayers = {
     osm: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom',
@@ -79,6 +79,32 @@
     layers: [tileLayers.osm],
     zoomControl: true
   });
+
+  // ── CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
+  fetch("{% static 'dashboard/layers/Chicago.geojson' %}")
+    .then(response => response.json())
+    .then(data => {
+        var ChicagoBounds = L.geoJSON(data, {
+            style: {
+                color: "#000000", // Outline color
+                weight: 2,
+                fillColor: "#000000",
+            }
+        }).addTo(map);
+        map.fitBounds(ChicagoBounds.getBounds())
+      })
+  
+  fetch("{% static 'dashboard/layers/ChicagoCommunityAreas.geojson' %}")
+    .then(response => response.json())
+    .then(data => {
+        var ChicagoCommunityBounds = L.geoJSON(data, {
+            style: {
+                color: "#00000077", // Outline color
+                weight: 1,
+            }
+        }).addTo(map);
+        map.fitBounds(ChicagoCommunityBounds.getBounds())
+      })
 
   // ── LAYER GROUPS ───────────────────────────────────────────────────────────
   const markerGroup = L.layerGroup().addTo(map);
