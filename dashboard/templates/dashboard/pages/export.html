@@ -1,0 +1,945 @@
+{% extends "dashboard/layout.html" %}
+{% load static %}
+
+{% block title %}Export Map{% endblock %}
+
+{% block extra_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Leaflet Heat CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet.heat.css" />
+
+<style>
+  /* ── EXPORT PAGE LAYOUT ─────────────────────────────── */
+  .export-layout {
+    display: flex;
+    gap: 1.5rem;
+    min-height: calc(100vh - var(--nav-height) - 80px);
+  }
+
+  .export-controls {
+    width: 320px;
+    flex-shrink: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    overflow-y: auto;
+    max-height: calc(100vh - var(--nav-height) - 100px);
+  }
+
+  .export-preview {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .export-controls h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .export-controls h3 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Form controls */
+  .form-group {
+    margin-bottom: 0.75rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+
+  .form-group input[type="date"],
+  .form-group input[type="month"],
+  .form-group input[type="number"],
+  .form-group input[type="text"],
+  .form-group select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
+  }
+
+  .form-group .hint {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .form-row .form-group {
+    flex: 1;
+  }
+
+  /* Map type selector buttons */
+  .map-type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+  }
+
+  .map-type-btn {
+    padding: 0.6rem 0.3rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .map-type-btn:hover {
+    border-color: var(--primary-light);
+    background: var(--bg-card);
+  }
+
+  .map-type-btn.active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #ffffff;
+  }
+
+  /* Checkbox toggle */
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .checkbox-group input[type="checkbox"] {
+    accent-color: var(--accent);
+    width: 16px;
+    height: 16px;
+  }
+
+  .checkbox-group label {
+    font-size: 0.82rem;
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  /* Action buttons */
+  .export-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--border);
+  }
+
+  .btn-export {
+    padding: 0.7rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .btn-export-primary {
+    background: var(--accent);
+    color: #ffffff;
+  }
+
+  .btn-export-primary:hover {
+    background: var(--primary);
+  }
+
+  .btn-export-secondary {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-export-secondary:hover {
+    background: var(--border);
+  }
+
+  .btn-export:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Map container for export */
+  .export-map-container {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    min-height: 500px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  #export-map {
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  .preview-label {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(0, 90, 158, 0.85);
+    color: #fff;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    z-index: 1000;
+    pointer-events: none;
+  }
+
+  /* Status indicator */
+  .export-status {
+    margin-top: 0.75rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: none;
+  }
+
+  .export-status.info {
+    display: block;
+    background: #ebf8ff;
+    color: #2b6cb0;
+    border: 1px solid #bee3f8;
+  }
+
+  .export-status.success {
+    display: block;
+    background: #f0fff4;
+    color: #276749;
+    border: 1px solid #c6f6d5;
+  }
+
+  .export-status.error {
+    display: block;
+    background: #fff5f5;
+    color: #c53030;
+    border: 1px solid #fed7d7;
+  }
+
+  /* Progress bar */
+  .progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+    display: none;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.3s;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .export-layout {
+      flex-direction: column;
+    }
+
+    .export-controls {
+      width: 100%;
+      max-height: none;
+    }
+
+    .export-map-container {
+      min-height: 400px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="export-layout">
+
+  <!-- ── LEFT: Export Controls Panel ──────────────────── -->
+  <aside class="export-controls">
+    <h2>Export Map as PDF</h2>
+
+    <!-- Map Type Selection -->
+    <h3>Map Type</h3>
+    <div class="map-type-grid">
+      <button class="map-type-btn active" data-type="hourly" onclick="selectMapType('hourly')">Hourly</button>
+      <button class="map-type-btn" data-type="daily" onclick="selectMapType('daily')">Daily</button>
+      <button class="map-type-btn" data-type="monthly" onclick="selectMapType('monthly')">Monthly</button>
+    </div>
+
+    <!-- Date Selection (single date — shown for hourly) -->
+    <h3 id="date-section-label">Date</h3>
+    <div class="form-group" id="single-date-group">
+      <label for="export-date">Select Date</label>
+      <input type="date" id="export-date" value="{{ today|date:'Y-m-d' }}" />
+    </div>
+
+    <!-- Hour Selection (only for hourly) -->
+    <div class="form-group" id="hour-group">
+      <label for="export-hour">Hour (UTC)</label>
+      <input type="number" id="export-hour" min="0" max="23" value="12" />
+      <span class="hint">Select 0–23 for hourly data</span>
+    </div>
+
+    <!-- Date Range Selection (only for daily) -->
+    <div id="date-range-group" style="display: none;">
+      <h3>Date Range</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="date-range-start">Start Date</label>
+          <input type="date" id="date-range-start" value="{{ today|date:'Y-m-d' }}" />
+          <span class="hint">Select a range of dates for aggregated daily view</span>
+        </div>
+        <div class="form-group">
+          <label for="date-range-end">End Date</label>
+          <input type="date" id="date-range-end" value="{{ today|date:'Y-m-d' }}" />
+        </div>
+        
+      </div>
+      <div class="form-group" style="margin-top: 0.5rem;">
+        <label for="date-range-pages">PDF Mode</label>
+        <select id="date-range-pages">
+          <option value="single">Single page (last date)</option>
+          <option value="multi">One page per date</option>
+        </select>
+        <span class="hint">Note: "One page per date" generates a separate PDF page for each day in the range. For easier processing, please refrain from exceeding 30 days.</span>
+      </div>
+    </div>
+
+    <!-- Month Range Selection (only for monthly) -->
+    <div id="month-range-group" style="display: none;">
+      <h3>Month Range</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="month-range-start">Start Month</label>
+          <input type="month" id="month-range-start" value="{{ today|date:'Y-m' }}" />
+          <span class="hint">Select a range of months for aggregated monthly view</span>
+        </div>
+        <div class="form-group">
+          <label for="month-range-end">End Month</label>
+          <input type="month" id="month-range-end" value="{{ today|date:'Y-m' }}" />
+        </div>
+      </div>
+      <div class="form-group" style="margin-top: 0.5rem;">
+        <label for="month-range-pages">PDF Mode</label>
+        <select id="month-range-pages">
+          <option value="single">Single page (last month)</option>
+          <option value="multi">One page per month</option>
+        </select>
+        <span class="hint">"One page per month" generates a separate PDF page for each month in the range</span>
+      </div>
+    </div>
+
+    <!-- Map View Settings -->
+    <h3>Map View Settings</h3>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="export-lat">Center Lat</label>
+        <input type="number" id="export-lat" step="0.01" value="41.90" />
+      </div>
+      <div class="form-group">
+        <label for="export-lng">Center Lng</label>
+        <input type="number" id="export-lng" step="0.01" value="-87.63" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="export-zoom">Zoom Level</label>
+      <input type="number" id="export-zoom" min="1" max="18" value="10" />
+      <span class="hint">1 = worldwide, 18 = building level</span>
+    </div>
+
+    <!-- Layer Options -->
+    <h3>Layers to Include</h3>
+    <div class="checkbox-group">
+      <input type="checkbox" id="include-communities" checked />
+      <label for="include-communities">Chicago Community Areas</label>
+    </div>
+    <div class="checkbox-group">
+      <input type="checkbox" id="include-fusion" checked />
+      <label for="include-fusion">Fusion NO₂ Data</label>
+    </div>
+    <div class="checkbox-group">
+      <input type="checkbox" id="include-tempo" checked />
+      <label for="include-tempo">TEMPO NO₂ Data</label>
+    </div>
+    <div class="checkbox-group">
+      <input type="checkbox" id="include-clarity" checked />
+      <label for="include-clarity">Clarity NO₂ Data</label>
+    </div>
+    <div class="checkbox-group">
+      <input type="checkbox" id="include-wind" checked />
+      <label for="include-wind">Wind Speed & Direction Data</label>
+    </div>
+
+
+    <!-- PDF Options -->
+    <h3>PDF Options</h3>
+    <div class="form-group">
+      <label for="pdf-orientation">Orientation</label>
+      <select id="pdf-orientation">
+        <option value="landscape" selected>Landscape</option>
+        <option value="portrait">Portrait</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="pdf-title">Map Title</label>
+      <input type="text" id="pdf-title" value="NO2_Map" />
+    </div>
+
+    <div class="form-group">
+      <label for="pdf-filename">Filename</label>
+      <input type="text" id="pdf-filename" value="no2_map_export" />
+      <span class="hint">The .pdf extension will be added automatically</span>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="export-actions">
+      <button class="btn-export btn-export-secondary" onclick="reloadMapData()">
+        Reload Preview
+      </button>
+      <button class="btn-export btn-export-primary" onclick="exportToPDF()" id="export-btn">
+        &#10515; Export as PDF
+      </button>
+    </div>
+
+    <!-- Status -->
+    <div class="export-status" id="export-status"></div>
+    <div class="progress-bar-container" id="progress-container">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+  </aside>
+
+  <!-- ── RIGHT: Map Preview (inline, no iframe) ──────── -->
+  <div class="export-preview">
+    <div class="export-map-container">
+      <span class="preview-label">MAP PREVIEW</span>
+      <div id="export-map">
+        <!-- Coords bar at bottom -->
+      <div id="coords-bar">
+      <span id="coords-text">Lat: —  Lng: —</span>
+      <span id="zoom-text">Zoom: —</span>
+    </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet Heat -->
+<script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet.heat.js"></script>
+<!-- html2canvas for screenshot capture -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- jsPDF for PDF generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+  // ── CONFIG ─────────────────────────────────────────────────────────────────
+  const TIME_SCALE = '{{ time_scale|default:"hourly" }}';
+  const API_BASE = '{% url "tempo_data_api" "2025-09-09" %}'.replace('2025-09-09', '');
+
+  let currentMapType = 'hourly';
+  let heatLayer = null;
+  let tempoLayerGroup = null;
+
+  // ── MAP INIT ───────────────────────────────────────────────────────────────
+  const map = L.map('export-map', {
+    center: [41.52, -87.37],
+    zoom: 10,
+    zoomControl: true
+  });
+  // ── CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
+    fetch("{% static 'dashboard/layers/Chicago.geojson' %}")
+      .then(response => response.json())
+      .then(data => {
+          L.geoJSON(data, {
+              style: {
+                  color: "#000000", // Outline color
+                  weight: 2
+              }
+          }).addTo(map);
+        })
+    
+    fetch("{% static 'dashboard/layers/ChicagoCommunityAreas.geojson' %}")
+      .then(response => response.json())
+      .then(data => {
+          L.geoJSON(data, {
+              style: {
+                  color: "#00000077", // Outline color
+                  weight: 1
+              }
+          }).addTo(map);
+        })
+
+  // ── MAP COORDS BAR ─────────────────────────────────────────────────────────────
+  map.on('mousemove', e => {
+  document.getElementById('coords-text').textContent =
+    `Lat: ${e.latlng.lat.toFixed(5)}  Lng: ${e.latlng.lng.toFixed(5)}`;
+  });
+  map.on('zoomend', () => {
+    document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
+  });
+  document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
+
+  // ── MAP coords PANEL ───────────────────────────────────────────────────────────────
+  map.on('mousemove', e => {
+  document.getElementById('coords-panel').innerHTML =
+    `<strong>Lat:</strong> ${e.latlng.lat.toFixed(6)}<br>
+     <strong>Lng:</strong> ${e.latlng.lng.toFixed(6)}<br>
+     <strong>Zoom:</strong> ${map.getZoom()}`;
+  });
+
+  // Basemap
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri',
+    maxZoom: 19
+  }).addTo(map);
+
+  // Layer groups
+  tempoLayerGroup = L.layerGroup().addTo(map);
+
+  // ── COLOR SCALE ────────────────────────────────────────────────────────────
+  function no2Color(value) {
+    const normalized = Math.min(value / 1e16, 1);
+    if (normalized < 0.25) return [100, 200, 255, 180];
+    if (normalized < 0.5)  return [50, 180, 100, 200];
+    if (normalized < 0.75) return [255, 200, 50, 200];
+    return [220, 50, 50, 200];
+  }
+
+  // ── LOAD TEMPO DATA ────────────────────────────────────────────────────────
+  async function loadTempoData(dateStr, hour) {
+    try {
+      const url = `${API_BASE}${dateStr}/?scale=${currentMapType}&hour=${hour || ''}`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      tempoLayerGroup.clearLayers();
+
+      if (data.features) {
+        L.geoJSON(data, {
+          pointToLayer: function(feature, latlng) {
+            return L.circleMarker(latlng, {
+              radius: 5,
+              fillColor: no2Color(feature.properties.value || 0),
+              color: 'transparent',
+              fillOpacity: 0.6
+            });
+          }
+        }).addTo(tempoLayerGroup);
+      }
+
+      // Update heatmap
+      updateHeatmap(data);
+      showStatus('Map data loaded.', 'info');
+    } catch (error) {
+      console.error('Error loading data:', error);
+      showStatus('Failed to load map data.', 'error');
+    }
+  }
+
+  // ── UPDATE HEATMAP ─────────────────────────────────────────────────────────
+  function updateHeatmap(data) {
+    if (heatLayer) {
+      map.removeLayer(heatLayer);
+      heatLayer = null;
+    }
+
+    if (!document.getElementById('include-heatmap').checked) return;
+
+    let heatPoints = [];
+    if (data.features) {
+      data.features.forEach(f => {
+        if (f.geometry && f.geometry.type === 'Point') {
+          heatPoints.push([
+            f.geometry.coordinates[1],
+            f.geometry.coordinates[0],
+            f.properties.value || 0
+          ]);
+        }
+      });
+    }
+
+    if (heatPoints.length > 0) {
+      heatLayer = L.heatLayer(heatPoints, {
+        radius: 25,
+        blur: 15,
+        maxZoom: 15,
+        max: 1e16,
+        gradient: {
+          0.0: '#268bd2', 0.25: '#2aa198', 0.5: '#859900',
+          0.75: '#b58900', 1.0: '#dc322f'
+        }
+      }).addTo(map);
+      heatLayer.bringToBack();
+    }
+  }
+
+  // ── MAP TYPE SELECTION ─────────────────────────────────────────────────────
+  function selectMapType(type) {
+    currentMapType = type;
+    document.querySelectorAll('.map-type-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.type === type);
+    });
+
+    // Show/hide date controls based on map type
+    const singleDateGroup = document.getElementById('single-date-group');
+    const hourGroup = document.getElementById('hour-group');
+    const dateRangeGroup = document.getElementById('date-range-group');
+    const monthRangeGroup = document.getElementById('month-range-group');
+    const dateSectionLabel = document.getElementById('date-section-label');
+
+    if (type === 'hourly') {
+      singleDateGroup.style.display = 'block';
+      hourGroup.style.display = 'block';
+      dateRangeGroup.style.display = 'none';
+      monthRangeGroup.style.display = 'none';
+      dateSectionLabel.textContent = 'Date';
+    } else if (type === 'daily') {
+      singleDateGroup.style.display = 'none';
+      hourGroup.style.display = 'none';
+      dateRangeGroup.style.display = 'block';
+      monthRangeGroup.style.display = 'none';
+      dateSectionLabel.textContent = 'Date Range';
+    } else if (type === 'monthly') {
+      singleDateGroup.style.display = 'none';
+      hourGroup.style.display = 'none';
+      dateRangeGroup.style.display = 'none';
+      monthRangeGroup.style.display = 'block';
+      dateSectionLabel.textContent = 'Month Range';
+    }
+
+    reloadMapData();
+  }
+
+  // ── RELOAD MAP DATA ────────────────────────────────────────────────────────
+  function reloadMapData() {
+    let dateStr, hour = null;
+    const lat = parseFloat(document.getElementById('export-lat').value);
+    const lng = parseFloat(document.getElementById('export-lng').value);
+    const zoom = parseInt(document.getElementById('export-zoom').value);
+
+    if (currentMapType === 'hourly') {
+      dateStr = document.getElementById('export-date').value;
+      hour = document.getElementById('export-hour').value;
+    } else if (currentMapType === 'daily') {
+      // Use end date of range for preview
+      dateStr = document.getElementById('date-range-end').value;
+    } else if (currentMapType === 'monthly') {
+      // Use end month of range for preview
+      dateStr = document.getElementById('month-range-end').value + '-01';
+    }
+
+    // Update map view
+    map.flyTo([lat, lng], zoom);
+
+    // Load data
+    loadTempoData(dateStr, hour);
+  }
+
+  // ── HELPER: Generate metadata lines for a given date/month ─────────────────
+  function getMetadataLines(dateStr, label) {
+    const hourVal = currentMapType === 'hourly' ? document.getElementById('export-hour').value : 'N/A';
+    return [
+      `${label}: ${dateStr}`,
+      `Scale: ${currentMapType.charAt(0).toUpperCase() + currentMapType.slice(1)}`,
+      `Hour (UTC): ${hourVal}`,
+      `Center: ${document.getElementById('export-lat').value}, ${document.getElementById('export-lng').value}`,
+      `Zoom: ${document.getElementById('export-zoom').value}`,
+      `Exported: ${new Date().toLocaleString()}`
+    ];
+  }
+
+  // ── HELPER: Add one page to the PDF with a canvas image and metadata ───────
+  function addPdfPage(pdf, canvas, metadata, pageLabel, pageWidth, pageHeight, margin) {
+    if (pageLabel > 1) {
+      pdf.addPage();
+    }
+
+    const availableWidth = pageWidth - 2 * margin;
+    const pdfTitle = document.getElementById('pdf-title').value;
+
+    // Title
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(pdfTitle, pageWidth / 2, 15, { align: 'center' });
+
+    // Metadata
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    metadata.forEach((line, i) => {
+      pdf.text(line, margin, 25 + i * 5);
+    });
+
+    // Map image
+    const imageY = 25 + metadata.length * 5 + 5;
+    const imageAvailableHeight = pageHeight - imageY - margin;
+    const imgWidth = canvas.width;
+    const imgHeight = canvas.height;
+    const imageRatio = Math.min(availableWidth / imgWidth, imageAvailableHeight / imgHeight);
+    const finalWidth = imgWidth * imageRatio;
+    const finalHeight = imgHeight * imageRatio;
+    const imageX = margin + (availableWidth - finalWidth) / 2;
+
+    const imgData = canvas.toDataURL('image/png', 1.0);
+    pdf.addImage(imgData, 'PNG', imageX, imageY, finalWidth, finalHeight);
+
+    // Footer
+    pdf.setFontSize(7);
+    pdf.setFont('helvetica', 'italic');
+    pdf.text(
+      'Generated by Regional Ozone Precursor Map Dashboard — NASA LaRC / EarthRISE Developers Academy',
+      pageWidth / 2, pageHeight - 5, { align: 'center' }
+    );
+  }
+
+  // ── HELPER: Capture current map as canvas ──────────────────────────────────
+  async function captureMapCanvas() {
+    const mapElement = document.getElementById('export-map');
+    await sleep(500);  // Brief pause for tiles
+    return html2canvas(mapElement, {
+      useCORS: true,
+      allowTaint: false,
+      scale: 2,
+      backgroundColor: '#ffffff',
+      logging: false,
+      width: mapElement.scrollWidth,
+      height: mapElement.scrollHeight
+    });
+  }
+
+  // ── EXPORT TO PDF ──────────────────────────────────────────────────────────
+  async function exportToPDF() {
+    const exportBtn = document.getElementById('export-btn');
+    const progressContainer = document.getElementById('progress-container');
+    const progressBar = document.getElementById('progress-bar');
+
+    exportBtn.disabled = true;
+    exportBtn.textContent = 'Exporting...';
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+
+    try {
+      const { jsPDF } = window.jspdf;
+      const orientation = document.getElementById('pdf-orientation').value;
+      const pdf = new jsPDF({ orientation: orientation, unit: 'mm', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+
+      if (currentMapType === 'daily') {
+        // ── DAILY: date range export ─────────────────────────────────────
+        const mode = document.getElementById('date-range-pages').value;
+        const dates = getDateRange(
+          document.getElementById('date-range-start').value,
+          document.getElementById('date-range-end').value
+        );
+
+        if (mode === 'single') {
+          // Single page with the last date
+          showStatus('Loading data for ' + dates[dates.length - 1] + '...', 'info');
+          await loadTempoData(dates[dates.length - 1], null);
+          progressBar.style.width = '20%';
+
+          const canvas = await captureMapCanvas();
+          progressBar.style.width = '50%';
+          showStatus('Generating PDF...', 'info');
+
+          const metadata = getMetadataLines(dates[dates.length - 1], 'Date');
+          addPdfPage(pdf, canvas, metadata, 1, pageWidth, pageHeight, margin);
+        } else {
+          // Multi-page: one page per date
+          const total = dates.length;
+          for (let i = 0; i < total; i++) {
+            const dateStr = dates[i];
+            showStatus(`Processing ${i + 1}/${total}: ${dateStr}...`, 'info');
+            progressBar.style.width = `${Math.round(((i + 1) / total) * 60)}%`;
+
+            await loadTempoData(dateStr, null);
+            const canvas = await captureMapCanvas();
+
+            const metadata = getMetadataLines(dateStr, 'Date');
+            addPdfPage(pdf, canvas, metadata, i + 1, pageWidth, pageHeight, margin);
+          }
+          progressBar.style.width = '80%';
+          showStatus('Generating PDF...', 'info');
+        }
+
+      } else if (currentMapType === 'monthly') {
+        // ── MONTHLY: month range export ──────────────────────────────────
+        const mode = document.getElementById('month-range-pages').value;
+        const months = getMonthRange(
+          document.getElementById('month-range-start').value,
+          document.getElementById('month-range-end').value
+        );
+
+        if (mode === 'single') {
+          // Single page with the last month
+          const monthStr = months[months.length - 1];
+          const dateStr = monthStr + '-01';
+          showStatus('Loading data for ' + monthStr + '...', 'info');
+          await loadTempoData(dateStr, null);
+          progressBar.style.width = '20%';
+
+          const canvas = await captureMapCanvas();
+          progressBar.style.width = '50%';
+          showStatus('Generating PDF...', 'info');
+
+          const metadata = getMetadataLines(monthStr, 'Month');
+          addPdfPage(pdf, canvas, metadata, 1, pageWidth, pageHeight, margin);
+        } else {
+          // Multi-page: one page per month
+          const total = months.length;
+          for (let i = 0; i < total; i++) {
+            const monthStr = months[i];
+            const dateStr = monthStr + '-01';
+            showStatus(`Processing ${i + 1}/${total}: ${monthStr}...`, 'info');
+            progressBar.style.width = `${Math.round(((i + 1) / total) * 60)}%`;
+
+            await loadTempoData(dateStr, null);
+            const canvas = await captureMapCanvas();
+
+            const metadata = getMetadataLines(monthStr, 'Month');
+            addPdfPage(pdf, canvas, metadata, i + 1, pageWidth, pageHeight, margin);
+          }
+          progressBar.style.width = '80%';
+          showStatus('Generating PDF...', 'info');
+        }
+
+      } else {
+        // ── HOURLY: single date export ───────────────────────────────────
+        const dateStr = document.getElementById('export-date').value;
+        const hour = document.getElementById('export-hour').value;
+
+        showStatus('Capturing map screenshot...', 'info');
+        progressBar.style.width = '20%';
+
+        await loadTempoData(dateStr, hour);
+        const canvas = await captureMapCanvas();
+        progressBar.style.width = '60%';
+        showStatus('Generating PDF...', 'info');
+
+        const metadata = getMetadataLines(dateStr, 'Date');
+        addPdfPage(pdf, canvas, metadata, 1, pageWidth, pageHeight, margin);
+      }
+
+      progressBar.style.width = '95%';
+
+      // Save
+      const filename = document.getElementById('pdf-filename').value || 'no2_map_export';
+      pdf.save(`${filename}.pdf`);
+
+      progressBar.style.width = '100%';
+      showStatus('PDF exported successfully!', 'success');
+
+    } catch (error) {
+      console.error('Export failed:', error);
+      showStatus(`Export failed: ${error.message}`, 'error');
+    } finally {
+      exportBtn.disabled = false;
+      exportBtn.textContent = 'Export as PDF';
+      setTimeout(() => {
+        progressContainer.style.display = 'none';
+        progressBar.style.width = '0%';
+      }, 2000);
+    }
+  }
+
+  // ── HELPER: Generate array of date strings (YYYY-MM-DD) in range ───────────
+  function getDateRange(startStr, endStr) {
+    const dates = [];
+    const start = new Date(startStr + 'T00:00:00');
+    const end = new Date(endStr + 'T00:00:00');
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      dates.push(d.toISOString().split('T')[0]);
+    }
+    return dates;
+  }
+
+  // ── HELPER: Generate array of month strings (YYYY-MM) in range ─────────────
+  function getMonthRange(startStr, endStr) {
+    const months = [];
+    let [year, month] = startStr.split('-').map(Number);
+    const [endYear, endMonth] = endStr.split('-').map(Number);
+
+    while (year < endYear || (year === endYear && month <= endMonth)) {
+      months.push(`${year}-${String(month).padStart(2, '0')}`);
+      month++;
+      if (month > 12) { month = 1; year++; }
+    }
+    return months;
+  }
+
+  // ── STATUS HELPER ──────────────────────────────────────────────────────────
+  function showStatus(message, type) {
+    const el = document.getElementById('export-status');
+    el.textContent = message;
+    el.className = `export-status ${type}`;
+  }
+
+  // ── UTILITY ────────────────────────────────────────────────────────────────
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // ── INIT ───────────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    selectMapType('hourly');
+  });
+</script>
+{% endblock %}

@@ -13,6 +13,7 @@ urlpatterns = [
     path("info/", views.info, name="info"),
     path("tutorial/", views.tutorial, name="tutorial"),
     path("community/", views.community, name="community"),
+    path("export/", views.export, name="export"),
 
     # ── Map Views (hourly, daily, monthly) ──────────────────────
     path("map/", views.map_view, name="map"),

@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>{% block title %}TEMPO Dashboard{% endblock %}</title>
+    <title>{% block title %}Regional Ozone Precursor Dashboard{% endblock %}</title>
     <link rel="stylesheet" type="text/css" href="{% static 'dashboard/css/site.css' %}"/>
 
     <!-- Leaflet CSS (only loaded when needed via map templates) -->
@@ -20,8 +20,8 @@
             <span class="hamburger-bar"></span>
         </button>
 
-        <span class="nav-brand">Regional Ozone Precursor Map
-            <a href=""></a>
+        <span class="nav-brand">
+            <a href="/">Regional Ozone Precursor Map</a>
         </span>
 
         <!-- Mobile menu toggle (shown only on small screens) -->
@@ -35,7 +35,7 @@
             <a href="{% url 'map_hourly' %}">Map</a>
             <a href="{% url 'info' %}">Info</a>
             <a href="{% url 'tutorial' %}">User Guide</a>
-            <a href="/">Export Data</a>
+            <a href="{% url 'export' %}">Export Data</a>
             <a href="{% url 'about' %}">About</a>
             <a href="/admin">Sign In</a>
             <a href="https://www.nasa.gov/tempo" target="_blank">

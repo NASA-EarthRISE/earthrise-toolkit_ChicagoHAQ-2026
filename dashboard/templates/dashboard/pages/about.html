@@ -1,7 +1,207 @@
 {% extends "dashboard/layout.html" %}
-{%block title%}
-About
+{% load static %}
+
+{% block title %}About{% endblock %}
+
+{% block extra_css %}
+<style>
+
+  /* Hero (Heading) banner */
+  .hero {
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .hero .subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    max-width: 640px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 600px) {
+    .hero h1 {
+      font-size: 1.4rem;
+    }
+  }
+  /* Section cards */
+  .about-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .about-section h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .about-section .section-blurb {
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Portrait grid */
+  .portrait-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.25rem;
+    justify-items: center;
+  }
+
+  .portrait-grid.three-col {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  /* Individual portrait card */
+  .portrait-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    max-width: 180px;
+  }
+
+  .portrait-card .portrait-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--border);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    background: var(--bg);
+    margin-bottom: 0.75rem;
+  }
+
+  .portrait-card .portrait-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.15rem;
+  }
+
+  .portrait-card .portrait-role {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  /* Partner portraits (slightly larger) */
+  .portrait-grid.three-col .portrait-card {
+    max-width: 220px;
+  }
+
+  .portrait-grid.three-col .portrait-image {
+    width: 140px;
+    height: 140px;
+  }
+
+</style>
 {% endblock %}
+
 {% block content %}
-<p>About page for the dashboard.</p>
+<!-- ── HERO ──────────────────────────────────────────── -->
+<div class="hero">
+  <h1>About the Dashboard</h1>
+  <p class="subtitle">
+    The Regional Ozone Precoursor Dashboard is a real-time visualization tool for TEMPO satellite and Open Air Clarity ground sensor NO₂ data, developed by the
+    EarthRISE Developers Academy in collaboration with NASA LaRC and community partners.
+  </p>
+</div>
+
+<!-- ── PROJECT OVERVIEW ─────────────────────────────── -->
+<div class="about-section">
+  <h2>Project Overview</h2>
+  <p class="section-blurb">
+    [Insert project overview.]
+  </p>
+  <p class="section-blurb" style="margin-bottom:0;">
+    [Paragaph two.]
+  </p>
+</div>
+
+<!-- ── MEET THE DEVELOPERS ──────────────────────────── -->
+<div class="about-section">
+  <h2>Meet the Developers</h2>
+  <p class="section-blurb">
+    These dedicated Developers designed, built, and tested every component
+    of the dashboard to deliver a seamless experience for exploring satellite air-quality data.
+  </p>
+
+  <div class="portrait-grid">
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Picture of Anya" />
+      <span class="portrait-name">Anya Desai</span>
+      <span class="portrait-role">[Role]</span>
+    </div>
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Picture of Margot" />
+      <span class="portrait-name">Margot Langenbach</span>
+      <span class="portrait-role">[Role]</span>
+    </div>
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Picture of Caitlyn" />
+      <span class="portrait-name">Caitlyn McClanahan</span>
+      <span class="portrait-role">[Role]</span>
+    </div>
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Picture of Kathryn" />
+      <span class="portrait-name">Kathryn Phung</span>
+      <span class="portrait-role">[Role]</span>
+    </div>
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Picture of Noah" />
+      <span class="portrait-name">Noah Ring</span>
+      <span class="portrait-role">[Role]</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── MEET THE PARTNERS ────────────────────────────── -->
+<div class="about-section">
+  <h2>Meet the Partners</h2>
+  <p class="section-blurb">
+    About LADCO. These organizations provide scientific guidance, data
+    resources, and domain expertise that make this dashboard possible.
+  </p>
+
+  <div class="portrait-grid three-col">
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Portrait of Partner One" />
+      <span class="portrait-name">Zac Adelman</span>
+      <span class="portrait-role">[Role]</span>
+    </div>
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Portrait of Partner Two" />
+      <span class="portrait-name">Angie Dickens</span>
+      <span class="portrait-role">[Role]</span>
+    </div>
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Portrait of Partner Three" />
+      <span class="portrait-name">Grant Coleman</span>
+      <span class="portrait-role">[Role]</span>
+    </div>
+  </div>
+</div>
+
+</div>
 {% endblock %}

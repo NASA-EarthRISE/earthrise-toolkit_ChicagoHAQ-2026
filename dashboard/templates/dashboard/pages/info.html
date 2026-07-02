@@ -1,7 +1,242 @@
 {% extends "dashboard/layout.html" %}
-{%block title%}
-Info
-{% endblock %}
+{% load static %}
+
+{% block title %}Info{% endblock %}
+
 {% block content %}
-<p>Info page for the dashboard <a href = "https://science.nasa.gov/mission/tempo/"></a></p>
+<style>
+    .info-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .info-header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .info-header p {
+        font-size: 1rem;
+        color: var(--text-muted);
+    }
+
+    /* Quick Actions Navigation */
+    .quick-actions-nav {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .quick-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.85rem 1.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .quick-action-btn.primary {
+        background: var(--accent);
+        color: #fff;
+        border: 2px solid var(--accent);
+    }
+
+    .quick-action-btn.primary:hover {
+        background: var(--primary);
+        border-color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(49, 130, 206, 0.25);
+    }
+
+    .quick-action-btn.secondary {
+        background: var(--bg-card);
+        color: var(--text);
+        border: 2px solid var(--border);
+    }
+
+    .quick-action-btn.secondary:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(49, 130, 206, 0.15);
+    }
+
+    .quick-action-btn .icon {
+        font-size: 1.2rem;
+    }
+
+    /* Info Sections */
+    .info-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .info-section h2 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--border);
+    }
+
+    .info-section h3 {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--text);
+        margin-top: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-section p {
+        font-size: 0.92rem;
+        line-height: 1.7;
+        color: var(--text);
+        margin-bottom: 0.75rem;
+    }
+
+    .info-section .highlight-box {
+        background: var(--bg);
+        border-left: 4px solid var(--accent);
+        border-radius: 6px;
+        padding: 1rem 1.25rem;
+        margin: 1rem 0;
+    }
+
+    .info-section .highlight-box p {
+        margin-bottom: 0;
+        font-size: 0.88rem;
+        color: var(--text-muted);
+    }
+
+    .product-card {
+        background: var(--bg);
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--accent);
+    }
+
+    .product-card.success {
+        border-left-color: var(--success);
+    }
+
+    .product-card.warning {
+        border-left-color: var(--warning);
+    }
+
+    .product-card h3 {
+        margin-top: 0;
+    }
+
+    .product-card p {
+        font-size: 0.88rem;
+    }
+</style>
+
+<!-- Page Header -->
+<div class="info-header">
+    <h1>Dashboard Information</h1>
+    <p>Learn about the Chicago ozone environment and the data products powering this dashboard</p>
+</div>
+
+<!-- Quick Actions Navigation -->
+<div class="quick-actions-nav">
+    <a href="#chicago-context" class="quick-action-btn primary">
+        <span class="icon">🌆</span>
+        Chicago Context
+    </a>
+    <a href="#data-products" class="quick-action-btn secondary">
+        <span class="icon">📊</span>
+        Data Products
+    </a>
+</div>
+
+<!-- Chicago Sea Bay Breeze & Ozone Characteristics Section -->
+<div class="info-section" id="chicago-context">
+    <h2>Chicago Sea Bay Breeze & Ozone Characteristics</h2>
+
+    <p>
+        The Chicago metropolitan region, situated on the southwestern shore of Lake Michigan, experiences a distinctive 
+        meteorological phenomenon known as the <strong>lake-breeze circulation</strong> (often referred to as a "sea bay breeze" 
+        in analogous coastal systems)...
+    </p>
+
+    <p>
+        The lake-breeze circulation has a profound impact on <strong>ground-level ozone formation and distribution</strong> 
+        in the Chicago area...
+
+    <div class="highlight-box">
+        <p>
+            <strong>Key finding:</strong> Studies have demonstrated that...
+        </p>
+    </div>
+
+    <p>
+        Understanding the complex...
+    </p>
+</div>
+
+<!-- Data Products Section -->
+<div class="info-section" id="data-products">
+    <h2>Data Products</h2>
+
+    <p>
+        This dashboard integrates three complementary data products to provide a comprehensive view of air quality conditions 
+        over the Chicago region. Each product offers unique spatial coverage, temporal resolution, and measurement capabilities 
+        that, when combined, enable a more complete understanding of ozone precursor distributions and their evolution.
+    </p>
+
+    <!-- TEMPO Card -->
+    <div class="product-card">
+        <h3>NASA TEMPO (Tropospheric Emissions: Monitoring of Pollution)</h3>
+        <p>
+            NASA's Tropospheric Emissions: Monitoring of Pollution (TEMPO) instrument is a revolutionary <strong> geostationary 
+            satellite mission</strong> designed to...
+        </p>
+        <p>
+            What sets TEMPO apart from previous satellite missions is...
+        </p>
+    </div>
+
+    <!-- OpenAir Chicago Card -->
+    <div class="product-card success">
+        <h3>OpenAir Chicago (CLARITY Sensor Network)</h3>
+        <p>
+            The OpenAir Chicago network, part of the Community Logic for Air Quality (CLARITY) initiative, is a 
+            dense, community-based air quality monitoring network deployed across Cook County and the greater 
+            Chicago metropolitan area...
+        </p>
+        <p>
+            The OpenAir Chicago network addresses a critical gap in air quality monitoring: the lack of fine-scale 
+            spatial data...
+        </p>
+    </div>
+
+    <!-- Fusion Layer Card -->
+    <div class="product-card warning">
+        <h3>Fusion Layer (Satellite + Ground Data Integration)</h3>
+        <p>
+            The Fusion Data Layer represents the integrated product that combines TEMPO satellite observations with 
+            OpenAir Chicago ground-based sensor data using <strong>statistical fusion techniques</strong>...
+        <p>
+            The Fusion Layer is the flagship product of this dashboard, providing the most accurate and spatially 
+            complete representation of ozone precursor concentrations across the Chicago region...
+        </p>
+    </div>
+</div>
+
 {% endblock %}
