@@ -1,6 +1,11 @@
 {% extends "dashboard/layout.html" %}
+{% load static %}
+
 {%block title%} Community Tools {% endblock %}
 {% block extra_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
 <style>
     /* Hero (Heading) banner */
     .hero {
@@ -29,13 +34,202 @@
         font-size: 1.4rem;
     }
     }
+
+    .community-layout {
+      display: flex;
+      gap: 1.5rem;
+      min-height: calc(100vh - var(--nav-height) - 80px);
+    }
+
+    .community-preview {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /*map container for community */
+    .community-map-container {
+      flex: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      min-height: 500px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    #community-map {
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+
 </style>
 {% endblock %}
 {% block content %}
 <div class="hero">
-  <h1>Community Tools</h1>
-  <p class="subtitle">
-    Welcome to the community tools page. 
-  </p>
+<h1>Community Tools</h1>
+<p class="subtitle">
+  Welcome to the community tools page. 
+</p>
 </div>
+<div class="community-layout">
+  <div class="community-preview">
+    <div class="community-map-container">
+    <div id="community-map"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// ── MAP INIT ───────────────────────────────────────────────────────────────
+  const map = L.map('community-map', {
+    center: [41.52, -87.37],
+    zoom: 10,
+    zoomControl: true
+  });
+
+  // Basemap
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri',
+    maxZoom: 15
+  }).addTo(map);
+
+
+  // ── CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
+  fetch("{% static 'dashboard/layers/Chicago.geojson' %}")
+    .then(response => response.json())
+    .then(data => {
+        var ChicagoBounds = L.geoJSON(data, {
+            style: {
+                color: "#636363", // Outline color
+                weight: 1.5,
+                fillColor: "#00000000" //make fill transparent
+            }
+        }).addTo(map);
+
+        map.fitBounds(ChicagoBounds.getBounds())
+      })
+
+  //attempt to keep highlighted on click
+  var defaultCommunityStyle = {color: "#636363", weight: 1, fillColor: "#00000066"}
+  var highlightCommunityStyle = {color: "#000000", weight: 2, fillColor: "fbf719"}
+
+  var previouslyClickedCommunity = null
+
+  fetch("{% static 'dashboard/layers/ChicagoCommunityAreas.geojson' %}")
+    .then(response => response.json())
+    .then(data => {
+        var CommunityAreas = L.geoJSON(data, {
+            style: defaultCommunityStyle,
+            //{color: "#636363", // outline color
+              //  weight: 1, //outline weight
+              //  fillColor: "#00000066"
+              // },
+            onEachFeature: function(feature, layer) {
+              // add pop-up with name for community in bold
+              if (feature.properties && feature.properties.community) {
+                layer.bindPopup("<b>" + feature.properties.community + "</b>");
+              }
+              
+              layer.on('click', function (c) {
+              // center pop-up at centroid of community
+              const center = layer.getBounds().getCenter();
+              layer.openPopup(center);
+
+              // keep highlighted on click
+              var clickedCommunity = c.target;
+
+              if (layer.setStyle) {
+
+              }
+
+              if (previouslyClickedCommunity && previouslyClickedCommunity !== clickedCommunity) {
+                CommunityAreas.setStyle(defaultCommunityStyle);
+              } //reset previously clicked community (if any) to default style
+
+              clickedCommunity.setStyle(highlightCommunityStyle);
+              clickedCommunity.bringToFront();
+
+              previouslyClickedCommunity = clickedCommunity; // track currently clicked community
+              });
+             
+            //highlight on hover
+            layer.on({
+              mouseover: function(e) {
+                e.target.setStyle({color: "#000000",  weight: 2, fillColor: "#fbf719"});
+                e.target.bringToFront() //brings the highlighted layer to front so it shows up
+                },
+              mouseout: function(e) {
+                  CommunityAreas.setStyle({color: "#636363",  weight: 1, fillColor: "#00000044"}); // reset to default style
+                  }
+                });
+            
+            //keep highlighted on click not working :(((
+              layer.on("click", function (e) {
+                layer.setStyle({color: "#000000", weight: 2, fillColor: "#fbf719"})
+              });
+
+              layer.openPopup()
+
+            // zoom on click
+            layer.on("click", function(e) {
+              var bounds = layer.getBounds();
+              map.fitBounds(bounds)
+            })      
+      }}).addTo(map)
+        map.fitBounds(ChicagoBounds.getBounds())
+      })
+    
+  
+  
+  // ── Home Button ───────────────────────────────────────────────────────────── 
+  
+  var homeButton = L.Control.Extend({
+    options: {
+        position: 'topright' // Button location
+    },
+    onAdd: function (map) {
+        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+        container.innerHTML = '<button style="width: 30px; height: 30px; font-weight: bold;">🏠</button>';
+        container.style.backgroundColor = 'white';
+        container.style.cursor = 'pointer';
+        
+        container.onclick = function(){
+            map.fitBounds(ChicagoBounds.getBounds()); // Zoom out to all features
+        }
+        return container;
+    }
+  });
+  map.addControl(new homeButton());
+
+  // ── MAP COORDS BAR ─────────────────────────────────────────────────────────────
+  map.on('mousemove', e => {
+  document.getElementById('coords-text').textContent =
+    `Lat: ${e.latlng.lat.toFixed(5)}  Lng: ${e.latlng.lng.toFixed(5)}`;
+  });
+  map.on('zoomend', () => {
+    document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
+  });
+  document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
+
+  // ── MAP coords PANEL ───────────────────────────────────────────────────────────────
+  map.on('mousemove', e => {
+  document.getElementById('coords-panel').innerHTML =
+    `<strong>Lat:</strong> ${e.latlng.lat.toFixed(6)}<br>
+     <strong>Lng:</strong> ${e.latlng.lng.toFixed(6)}<br>
+     <strong>Zoom:</strong> ${map.getZoom()}`;
+  });
+
+</script>
+
 {% endblock %}

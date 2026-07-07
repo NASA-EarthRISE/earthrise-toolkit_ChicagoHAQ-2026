@@ -5,7 +5,7 @@ from django.conf import settings
 import re
 import json
 import os
-import folium
+#import folium
 from django.utils.timezone import datetime
 
 # libraries for site/html render

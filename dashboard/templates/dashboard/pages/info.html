@@ -165,29 +165,19 @@
     </a>
 </div>
 
-<!-- Chicago Sea Bay Breeze & Ozone Characteristics Section -->
+<!-- Chicago & Ozone Characteristics Section -->
 <div class="info-section" id="chicago-context">
-    <h2>Chicago Sea Bay Breeze & Ozone Characteristics</h2>
-
+    <h2>Ozone Pollution in Chicago</h2>
+    
     <p>
-        The Chicago metropolitan region, situated on the southwestern shore of Lake Michigan, experiences a distinctive 
-        meteorological phenomenon known as the <strong>lake-breeze circulation</strong> (often referred to as a "sea bay breeze" 
-        in analogous coastal systems)...
+        Air pollution adversely impacts human health and is a leading cause of premature mortality worldwide. Tropospheric ozone pollution is a concern across major cities, including Chicago. While the United States Environmental Protection Agency sets national air quality standards for ozone, many cities remain in nonattainment status, meaning that air quality monitoring stations record concentrations at levels harmful to human and environmental health. According to these national standards, Chicago has been in a severe nonattainment status since January of 2025. 
     </p>
-
     <p>
-        The lake-breeze circulation has a profound impact on <strong>ground-level ozone formation and distribution</strong> 
-        in the Chicago area...
-
-    <div class="highlight-box">
-        <p>
-            <strong>Key finding:</strong> Studies have demonstrated that...
-        </p>
-    </div>
-
-    <p>
-        Understanding the complex...
+        Tropospheric ozone forms from interactions between gaseous pollutants, including nitrogen oxide (NO<sub>x</sub>) and volatile organic compounds (VOCs). NO<sub>x</sub> refers to both nitrogen oxide  and nitrogen dioxide (NO<sub>2</sub>). NO<sub>2</sub> is the more stable species of NO<sub>x</sub> and is directly regulated under national air quality standards, making NO<sub>2</sub> a practical proxy for understanding the role of NO<sub>x</sub> in ozone production. 
     </p>
+    <img src = "{% static 'dashboard/images/EPA_AirData_DaysOzoneExceedance_CookCounty.png' %}" class = "EPA-ozone-graph" alt = "Number of Days 8-Hour Ozone Exceeded Healthy Air Quality (2000-2026)"> <br>
+    <p class="image-credit">Image Credit: U.S. EPA Air Data</p>
+
 </div>
 
 <!-- Data Products Section -->
@@ -195,35 +185,37 @@
     <h2>Data Products</h2>
 
     <p>
-        This dashboard integrates three complementary data products to provide a comprehensive view of air quality conditions 
-        over the Chicago region. Each product offers unique spatial coverage, temporal resolution, and measurement capabilities 
-        that, when combined, enable a more complete understanding of ozone precursor distributions and their evolution.
+        This dashboard integrates three complementary data products to provide a comprehensive view of air quality conditions over the Chicago region. Each product offers unique spatial coverage, temporal resolution, and measurement capabilities that, when combined, enable a more complete understanding of ozone precursor distributions and their evolution.
     </p>
 
     <!-- TEMPO Card -->
     <div class="product-card">
-        <h3>NASA TEMPO (Tropospheric Emissions: Monitoring of Pollution)</h3>
-        <p>
-            NASA's Tropospheric Emissions: Monitoring of Pollution (TEMPO) instrument is a revolutionary <strong> geostationary 
-            satellite mission</strong> designed to...
+        <h3 class="heading">
+            NASA TEMPO (Tropospheric Emissions: Monitoring of Pollution) <br></h3>
+        <div class="data-content">
+            <img src = "{% static 'dashboard/images/tempo.png' %}" class = "tempo-sat" alt = "TEMPO Satellite">
+            <p class="side-paragraph">
+            NASA's Tropospheric Emissions: Monitoring of Pollution (TEMPO) instrument is a revolutionary <strong> geostationary satellite mission</strong> that was launched in April of 2023. TEMPO measures key gases and aerosols that impact air quality, including ozone and NO<sub>2</sub>, across North America. As a geostationary satellite with a fixed position above North America, TEMPO scans the concentrations of air pollutants hourly. This project used the Level 3 Gridded NO<sub>2</sub> Tropospheric and Stratospheric Columns Version 04 product for the analysis, which was released in September of 2025. 
         </p>
-        <p>
-            What sets TEMPO apart from previous satellite missions is...
-        </p>
+        </div>
+         <div class="image-credit">
+            <p> Image Credit: NASA </p>
+         </div>
+
     </div>
 
     <!-- OpenAir Chicago Card -->
     <div class="product-card success">
-        <h3>OpenAir Chicago (CLARITY Sensor Network)</h3>
-        <p>
-            The OpenAir Chicago network, part of the Community Logic for Air Quality (CLARITY) initiative, is a 
-            dense, community-based air quality monitoring network deployed across Cook County and the greater 
-            Chicago metropolitan area...
+        <h3 class="heading">OpenAir Chicago (CLARITY Sensor Network) <br></h3>
+        <div class="data-content">
+            <!-- <img src = "{% static 'dashboard/images/????.png' %}" class = "sensor" alt = "Clarity's Node-S Sensor"> --> 
+            <p class="side-paragraph">
+            OpenAir Chicago, part of the Community Logic for Air Quality (CLARITY) initiative, is a dense, community-based air quality monitoring network that launched in September of 2025. With 277 of Clarity's low-cost, Node-S sensors deployed in a grid-based approach across Chicago, Open Air Chicago provides sub-hourly readings of NO<sub>2</sub> and PM2.5 concentrations. All sensors in Chicago are located less than a mile from each other.
         </p>
-        <p>
-            The OpenAir Chicago network addresses a critical gap in air quality monitoring: the lack of fine-scale 
-            spatial data...
-        </p>
+         <!-- <div class="image-credit"> 
+            <p> Image Credit: xx </p>
+         </div> -->
+        </div>
     </div>
 
     <!-- Fusion Layer Card -->
@@ -238,5 +230,33 @@
         </p>
     </div>
 </div>
+
+<!-- CSS -->
+<style>
+.EPA-ozone-graph {
+    width: auto;
+    height: 300px;
+}
+
+.data-content {
+    display: flex;
+    align-items: center; /* Aligns text and image vertically */
+    gap: 20px; 
+}
+
+.tempo-sat {
+    width: 200px; /* Forces the image to 200 pixels wide */
+    height: auto; /* automatically adjusts height */
+}
+
+.side-paragraph {
+    flex: 1; /* Tells the paragraph to fill up the rest of the empty space */
+    margin: 0; 
+}
+
+.image-credit { 
+    font-size: 6;
+}
+</style>
 
 {% endblock %}
