@@ -72,6 +72,7 @@
     }),
   };
 
+
   // ── MAP INIT ───────────────────────────────────────────────────────────────
   const map = L.map('map', {
     center: [41.52, -87.37],  // Chicago, IL default
@@ -116,65 +117,6 @@
   let savedMarkers = [];
   let markerIdSeq = 0;
 
-  // ── HEATMAP COLOR SCALE ────────────────────────────────────────────────────
-  function no2Color(value) {
-      // Simple color scale for NO2 vertical column (molecules/cm²)
-      // Typical range: 0 to 1e16
-      const normalized = Math.min(value / 1e16, 1);
-      if (normalized < 0.25) return [100, 200, 255, 180];    // light blue
-      if (normalized < 0.5)  return [50, 180, 100, 200];     // green
-      if (normalized < 0.75) return [255, 200, 50, 200];     // yellow-orange
-      return [220, 50, 50, 200];                              // red
-  }
-
-  // ── LOAD TEMPO DATA FROM API ──────────────────────────────────────────────
-  async function loadTempoData(dateStr, hour) {
-      try {
-          const url = `${API_BASE}${dateStr}/?scale=${TIME_SCALE}&hour=${hour || ''}`;
-          showToast('Loading data...');
-          const response = await fetch(url);
-
-          if (!response.ok) {
-              // If API not yet implemented, show demo data
-              loadDemoData();
-              return;
-          }
-
-          const data = await response.json();
-
-          // Clear existing layers
-          tempoLayerGroup.clearLayers();
-
-          if (data.features) {
-              // GeoJSON data
-              L.geoJSON(data, {
-                  pointToLayer: function(feature, latlng) {
-                      return L.circleMarker(latlng, {
-                          radius: 6,
-                          fillColor: no2Color(feature.properties.value || 0),
-                          color: '#fff',
-                          weight: 1,
-                          opacity: 0.8,
-                          fillOpacity: 0.7
-                      }).bindPopup(`
-                          <div class="popup-title">NO2 — ${feature.properties.datetime || dateStr}</div>
-                          <div class="popup-coords">${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}</div>
-                          <div class="popup-value">VC: ${((feature.properties.value || 0) * 1e-16).toFixed(3)} ×10¹⁶ molec/cm²</div>
-                      `);
-                  }
-              }).addTo(tempoLayerGroup);
-          }
-
-          // Update heatmap
-          updateHeatmap(data);
-          showToast('Data loaded!');
-
-      } catch (error) {
-          console.error('Error loading TEMPO data:', error);
-          showToast('Using demo data');
-          loadDemoData();
-      }
-  }
 
   // ── UPDATE HEATMAP ─────────────────────────────────────────────────────────
   function updateHeatmap(data) {
@@ -295,86 +237,6 @@
       explorePanel.classList.toggle('expanded');
     });
   }
-
-  // ── CLICK → ADD MARKER ─────────────────────────────────────────────────────
-  const pinIcon = L.divIcon({
-    className: '',
-    html: `<svg width="24" height="36" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 24 12 24s12-15 12-24C24 5.37 18.63 0 12 0z"
-        fill="#3182ce" stroke="#1a5276" stroke-width="1.5"/>
-      <circle cx="12" cy="12" r="5" fill="white"/>
-    </svg>`,
-    iconSize: [24, 36],
-    iconAnchor: [12, 36],
-    popupAnchor: [0, -38]
-  });
-
-  map.on('click', e => {
-    const { lat, lng } = e.latlng;
-    const id = ++markerIdSeq;
-    const label = `Pin #${id}`;
-
-    const marker = L.marker([lat, lng], { icon: pinIcon })
-      .bindPopup(`
-        <div class="popup-title">${label}</div>
-        <div class="popup-coords">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
-      `)
-      .addTo(markerGroup);
-
-    savedMarkers.push({ id, label, lat, lng, marker });
-    renderMarkerList();
-    showToast(`${label} added`);
-  });
-
-  // ── MARKER LIST ────────────────────────────────────────────────────────────
-  function renderMarkerList() {
-    const ul = document.getElementById('marker-list');
-    const mc = document.getElementById('marker-count');
-    mc.textContent = savedMarkers.length ? `(${savedMarkers.length})` : '';
-
-    if (!savedMarkers.length) {
-      ul.innerHTML = '<li class="empty-note">Click map to add markers</li>';
-      return;
-    }
-    ul.innerHTML = savedMarkers.map(m =>
-      `<li>
-         <span class="loc-name" onclick="flyTo(${m.id})">📍 ${m.label}</span>
-         <button onclick="removeMarker(${m.id})" title="Remove">✕</button>
-       </li>`
-    ).join('');
-  }
-
-  function flyTo(id) {
-    const m = savedMarkers.find(x => x.id === id);
-    if (m) { map.flyTo([m.lat, m.lng], 14); m.marker.openPopup(); }
-  }
-
-  function removeMarker(id) {
-    const idx = savedMarkers.findIndex(x => x.id === id);
-    if (idx === -1) return;
-    markerGroup.removeLayer(savedMarkers[idx].marker);
-    savedMarkers.splice(idx, 1);
-    renderMarkerList();
-  }
-
-  window.flyTo = flyTo;
-  window.removeMarker = removeMarker;
-
-  // ── BASEMAP SWITCHER ───────────────────────────────────────────────────────
-  let activeBasemap = 'osm';
-  document.querySelectorAll('.basemap-btn[data-layer]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const key = btn.dataset.layer;
-      if (!key || key === activeBasemap) return;
-      map.removeLayer(tileLayers[activeBasemap]);
-      tileLayers[key].addTo(map);
-      tileLayers[key].bringToBack();
-      activeBasemap = key;
-      document.querySelectorAll('.basemap-btn[data-layer]').forEach(b =>
-        b.classList.toggle('active', b.dataset.layer === key)
-      );
-    });
-  });
 
   // ── LAYER TOGGLES (fixed: no duplicate IDs) ────────────────────────────────
   document.querySelectorAll('.layer-toggle').forEach(checkbox => {
