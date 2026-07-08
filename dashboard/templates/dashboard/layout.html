@@ -13,31 +13,34 @@
 <body>
     <!-- ── NAVIGATION BAR ─────────────────────────────── -->
     <nav>
-        <!-- Sidebar toggle hamburger button -->
+        <a target="_blank">
+                <img class="logo" src="{% static 'dashboard/images/atmosphere.png' %}" alt="Regional Ozone Precursor Map"/>
+        </a>
+        
+        <!-- Sidebar toggle hamburger button
         <button class="hamburger" id="sidebar-hamburger" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
             <span class="hamburger-bar"></span>
             <span class="hamburger-bar"></span>
             <span class="hamburger-bar"></span>
-        </button>
+        </button>-->
 
         <span class="nav-brand">
             <a href="/">Regional Ozone Precursor Map</a>
+            
         </span>
 
         <!-- Mobile menu toggle (shown only on small screens) -->
         <div class="mobile-menu-container" id="mobile-menu-container" onclick="MenuToggle(this)" style="display:none;">
-            <span class="hamburger-bar"></span>
-            <span class="hamburger-bar"></span>
-            <span class="hamburger-bar"></span>
+            &#11167;
         </div>
 
         <div class="nav-links" id="nav-links">
-            <a href="{% url 'map_hourly' %}">Map</a>
+            <a href="{% url 'map_hourly' %}">Pollution Map</a>
+            <a href="/community/">Community Tools</a>
             <a href="{% url 'info' %}">Info</a>
             <a href="{% url 'tutorial' %}">User Guide</a>
             <a href="{% url 'export' %}">Export Data</a>
             <a href="{% url 'about' %}">About</a>
-            <a href="/admin">Sign In</a>
             <a href="https://www.nasa.gov/tempo" target="_blank">
                 <img class="logo" src="{% static 'dashboard/images/nasalogo.png' %}" alt="NASA Logo"/>
             </a>

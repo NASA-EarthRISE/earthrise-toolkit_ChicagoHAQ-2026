@@ -1,6 +1,5 @@
 {% extends "dashboard/layout.html" %}
 {% load static %}
-
 {%block title%} Community Tools {% endblock %}
 {% block extra_css %}
 <!-- Leaflet CSS -->
@@ -88,6 +87,7 @@
 <h1>Community Tools</h1>
 <p class="subtitle">
   Select a Community in Chicago to see detailed information on its spatiotemporal trends of NO<sub>2</sub> pollution for the area. 
+  Look at the ozone precoursor patterns for any community within the city of Chicago using the region select tool down below. 
 </p>
 </div>
 <!-- create empty dropdown element -->
@@ -168,7 +168,7 @@
   const defaultStyle = {color: "#636363", weight: 1, fillColor: "#00000066"}
   const highlightStyle = {color: "#000000", weight: 2.5, fillColor: "#fbf719"}
 
-  var selectedCommunity = null //keep track of clicked community
+  var selectedCommunity = null //keep track of clicked community (for keep highlighted)
 
   //load dropdown
   var dropdownCommunity = document.getElementById('community-dropdown');
@@ -184,6 +184,7 @@
               var option = document.createElement('option');
               option.value = feature.properties.community;
               option.textContent = feature.properties.community;
+              option.idNumber = feature.properties.area_numbe;
               dropdownCommunity.appendChild(option);
               
               // add pop-up with name for community in bold, can add something about NO2 to pop up later if add an attribute to the geojson
@@ -226,7 +227,7 @@
                 //layer.bringToFront();
               });
              
-            //highlight on hover (keep outside of onEachFeature otherwise doesn't work?)
+            //highlight on hover (keep outside of onEachFeature otherwise doesn't work)
             layer.on({
               mouseover: function(e) {
                 e.target.setStyle(highlightStyle);
@@ -236,22 +237,30 @@
                   CommunityAreas.setStyle(defaultStyle); // reset to default style
                   }
                 });    
-      }}).addTo(map)
-        map.fitBounds(ChicagoBounds.getBounds())
+      }}).addTo(map);
+        map.fitBounds(ChicagoBounds.getBounds());
       })
+      .catch(error => console.error('Error loading Community Areas:', error));
   
   //choose name from dropdown and zoom in on map (not working yet!)
   dropdownCommunity.addEventListener('change', function(e) {
     var selectedArea = e.target.value;
-    if (!selectedArea) return;
+    if (!selectedArea) return; //do not change map zoom if no community selected
+    if (selectedArea) {
+      //find map feature with matching name and zoom in to community
+      CommunityAreas.eachLayer(function (layer) {
+        if (feature.properties.community === selectedArea) {
+          map.fitBounds(layer.getBounds());
+        }
+      })
+    }});
 
     //find feature with matching name
-    CommunityAreas.eachLayer(function (layer) {
-      if (feature.properties.community === selectedArea) {
-        map.fitBounds(layer.getBounds());
-      }
-    });
-  });
+    //CommunityAreas.eachLayer(function (layer) {
+      //if (feature.properties.community === selectedArea) {
+      //  map.fitBounds(layer.getBounds());}
+    //});
+  //});
 
 
   // ── MAP COORDS BAR ─────────────────────────────────────────────────────────────

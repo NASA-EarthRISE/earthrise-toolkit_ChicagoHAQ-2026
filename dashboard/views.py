@@ -6,7 +6,10 @@ import re
 import json
 import os
 #import folium
-from django.utils.timezone import datetime
+from django.utils.timezone import datetime, now
+
+# Capture server startup time when the module is first loaded (server starts)
+SERVER_START_TIME = now()
 
 # libraries for site/html render
 from django.http import HttpResponse
@@ -27,7 +30,9 @@ from django.views.generic import ListView
 
 
 def home(request):
-    return render(request, "dashboard/pages/home.html")
+    return render(request, "dashboard/pages/home.html", {
+        'server_start_time': SERVER_START_TIME
+    })
 
 def about(request):
     return render(request, "dashboard/pages/about.html")
