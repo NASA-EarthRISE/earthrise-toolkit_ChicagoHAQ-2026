@@ -48,15 +48,15 @@
 
 <div class="dashboard-grid">
     <!-- Stat Card 1 -->
-    <div class="stat-card">
+    <!--<div class="stat-card">
         <div class="stat-label">Latest NO₂ Reading</div>
         <div class="stat-value">3.2</div>
         <div class="stat-sub">×10¹⁵ molec/cm²</div>
-    </div>
+    </div>-->
 
     <!-- Stat Card 2 -->
     <div class="stat-card">
-        <div class="stat-label">AQI Status</div>
+        <div class="stat-label">Data Status</div>
         <div class="stat-value" style="color: var(--success);">Good</div>
         <div class="stat-sub">Files/Points Loaded: 42</div>
     </div>
@@ -71,8 +71,8 @@
     <!-- Stat Card 4 -->
     <div class="stat-card">
         <div class="stat-label">Last Server Update</div>
-        <div class="stat-value" style="font-size:1.25rem;">{% now "H:i" %}</div>
-        <div class="stat-sub">{% now "M d, Y" %}</div>
+        <div class="stat-value" style="font-size:1.25rem;">{{ server_start_time|time:"H:i" }}</div>
+        <div class="stat-sub">{{ server_start_time|date:"M d, Y" }}</div>
     </div>
 </div>
 
