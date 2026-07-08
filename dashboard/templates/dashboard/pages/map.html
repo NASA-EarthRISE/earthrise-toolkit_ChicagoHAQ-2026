@@ -14,6 +14,14 @@
 {% endblock %}
 
 {% block content %}
+<!-- Mobile disclaimer overlay -->
+<div class="mobile-disclaimer" id="mobile-disclaimer">
+  <div class="mobile-disclaimer-content">
+    <p>Mapping tools for the Regional Ozone Precursor Dashboard are best displayed on a desktop or laptop computer.</p>
+    <a href="{% url 'home' %}" class="mobile-disclaimer-btn">Go to the Homepage</a>
+  </div>
+</div>
+
 <!-- Map layout: sidebar + map container -->
 <div class="map-layout">
 

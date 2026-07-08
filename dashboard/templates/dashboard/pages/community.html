@@ -34,54 +34,85 @@
     }
     }
 
-    .community-layout {
-      display: flex;
-      gap: 1.5rem;
-      min-height: calc(100vh - var(--nav-height) - 80px);
-    }
+  .community-layout { /*holds all the elements below*/
+    display: flex;
+    gap: 1.5rem;
+    min-height: 500px;
+    /*max-width: 50vw; /*sets maximum width of map container to half the screen size */
+  } 
 
-    .community-preview {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
+  .community-preview { 
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+  } 
 
-    /*map container for community */
-    .community-map-container {
-      flex: 1;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-      position: relative;
-      min-height: 500px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
+  /*map container for community */
+  .community-map-container {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+    min-height: 500px;
+    max-width: 50vw; /*sets maximum width of map container to half the screen size */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
 
-    #community-map {
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-    }
+  #community-map {
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  /*container for timeseries plot*/
+  .plot-container {
+    flex: 1;
+    float: right;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    min-height: 500px;
+    max-width: 50vw;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
 
 
 </style>
 {% endblock %}
 {% block content %}
+<!-- Mobile disclaimer overlay -->
+<div class="mobile-disclaimer" id="mobile-disclaimer">
+  <div class="mobile-disclaimer-content">
+    <p>Mapping tools for the Regional Ozone Precursor Dashboard are best displayed on a desktop or laptop computer.</p>
+    <a href="{% url 'home' %}" class="mobile-disclaimer-btn">Go to the Homepage</a>
+  </div>
+</div>
+
 <div class="hero">
 <h1>Community Tools</h1>
 <p class="subtitle">
   Look at the ozone precoursor patterns for any community within the city of Chicago using the region select tool down below. 
+  Select a Community in Chicago to see detailed information on its spatiotemporal trends of NO<sub>2</sub> pollution for the area. 
 </p>
 </div>
+<!-- create empty dropdown element -->
+     <select id="community-dropdown">
+      <option value="">Select a Community Area...</option>
+    </select>
 <div class="community-layout">
   <div class="community-preview">
+    <div id="mapid" style="height: 25px;"></div>
+    <!-- place map below dropdown-->
     <div class="community-map-container">
     <div id="community-map"></div>
     </div>
+    <img src="{% static 'dashboard/images/SampleGraphClear.png' %}" class="plot-container" alt="Plot">
   </div>
 </div>
+
 
 {% endblock %}
 
@@ -89,13 +120,39 @@
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+
 <script>
 // ── MAP INIT ───────────────────────────────────────────────────────────────
   const map = L.map('community-map', {
-    center: [41.52, -87.37],
+    center: [41.83772083187901, -87.68664593458594], //chicago boundary centroid
     zoom: 10,
     zoomControl: true
   });
+
+  //home button
+  const homeCoords = [41.83772083187901, -87.68664593458594];
+  const homeZoom = 10;
+
+  var HomeButton = L.Control.extend({
+    options: { position: 'topleft' },
+    onAdd: function (map) {
+      var btn = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+            btn.style.backgroundColor = 'white';
+            btn.style.width = '30px';
+            btn.style.height = '30px';
+            btn.style.cursor = 'pointer';
+            btn.innerHTML = '<span style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; font-weight: bold;">&#8962;</span>'; //unicode house outline symbol is &#8962, would be nice to use font awesome home symbol instead but it doesn't want to show up
+            //btn.innerHTML = '<center><i class="fa-solid fa-home" style="font-weight:900;"></i></center>'; //did not show any symbol in home button
+            btn.title = 'Zoom to Home';
+
+            btn.onclick = function(){
+                map.setView(homeCoords, homeZoom);
+            }
+            return btn;
+    }
+  });
+
+  map.addControl(new HomeButton());
 
   // Basemap
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
@@ -105,111 +162,105 @@
 
 
   // ── CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
-  fetch("{% static 'dashboard/layers/Chicago.geojson' %}")
+  fetch("{% static 'dashboard/layers/Chicago.geojson' %}") //load Chicago boundary
     .then(response => response.json())
     .then(data => {
         var ChicagoBounds = L.geoJSON(data, {
-            style: {
-                color: "#636363", // Outline color
-                weight: 1.5,
-                fillColor: "#00000000" //make fill transparent
-            }
+            style: {color: "#636363", weight: 1.75, fillColor: "#00000000"}
         }).addTo(map);
 
         map.fitBounds(ChicagoBounds.getBounds())
       })
 
-  //attempt to keep highlighted on click
-  var defaultCommunityStyle = {color: "#636363", weight: 1, fillColor: "#00000066"}
-  var highlightCommunityStyle = {color: "#000000", weight: 2, fillColor: "fbf719"}
+  //set styles
+  const defaultStyle = {color: "#636363", weight: 1, fillColor: "#00000066"}
+  const highlightStyle = {color: "#000000", weight: 2.5, fillColor: "#fbf719"}
 
-  var previouslyClickedCommunity = null
+  var selectedCommunity = null //keep track of clicked community
+
+  //load dropdown
+  var dropdownCommunity = document.getElementById('community-dropdown');
+
 
   fetch("{% static 'dashboard/layers/ChicagoCommunityAreas.geojson' %}")
     .then(response => response.json())
     .then(data => {
         var CommunityAreas = L.geoJSON(data, {
-            style: defaultCommunityStyle,
-            //{color: "#636363", // outline color
-              //  weight: 1, //outline weight
-              //  fillColor: "#00000066"
-              // },
+            style: defaultStyle,
             onEachFeature: function(feature, layer) {
-              // add pop-up with name for community in bold
-              if (feature.properties && feature.properties.community) {
-                layer.bindPopup("<b>" + feature.properties.community + "</b>");
-              }
+              //create dropdown option for each feature
+              var option = document.createElement('option');
+              option.value = feature.properties.community;
+              option.textContent = feature.properties.community;
+              dropdownCommunity.appendChild(option);
               
-              layer.on('click', function (c) {
-              // center pop-up at centroid of community
-              const center = layer.getBounds().getCenter();
-              layer.openPopup(center);
+              // add pop-up with name for community in bold, can add something about NO2 to pop up later if add an attribute to the geojson
+              layer.bindPopup("<b>" + feature.properties.community + "</b>")
+              
+              layer.on('click', function (e) {
+                //click feature on map to populate name in dropdown
+                dropdownCommunity.value = feature.properties.community;
+                // pop-up at centroid of community
+                const center = layer.getBounds().getCenter();
+                layer.openPopup(center);
 
-              // keep highlighted on click
-              var clickedCommunity = c.target;
+                //zoom to community
+                var bounds = layer.getBounds();
+                map.fitBounds(bounds, {padding: [15, 15]});
+              
+              //this highlight also doesn't work
+              //layer.on({
+                //popupopen: function(e) {
+                  //selectedCommunity = e.target; //save selected layer
+                  //selectedCommunity.setStyle(highlightStyle);
+                //},   
+                //popupclose: function(e) {
+                  //selectedCommunity.setStyle(defaultStyle);
+                  //selectedCommunity = null;
+                //}        
+              //})
 
-              if (layer.setStyle) {
+              //this highlight doesn't work either   
+              //layer.on('popupopen', function(e) {
+                //e.target.setStyle(highlightStyle)});
+              //layer.on('popupclose', function(e) {
+                //CommunityAreas.resetStyle(e.target)})
 
-              }
-
-              if (previouslyClickedCommunity && previouslyClickedCommunity !== clickedCommunity) {
-                CommunityAreas.setStyle(defaultCommunityStyle);
-              } //reset previously clicked community (if any) to default style
-
-              clickedCommunity.setStyle(highlightCommunityStyle);
-              clickedCommunity.bringToFront();
-
-              previouslyClickedCommunity = clickedCommunity; // track currently clicked community
+                // keep highlighted on click (NOT WORKING!!!)
+                //if (selectedCommunity && selectedCommunity !== layer) {
+                //  CommunityAreas.resetStyle(selectedCommunity);} //reset previously clicked community (if any) to default 
+                //layer.setStyle(highlightStyle)  //highlight selected community
+                //selectedCommunity = layer //track selected community
+                //layer.bringToFront();
               });
              
-            //highlight on hover
+            //highlight on hover (keep outside of onEachFeature otherwise doesn't work?)
             layer.on({
               mouseover: function(e) {
-                e.target.setStyle({color: "#000000",  weight: 2, fillColor: "#fbf719"});
+                e.target.setStyle(highlightStyle);
                 e.target.bringToFront() //brings the highlighted layer to front so it shows up
                 },
               mouseout: function(e) {
-                  CommunityAreas.setStyle({color: "#636363",  weight: 1, fillColor: "#00000044"}); // reset to default style
+                  CommunityAreas.setStyle(defaultStyle); // reset to default style
                   }
-                });
-            
-            //keep highlighted on click not working :(((
-              layer.on("click", function (e) {
-                layer.setStyle({color: "#000000", weight: 2, fillColor: "#fbf719"})
-              });
-
-              layer.openPopup()
-
-            // zoom on click
-            layer.on("click", function(e) {
-              var bounds = layer.getBounds();
-              map.fitBounds(bounds)
-            })      
+                });    
       }}).addTo(map)
         map.fitBounds(ChicagoBounds.getBounds())
       })
-    
   
-  
-  // ── Home Button ───────────────────────────────────────────────────────────── 
-  
-  var homeButton = L.Control.Extend({
-    options: {
-        position: 'topright' // Button location
-    },
-    onAdd: function (map) {
-        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-        container.innerHTML = '<button style="width: 30px; height: 30px; font-weight: bold;">🏠</button>';
-        container.style.backgroundColor = 'white';
-        container.style.cursor = 'pointer';
-        
-        container.onclick = function(){
-            map.fitBounds(ChicagoBounds.getBounds()); // Zoom out to all features
-        }
-        return container;
-    }
+  //choose name from dropdown and zoom in on map (not working yet!)
+  dropdownCommunity.addEventListener('change', function(e) {
+    var selectedArea = e.target.value;
+    if (!selectedArea) return;
+
+    //find feature with matching name
+    CommunityAreas.eachLayer(function (layer) {
+      if (feature.properties.community === selectedArea) {
+        map.fitBounds(layer.getBounds());
+      }
+    });
   });
-  map.addControl(new homeButton());
+
 
   // ── MAP COORDS BAR ─────────────────────────────────────────────────────────────
   map.on('mousemove', e => {

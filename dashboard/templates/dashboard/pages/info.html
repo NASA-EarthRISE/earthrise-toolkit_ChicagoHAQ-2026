@@ -145,6 +145,32 @@
     .product-card p {
         font-size: 0.88rem;
     }
+
+    .EPA-ozone-graph {
+        width: auto;
+        height: 300px;
+    }
+
+    .data-content {
+        display: flex;
+        align-items: center; /* Aligns text and image vertically */
+        gap: 20px; 
+    }
+
+    .tempo-sat {
+        width: 200px; /* Forces the image to 200 pixels wide */
+        height: auto; /* automatically adjusts height */
+    }
+
+    .side-paragraph {
+        flex: 1; /* Tells the paragraph to fill up the rest of the empty space */
+        margin: 0; 
+    }
+
+    .image-credit { 
+        font-size: 6;
+    }
+
 </style>
 
 <!-- Page Header -->
@@ -189,9 +215,8 @@
     </p>
 
     <!-- TEMPO Card -->
-    <div class="product-card">
-        <h3 class="heading">
-            NASA TEMPO (Tropospheric Emissions: Monitoring of Pollution) <br></h3>
+    <div class="product-card" id="tempo-product">
+        <h3>NASA TEMPO (Tropospheric Emissions: Monitoring of Pollution)</h3>
         <div class="data-content">
             <img src = "{% static 'dashboard/images/tempo.png' %}" class = "tempo-sat" alt = "TEMPO Satellite">
             <p class="side-paragraph">
@@ -205,8 +230,8 @@
     </div>
 
     <!-- OpenAir Chicago Card -->
-    <div class="product-card success">
-        <h3 class="heading">OpenAir Chicago (CLARITY Sensor Network) <br></h3>
+    <div class="product-card success" id="openair-product">
+        <h3>OpenAir Chicago (CLARITY Sensor Network)</h3>
         <div class="data-content">
             <!-- <img src = "{% static 'dashboard/images/????.png' %}" class = "sensor" alt = "Clarity's Node-S Sensor"> --> 
             <p class="side-paragraph">
@@ -219,44 +244,18 @@
     </div>
 
     <!-- Fusion Layer Card -->
-    <div class="product-card warning">
+    <div class="product-card warning" id="fusion-product">
         <h3>Fusion Layer (Satellite + Ground Data Integration)</h3>
         <p>
             The Fusion Data Layer represents the integrated product that combines TEMPO satellite observations with 
             OpenAir Chicago ground-based sensor data using <strong>statistical fusion techniques</strong>...
+            </p>
         <p>
             The Fusion Layer is the flagship product of this dashboard, providing the most accurate and spatially 
             complete representation of ozone precursor concentrations across the Chicago region...
-        </p>
+            </p>
     </div>
 </div>
 
-<!-- CSS -->
-<style>
-.EPA-ozone-graph {
-    width: auto;
-    height: 300px;
-}
-
-.data-content {
-    display: flex;
-    align-items: center; /* Aligns text and image vertically */
-    gap: 20px; 
-}
-
-.tempo-sat {
-    width: 200px; /* Forces the image to 200 pixels wide */
-    height: auto; /* automatically adjusts height */
-}
-
-.side-paragraph {
-    flex: 1; /* Tells the paragraph to fill up the rest of the empty space */
-    margin: 0; 
-}
-
-.image-credit { 
-    font-size: 6;
-}
-</style>
 
 {% endblock %}

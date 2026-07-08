@@ -18,23 +18,6 @@ map.on(L.Draw.Event.CREATED, e => {
   showToast('Shape added to map');
 });
 
-// ── COORDS BAR ───────────────────────────────────────────────────────────────
-map.on('mousemove', e => {
-  document.getElementById('coords-text').textContent =
-    `Lat: ${e.latlng.lat.toFixed(5)}  Lng: ${e.latlng.lng.toFixed(5)}`;
-});
-map.on('zoomend', () => {
-  document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
-});
-document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
-
-// ── INFO PANEL ───────────────────────────────────────────────────────────────
-map.on('mousemove', e => {
-  document.getElementById('info-panel').innerHTML =
-    `<strong>Lat:</strong> ${e.latlng.lat.toFixed(6)}<br>
-     <strong>Lng:</strong> ${e.latlng.lng.toFixed(6)}<br>
-     <strong>Zoom:</strong> ${map.getZoom()}`;
-});
 
 // ── CLICK → ADD MARKER ───────────────────────────────────────────────────────
 const pinIcon = L.divIcon({

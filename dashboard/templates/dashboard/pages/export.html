@@ -298,6 +298,7 @@
       min-height: 400px;
     }
   }
+
 </style>
 {% endblock %}
 
@@ -402,6 +403,10 @@
     <!-- Layer Options -->
     <h3>Layers to Include</h3>
     <div class="checkbox-group">
+      <input type="checkbox" id="include-border" checked />
+      <label for="include-border">Chicago Border</label>
+    </div>
+    <div class="checkbox-group">
       <input type="checkbox" id="include-communities" checked />
       <label for="include-communities">Chicago Community Areas</label>
     </div>
@@ -464,6 +469,12 @@
   <!-- ── RIGHT: Map Preview (inline, no iframe) ──────── -->
   <div class="export-preview">
     <div class="export-map-container">
+      <!-- Mobile disclaimer overlay -->
+      <div class="mobile-disclaimer" id="mobile-disclaimer">
+        <div class="mobile-disclaimer-content">
+          <p>Export map preview is only avaiable on desktop or laptop.</p>
+        </div>
+      </div>
       <span class="preview-label">MAP PREVIEW</span>
       <div id="export-map">
         <!-- Coords bar at bottom -->
@@ -518,7 +529,7 @@
        });
        
        // Add to map if checkbox is checked (default)
-       if (document.getElementById('include-communities').checked) {
+       if (document.getElementById('include-border').checked) {
          chicagoBorderLayer.addTo(map);
        }
      })
@@ -540,15 +551,21 @@
      })
 
    // Toggle Chicago border & community areas layers based on checkbox
-   document.getElementById('include-communities').addEventListener('change', function() {
+   document.getElementById('include-border').addEventListener('change', function() {
      if (this.checked) {
        if (chicagoBorderLayer) chicagoBorderLayer.addTo(map);
-       if (chicagoCommunityLayer) chicagoCommunityLayer.addTo(map);
      } else {
        if (chicagoBorderLayer) map.removeLayer(chicagoBorderLayer);
-       if (chicagoCommunityLayer) map.removeLayer(chicagoCommunityLayer);
      }
    });
+
+    document.getElementById('include-communities').addEventListener('change', function() {
+      if (this.checked) {
+        if (chicagoCommunityLayer) chicagoCommunityLayer.addTo(map);
+      } else {
+        if (chicagoCommunityLayer) map.removeLayer(chicagoCommunityLayer);
+      }
+    });
 
   // ── MAP COORDS BAR ─────────────────────────────────────────────────────────────
   map.on('mousemove', e => {
