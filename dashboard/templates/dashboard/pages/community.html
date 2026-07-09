@@ -102,9 +102,10 @@
       <!-- create dropdown element -->
      <select id="community-dropdown">
       <option value="">Select a Chicago Community...</option>
-      {% for features in features %}
-        <option value=""{{ feature }}>{{ features }}</option>
-      {% endfor %}
+      <!-- below is what google suggested for populating the dropdown from views.py but it does not work
+      {% for features in features %} 
+        <option value=""{{ feature }}>{{ features }}</option> 
+      {% endfor %} -->
     </select>
     <!-- load leaflet map below dropdown -->
      <div class="community-map-container">
