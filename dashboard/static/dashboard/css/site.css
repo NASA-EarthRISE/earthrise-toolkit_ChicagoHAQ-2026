@@ -161,6 +161,7 @@ nav {
   padding: 4px;
   margin-left: auto;
   margin-right: 0.5rem;
+  color: #e2e8f0;
 }
 
 .mobile-menu-container .hamburger-bar {
@@ -203,15 +204,15 @@ nav {
 /* ── SIDEBAR ─────────────────────────────────────── */
 
 .sidebar {
-  width: var(--sidebar-width);
+  width: 320px;
   flex-shrink: 0;
-  background-color: var(--bg-sidebar);
-  border-right: 1px solid var(--border);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   overflow-y: auto;
-  overflow-x: hidden;
-  transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
-  display: flex;
-  flex-direction: column;
+  max-height: calc(100vh - var(--nav-height) - 100px);
 }
 
 .sidebar a {
@@ -367,45 +368,59 @@ nav {
   height: 16px;
 }
 
-/* Basemap / time-scale buttons */
-.basemap-grid {
+/* Map type selector buttons */
+.map-type-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: .4rem;
-  width: 100%;
+  gap: 0.4rem;
 }
 
-.basemap-btn {
-  padding: .5rem .3rem;
+/* Override .sidebar a styling for map type links so they act as invisible wrappers */
+.map-type-link {
+  text-decoration: none;
+  display: block;
+  padding: 0;
+  border-left: none;
+  background: transparent;
+  color: inherit;
+}
+
+.map-type-link:hover {
+  background: transparent;
+  color: inherit;
+  border-left-color: transparent;
+}
+
+.map-type-btn {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.25rem;
   border: 2px solid var(--border);
   border-radius: 8px;
-  background: var(--bg-card);
+  background: var(--bg);
   color: var(--text);
-  font-size: .78rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   text-align: center;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 36px;
-  word-wrap: break-word;
+  transition: all 0.2s;
+  white-space: nowrap;
   overflow: hidden;
-  transition: all .2s;
+  text-overflow: ellipsis;
 }
 
-.basemap-btn:hover {
+.map-type-btn:hover {
   border-color: var(--primary-light);
-  background: var(--bg);
-  color: var(--primary);
+  background: var(--bg-card);
 }
 
-.basemap-btn.active {
+.map-type-btn.active {
   border-color: var(--accent);
-  color: #ffffff;
   background: var(--accent);
+  color: #ffffff;
 }
+
+
 
 /* Search */
 .search-wrap {
@@ -456,9 +471,11 @@ nav {
   display: flex;
   flex: 1;
   overflow: hidden;
+  height: 100%;
+  min-height: calc(100vh - var(--nav-height));
 }
 
-.map-layout .sidebar {
+.map-controls {
   width: 320px;
   flex-shrink: 0;
   background: var(--bg-card);
@@ -467,6 +484,7 @@ nav {
   padding: 1.25rem;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   overflow-y: auto;
+  min-height: 500px;
   max-height: calc(100vh - var(--nav-height) - 100px);
 }
 
@@ -476,6 +494,9 @@ nav {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 #map {
@@ -483,6 +504,7 @@ nav {
   z-index: 0;
   width: 100%;
   height: 100%;
+  min-height: 0;
 }
 
 /* Coords bar */
@@ -526,7 +548,7 @@ nav {
   transition: all 0.3s ease;
 }
 
-/* Toggle button — circular "!" button */
+/* Toggle button — circular "?" button */
 .explore-panel-toggle {
   display: flex;
   align-items: center;

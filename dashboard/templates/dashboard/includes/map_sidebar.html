@@ -13,27 +13,49 @@
 
 <div class="sidebar-section">
     <h3>Time Scale</h3>
-    <div class="basemap-grid">
-        <a href="{% url 'map_hourly' %}" class="basemap-btn {% if time_scale == 'hourly' %}active{% endif %}">Hourly</a>
-        <a href="{% url 'map_daily' %}" class="basemap-btn {% if time_scale == 'daily' %}active{% endif %}">Daily</a>
-        <a href="{% url 'map_monthly' %}" class="basemap-btn {% if time_scale == 'monthly' %}active{% endif %}">Monthly</a>
+    <div class="map-type-grid">
+        <button class="map-type-btn {% if time_scale == 'hourly' %}active{% endif %}" data-type="hourly" data-url="{% url 'map_hourly' %}" onclick="handleMapTypeClick(event, 'hourly');">Hourly</button>
+        <button class="map-type-btn {% if time_scale == 'daily' %}active{% endif %}" data-type="daily" data-url="{% url 'map_daily' %}" onclick="handleMapTypeClick(event, 'daily');">Daily</button>
+        <button class="map-type-btn {% if time_scale == 'monthly' %}active{% endif %}" data-type="monthly" data-url="{% url 'map_monthly' %}" onclick="handleMapTypeClick(event, 'monthly');">Monthly</button>
     </div>
 </div>
 
-<!-- Time slider (only shown on hourly view) -->
-<div class="sidebar-section time-slider-section" id="time-slider-container" style="display:none;">
+<div class = "sidebar-section">
     <h3>Observation Window</h3>
-    <div class="form-group">
-        <label for="time-slider">Scroll through observation window</label>
-        <input type="range" id="time-slider" min="0" max="23" value="0" step="1" />
-        <div id="time-display">00:00 UTC</div>
+    <!-- Date Selection (only for hourly) -->
+    <div class="form-group" id="single-date-group">
+      <label for="map-date">Select Date</label>
+      <input type="date" id="map-date" value="{{ today|date:'Y-m-d' }}" />
     </div>
-    <div class="time-controls">
-        <button id="time-play" title="Auto-play">▶</button>
-        <button id="time-prev" title="Previous hour"></button>
 
-        <button id="time-next" title="Next hour">▶</button>
+    <!-- Date Range Selection (only for daily) -->
+    <div id="date-range-group" style="display: none;">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="date-range-start">Start Date</label>
+          <input type="date" id="date-range-start" value="{{ today|date:'Y-m-d' }}" />
+        </div>
+        <div class="form-group">
+          <label for="date-range-end">End Date</label>
+          <input type="date" id="date-range-end" value="{{ today|date:'Y-m-d' }}" />
+        </div>
     </div>
+    </div>
+
+    <!-- Month Range Selection (only for monthly) -->
+    <div id="month-range-group" style="display: none;">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="month-range-start">Start Month</label>
+          <input type="month" id="month-range-start" value="{{ today|date:'Y-m' }}" />
+        </div>
+        <div class="form-group">
+          <label for="month-range-end">End Month</label>
+          <input type="month" id="month-range-end" value="{{ today|date:'Y-m' }}" />
+        </div>
+      </div>
+    </div>
+
 </div>
 
 <div class="sidebar-section">
@@ -51,6 +73,5 @@
             <input type="checkbox" class="layer-toggle" data-layer="fusion" /> Fusion (TEMPO + Open Air Chicago)
         </label>
     </div>
-
-    
+   
 </div>

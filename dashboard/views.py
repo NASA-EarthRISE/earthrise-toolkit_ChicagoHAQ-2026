@@ -6,7 +6,10 @@ import re
 import json
 import os
 #import folium
-from django.utils.timezone import datetime
+from django.utils.timezone import datetime, now
+
+# Capture server startup time when the module is first loaded (server starts)
+SERVER_START_TIME = now()
 
 # libraries for site/html render
 from django.http import HttpResponse
@@ -27,7 +30,9 @@ from django.views.generic import ListView
 
 
 def home(request):
-    return render(request, "dashboard/pages/home.html")
+    return render(request, "dashboard/pages/home.html", {
+        'server_start_time': SERVER_START_TIME
+    })
 
 def about(request):
     return render(request, "dashboard/pages/about.html")
@@ -61,10 +66,30 @@ def map_monthly(request):
         'time_scale': 'monthly'
     })
 
-# ── COMMUNITY ─────────────────────────────────────────────────────────────────
+# ── COMMUNITY STATISTICAL ANALYSIS ─────────────────────────────────────────────────────────────────
 
 def community(request):
     return render(request, 'dashboard/pages/community.html')
+
+#supposedly this will populate the dropdown with all community names but it is not working
+def community_dropdown_view(request):
+    #path to community areas geojson
+    file_path = os.path.join(settings.BASE_DIR, 'dashboard', 'static', 'dashboard', 'layers', 'ChicagoCommunityAreas.geojson')
+    community_names = []
+    # Read and parse the file
+    with open(file_path, 'r') as f:
+        communities_data = json.load(f)  
+        # Extract feature properties (replace 'name' with your actual GeoJSON property name)
+        for feature in communities_data.get('features', []):
+            properties = feature.get('properties', {})
+            if 'community' in properties:
+                community_names.append(properties['community'])
+    # Sort the names alphabetically
+    community_names.sort()
+    # Pass the sorted list to the template
+    return render(request, 'dashboard/community.html', {'features': community_names})
+
+
 
 # ── EXPORT ────────────────────────────────────────────────────────────────────
 

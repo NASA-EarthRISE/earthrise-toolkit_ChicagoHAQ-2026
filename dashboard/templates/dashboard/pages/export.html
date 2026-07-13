@@ -304,12 +304,12 @@
 {% block content %}
 <div class="export-layout">
 
-  <!-- ── LEFT: Export Controls Panel ──────────────────── -->
+  <!-- ── LEFT: Export Controls  ──────────────────── -->
   <aside class="export-controls">
     <h2>Export Map as PDF</h2>
 
     <!-- Map Type Selection -->
-    <h3>Map Type</h3>
+    <h3>Time Scale</h3>
     <div class="map-type-grid">
       <button class="map-type-btn active" data-type="hourly" onclick="selectMapType('hourly')">Hourly</button>
       <button class="map-type-btn" data-type="daily" onclick="selectMapType('daily')">Daily</button>
@@ -447,7 +447,7 @@
     <!-- Action Buttons -->
     <div class="export-actions">
       <button class="btn-export btn-export-secondary" onclick="reloadMapData()">
-        Reload Preview
+        &#8635; Reload Preview
       </button>
       <button class="btn-export btn-export-primary" onclick="exportToPDF()" id="export-btn">
         &#10515; Export as PDF
@@ -503,28 +503,52 @@
     zoom: 10,
     zoomControl: true
   });
-  // ── CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
-    fetch("{% static 'dashboard/layers/Chicago.geojson' %}")
-      .then(response => response.json())
-      .then(data => {
-          L.geoJSON(data, {
-              style: {
-                  color: "#000000", // Outline color
-                  weight: 2
-              }
-          }).addTo(map);
-        })
-    
-    fetch("{% static 'dashboard/layers/ChicagoCommunityAreas.geojson' %}")
-      .then(response => response.json())
-      .then(data => {
-          L.geoJSON(data, {
-              style: {
-                  color: "#00000077", // Outline color
-                  weight: 1
-              }
-          }).addTo(map);
-        })
+   // ── CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
+   let chicagoBorderLayer = null;
+   let chicagoCommunityLayer = null;
+
+   fetch("{% static 'dashboard/layers/Chicago.geojson' %}")
+     .then(response => response.json())
+     .then(data => {
+       chicagoBorderLayer = L.geoJSON(data, {
+         style: {
+           color: "#000000",
+           weight: 2
+         }
+       });
+       
+       // Add to map if checkbox is checked (default)
+       if (document.getElementById('include-communities').checked) {
+         chicagoBorderLayer.addTo(map);
+       }
+     })
+   
+   fetch("{% static 'dashboard/layers/ChicagoCommunityAreas.geojson' %}")
+     .then(response => response.json())
+     .then(data => {
+       chicagoCommunityLayer = L.geoJSON(data, {
+         style: {
+           color: "#00000077",
+           weight: 1
+         }
+       });
+       
+       // Add to map if checkbox is checked (default)
+       if (document.getElementById('include-communities').checked) {
+         chicagoCommunityLayer.addTo(map);
+       }
+     })
+
+   // Toggle Chicago border & community areas layers based on checkbox
+   document.getElementById('include-communities').addEventListener('change', function() {
+     if (this.checked) {
+       if (chicagoBorderLayer) chicagoBorderLayer.addTo(map);
+       if (chicagoCommunityLayer) chicagoCommunityLayer.addTo(map);
+     } else {
+       if (chicagoBorderLayer) map.removeLayer(chicagoBorderLayer);
+       if (chicagoCommunityLayer) map.removeLayer(chicagoCommunityLayer);
+     }
+   });
 
   // ── MAP COORDS BAR ─────────────────────────────────────────────────────────────
   map.on('mousemove', e => {

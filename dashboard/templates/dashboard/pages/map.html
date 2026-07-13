@@ -18,7 +18,7 @@
 <div class="map-layout">
 
   <!-- Map-specific sidebar -->
-  <aside class="sidebar" id="map-sidebar">
+  <aside class= "sidebar" id="map-controls">
     {% include 'dashboard/includes/map_sidebar.html' %}
   </aside>
 
@@ -28,13 +28,13 @@
 
     <!-- Explore panel overlay — retractable circle with "!" -->
     <div id="explore-panel">
-      <button id="explore-panel-toggle" class="explore-panel-toggle" title="Toggle explore panel" aria-label="Toggle explore panel">!</button>
+      <button id="explore-panel-toggle" class="explore-panel-toggle" title="Toggle explore panel" aria-label="Toggle explore panel">?</button>
       <div id="explore-panel-body">
         <strong>Explore The Map </strong><br/>
         <span id="explore-panel-content">Click and drag to shift your view</span>
       </div>
     </div>
-
+  
     <!-- Coords bar at bottom -->
     <div id="coords-bar">
       <span id="coords-text">Lat: —  Lng: —</span>
@@ -67,7 +67,7 @@
   // ── BASEMAP LAYERS ────────────────────────────────────────────────────
   const tileLayers = {
     osm: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Tiles © Esri — Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom',
+      attribution: 'Tiles &copy; Esri',
       maxZoom: 19
     }),
   };
@@ -81,15 +81,16 @@
     zoomControl: true
   });
 
+  var defaultCommunityStyle = {color: "#636363", weight: 1, fillColor: "#00000066"}
   // ── CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
   fetch("{% static 'dashboard/layers/Chicago.geojson' %}")
     .then(response => response.json())
     .then(data => {
         var ChicagoBounds = L.geoJSON(data, {
-            style: {
-                color: "#000000", // Outline color
-                weight: 2,
-                fillColor: "#000000",
+            style:{
+              color: "#636363", // Outline color
+              weight: 1.5,
+              fillColor: "#00000000" //make fill transparent
             }
         }).addTo(map);
         map.fitBounds(ChicagoBounds.getBounds())
@@ -99,10 +100,8 @@
     .then(response => response.json())
     .then(data => {
         var ChicagoCommunityBounds = L.geoJSON(data, {
-            style: {
-                color: "#00000077", // Outline color
-                weight: 1,
-            }
+            style: defaultCommunityStyle,
+
         }).addTo(map);
         map.fitBounds(ChicagoCommunityBounds.getBounds())
       })
@@ -207,6 +206,57 @@
   // Load demo data on init
   // loadDemoData();
 
+  // -- SELECT MAP TYPE ------
+  let currentMapType = TIME_SCALE;
+
+  function selectMapType(type) {
+    currentMapType = type;
+
+    // Update active state on buttons
+    document.querySelectorAll('.map-type-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.type === type);
+    });
+
+    // Update active state on parent link elements
+    document.querySelectorAll('.map-type-link').forEach(link => {
+      link.classList.toggle('active', link.dataset.type === type);
+    });
+
+    // Show/hide date controls based on map type
+    const singleDateGroup = document.getElementById('single-date-group');
+    const dateRangeGroup = document.getElementById('date-range-group');
+    const monthRangeGroup = document.getElementById('month-range-group');
+    const dateSectionLabel = document.getElementById('date-section-label');
+
+    if (type === 'hourly') {
+      if (singleDateGroup) singleDateGroup.style.display = 'block';
+      if (dateRangeGroup) dateRangeGroup.style.display = 'none';
+      if (monthRangeGroup) monthRangeGroup.style.display = 'none';
+      if (dateSectionLabel) dateSectionLabel.textContent = 'Date';
+    } else if (type === 'daily') {
+      if (singleDateGroup) singleDateGroup.style.display = 'none';
+      if (dateRangeGroup) dateRangeGroup.style.display = 'block';
+      if (monthRangeGroup) monthRangeGroup.style.display = 'none';
+      if (dateSectionLabel) dateSectionLabel.textContent = 'Date Range';
+    } else if (type === 'monthly') {
+      if (singleDateGroup) singleDateGroup.style.display = 'none';
+      if (dateRangeGroup) dateRangeGroup.style.display = 'none';
+      if (monthRangeGroup) monthRangeGroup.style.display = 'block';
+      if (dateSectionLabel) dateSectionLabel.textContent = 'Month Range';
+    }
+  }
+
+  // Initialize the correct date control visibility on page load
+  selectMapType(TIME_SCALE);
+
+  // Handle click on map type links: update UI first, then allow navigation
+  function handleMapTypeClick(event, type) {
+    // Don't block navigation — just update the UI before the page navigates
+    selectMapType(type);
+    // Return true to allow the <a> href navigation to proceed
+    return true;
+  }
+  window.handleMapTypeClick = handleMapTypeClick;
 
   // ── COORDS BAR ─────────────────────────────────────────────────────────────
   map.on('mousemove', e => {
@@ -219,12 +269,15 @@
   document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
 
   // ── coords PANEL ───────────────────────────────────────────────────────────────
-  map.on('mousemove', e => {
-  document.getElementById('coords-panel').innerHTML =
-    `<strong>Lat:</strong> ${e.latlng.lat.toFixed(6)}<br>
-     <strong>Lng:</strong> ${e.latlng.lng.toFixed(6)}<br>
-     <strong>Zoom:</strong> ${map.getZoom()}`;
-  });
+  const coordsPanel = document.getElementById('coords-panel');
+  if (coordsPanel) {
+    map.on('mousemove', e => {
+      coordsPanel.innerHTML =
+        `<strong>Lat:</strong> ${e.latlng.lat.toFixed(6)}<br>
+         <strong>Lng:</strong> ${e.latlng.lng.toFixed(6)}<br>
+         <strong>Zoom:</strong> ${map.getZoom()}`;
+    });
+  }
 
   // ── EXPLORE PANEL TOGGLE ────────────────────────────────────────────────────
   const explorePanel = document.getElementById('explore-panel');
