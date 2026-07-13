@@ -45,30 +45,34 @@
   /*this holds the elements on left of page (dropdown, map)*/
   .community-left {
     display: flex;
+    position: sticky;
+    top: 0;
+    padding: 0.5%;
     flex-direction: column; /*all items inside stacked vertically */
-    min-width: 250px;
+    min-width: 30vh;
     flex-shrink: 0; /*prevent column from shrinking */
-    max-width: 30vw; /*left sidebar only takes up 30% of width of screen max*/
+    max-width: 40vw; /*left sidebar only takes up 40% of width of screen max*/
+    height: 100vh;
     gap: 1rem;
-    background-color: #636363;
+    background-color: #cecece;
   }
 
   .sticky-content {
     position: sticky; 
-    position: -webkit-sticky; /* support for older Safari versions */
-    top: 100px; /* distance from the top of the screen when it starts sticking */
-  }
+    position: -webkit-sticky; 
+    top: 50px;
+  } 
 
   .community-map-container {
     flex: 1;
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 20px;
-    overflow: hidden;
+    padding: 10px;
     min-width: 225px;
-    max-width: 95%; /*sets maximum width to be 90% of left sidebar*/
+    max-width: 98%; /*sets maximum width to be 90% of left sidebar*/
     min-height: 225px;
-    max-height: 400px;
+    max-height: 90vh;
     box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   }
 
@@ -82,7 +86,7 @@
       flex-grow: 1;
       background-color: #fafafa;
       padding: 20px;
-      height: 750px; /* extra height to make the page scrollable */
+      height: 200vh;
       border: 1px solid #ddd;
     }
 
@@ -98,19 +102,15 @@
 </div>
 <div class="community-layout">
   <div class="community-left sticky-content">
-    This side is for dropdown menu and map
+    <p>
       <!-- create dropdown element -->
-     <select id="community-dropdown">
-      <option value="">Select a Chicago Community...</option>
-      <!-- below is what google suggested for populating the dropdown from views.py but it does not work
-      {% for features in features %} 
-        <option value=""{{ feature }}>{{ features }}</option> 
-      {% endfor %} -->
-    </select>
-    <!-- load leaflet map below dropdown -->
-     <div class="community-map-container">
-       <div id="community-map"></div>
-     </div>
+       <select id="community-dropdown">
+        <option value="">Select a Chicago Community...</option>
+       </select>
+      <div class="community-map-container">
+        <div id="community-map"></div>
+      </div>
+    </p>
   </div>
   <div class="main-content">
     This is where all the plots will go
