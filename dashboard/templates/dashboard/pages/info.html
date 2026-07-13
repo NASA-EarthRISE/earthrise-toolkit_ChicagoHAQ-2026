@@ -70,6 +70,19 @@
         box-shadow: 0 4px 12px rgba(49, 130, 206, 0.15);
     }
 
+    .quick-action-btn.tertiary {
+        background: var(--bg-card);
+        color: var(--text);
+        border: 2px solid var(--border);
+    }
+
+    .quick-action-btn.tertiary:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(49, 130, 206, 0.15);
+    }
+
     .quick-action-btn .icon {
         font-size: 1.2rem;
     }
@@ -189,6 +202,10 @@
         <span class="icon"></span>
         Data Products
     </a>
+    <a href="#citations" class="quick-action-btn tertiary">
+        <span class = "icon"></span>
+        Citations
+    </a>
 </div>
 
 <!-- Chicago & Ozone Characteristics Section -->
@@ -257,5 +274,11 @@
     </div>
 </div>
 
+<div class ="info-section" id="citations">
+    <h2>Citations</h2>
+    <p>
+        Put data and research citations here. 
+    </p>
+</div>
 
 {% endblock %}

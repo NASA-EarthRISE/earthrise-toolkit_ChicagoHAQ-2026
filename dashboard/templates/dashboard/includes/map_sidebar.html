@@ -56,22 +56,32 @@
       </div>
     </div>
 
-</div>
+  </div>
 
 <div class="sidebar-section">
     <h3>Data Products</h3>
-
     <div style="margin-bottom:.75rem;">
         <strong style="font-size:.82rem; color:var(--text-muted);">NO2 Concentration</strong>
-        <label class="layer-item">
-            <input type="checkbox" class="layer-toggle" data-layer="tempo" checked /> TEMPO
+        <label class="layer-item" style="display:block; margin-bottom:.4rem;">
+            <input type="radio" name="dataProduct" value="tempo" checked /> TEMPO
         </label>
-        <label class="layer-item">
-            <input type="checkbox" class="layer-toggle" data-layer="openaq" /> Open Air Chicago
+        <label class="layer-item" style="display:block; margin-bottom:.4rem;">
+            <input type="radio" name="dataProduct" value="openaq" /> Open Air Chicago
         </label>
-        <label class="layer-item">
-            <input type="checkbox" class="layer-toggle" data-layer="fusion" /> Fusion (TEMPO + Open Air Chicago)
+        <label class="layer-item" style="display:block; margin-bottom:.4rem;">
+            <input type="radio" name="dataProduct" value="fusion" /> Fusion (TEMPO + Open Air Chicago)
         </label>
     </div>
-   
-</div>
+  </div>
+
+<div class="sidebar-section">
+    <h3>Data Visualization</h3>
+    <div style="margin-bottom:.75rem;">
+      <label class="layer-item" style="display:block; margin-bottom:.4rem;">
+        <input type="radio" name="displayMode" value="sensor" checked /> Individual Sensors
+      </label>
+      <label class="layer-item" style="display:block; margin-bottom:.4rem;">
+        <input type="radio" name="displayMode" value ="community" /> Community Areas
+      </label>
+    </div>
+  </div>
