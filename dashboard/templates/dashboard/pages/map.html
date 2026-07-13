@@ -1513,18 +1513,23 @@
 
   // Initialize the correct date control visibility on page load
   selectMapType(TIME_SCALE);
+  // Also initialize hour-controls / range-controls visibility to match the current view
+  changeAggregation(TIME_SCALE);
 
-  // Handle click on map type links: update UI first, then allow navigation
-  function handleMapTypeClick(event, type) {
-    // Don't block navigation — just update the UI before the page navigates
-    selectMapType(type);
+   // Handle click on map type buttons: update UI, then navigate to the matching view
+   function handleMapTypeClick(event, type) {
+     // Update the local UI (active button highlight, date-control visibility, etc.)
+     selectMapType(type);
 
-    // Also update the V4 slider control radio buttons and trigger aggregation change
-    changeAggregation(type);
+     // Also update the V4 slider control radio buttons and trigger aggregation change
+     changeAggregation(type);
 
-    // Return true to allow the <a> href navigation to proceed
-    return true;
-  }
+     // Navigate to the corresponding map view (/hourly/, /daily/, /monthly/)
+     const btn = event && event.currentTarget;
+     if (btn && btn.dataset.url) {
+       window.location.href = btn.dataset.url;
+     }
+   }
   window.handleMapTypeClick = handleMapTypeClick;
 
   // ── CHANGE AGGREGATION (unified function for sidebar + in-map controls) ──
