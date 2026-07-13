@@ -9,8 +9,8 @@
     /* Hero (Heading) banner */
     .hero {
     text-align: center;
-    padding: 2rem 1rem;
-    margin-bottom: 1.5rem;
+    padding: 1rem 1rem;
+    margin-bottom: 1rem;
     }
 
     .hero h1 {
@@ -23,7 +23,7 @@
     .hero .subtitle {
     font-size: 1rem;
     color: var(--text-muted);
-    max-width: 640px;
+    max-width: 75vw; /*maximum width is set to 75% of screen width*/
     margin: 0 auto;
     line-height: 1.6;
     }
@@ -34,92 +34,177 @@
     }
     }
 
-  .community-layout { /*holds all the elements below*/
+  /* Main two-column layout */
+  .community-layout {
     display: flex;
+    flex-wrap: wrap;
     gap: 1.5rem;
-    min-height: 500px;
-    /*max-width: 50vw; /*sets maximum width of map container to half the screen size */
-  } 
+    width: 100%;
+  }
 
-  .community-preview { 
+  /* Left column: map + help */
+  .community-left {
     flex: 1;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     gap: 1rem;
-  } 
+    padding: 1rem;
+    border-radius: 5px;
+    position: sticky;
+    top: 1rem;
+    align-self: flex-start;
+  }
 
-  /*map container for community */
-  .community-map-container {
+  /* Right column: graphs */
+  .community-right {
     flex: 1;
-    background: var(--bg-card);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Dropdown styling */
+  #community-dropdown {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
     border: 1px solid var(--border);
     border-radius: 5px;
+    background: var(--bg-card);
+  }
+
+  /* Map container for community */
+  .community-map-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
     overflow: hidden;
     position: relative;
-    min-height: 500px;
-    max-width: 50vw; /*sets maximum width of map container to half the screen size */
+    min-height: 280px;
+    max-height: 320px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    position: sticky;
   }
 
   #community-map {
     width: 100%;
     height: 100%;
+    min-height: 280px;
     z-index: 0;
   }
 
-  /*container for timeseries plot*/
-  .plot-container {
-    flex: 1;
-    float: right;
+  /* Help container */
+  .help-container {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 5px;
-    min-height: 500px;
-    max-width: 50vw;
+    padding: 1rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    text-align: center;
   }
 
+  .help-container p {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  .help-container a {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+
+  .help-container a:hover {
+    opacity: 0.9;
+  }
+
+  /* Graph placeholder container */
+  .graph-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    flex: 1;
+    min-height: 160px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .graph-container img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .graph-placeholder {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+
+  /* Responsive: stack columns on small screens */
+  @media (max-width: 900px) {
+    .community-layout {
+      flex-direction: column;
+    }
+  }
 
 </style>
 {% endblock %}
 {% block content %}
-<!-- Mobile disclaimer overlay -->
-<div class="mobile-disclaimer" id="mobile-disclaimer">
-  <div class="mobile-disclaimer-content">
-    <p>Mapping tools for the Regional Ozone Precursor Dashboard are best displayed on a desktop or laptop computer.</p>
-    <a href="{% url 'home' %}" class="mobile-disclaimer-btn">Go to the Homepage</a>
-  </div>
-</div>
-
 <div class="hero">
-<h1>Community Tools</h1>
+<h1>Statistical Analysis</h1>
 <p class="subtitle">
-  Look at the ozone precoursor patterns for any community within the city of Chicago using the region select tool down below. 
-  Select a Community in Chicago to see detailed information on its spatiotemporal trends of NO<sub>2</sub> pollution for the area. 
+  Use the tool below to see detailed information on the spatiotemporal trends of NO<sub>2</sub> pollution for any Chicago Community. 
 </p>
 </div>
-<!-- create empty dropdown element -->
-     <select id="community-dropdown">
+
+<div class="community-layout">
+
+  <!-- LEFT COLUMN: Dropdown + Map preview + Help -->
+  <div class="community-left">
+    <!-- Dropdown element -->
+    <select id="community-dropdown">
       <option value="">Select a Community Area...</option>
     </select>
-<div class="community-layout">
-  <div class="community-preview">
-    <div id="mapid" style="height: 25px;"></div>
-    <!-- place map below dropdown-->
-    <div class="community-map-container">
-    <div id="community-map"></div>
-    </div>
-    <img src="{% static 'dashboard/images/SampleGraphClear.png' %}" class="plot-container" alt="Plot">
-  </div>
-</div>
 
+    <div class="community-map-container">
+      <div id="community-map"></div>
+    </div>
+
+    <!-- Help container -->
+    <div class="help-container">
+      <p>Need help finding a community?</p>
+      <a href="https://example.com/community-help" target="_blank" rel="noopener noreferrer">Get Help</a>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: Three graphs -->
+  <div class="community-right">
+    <div class="graph-container" id="graph-1">
+      <img src="{% static 'dashboard/images/SampleGraphClear.png' %}" alt="Graph 1">
+    </div>
+    <div class="graph-container" id="graph-2">
+      <img src="{% static 'dashboard/images/SampleGraphClear.png' %}" alt="Graph 2">
+    </div>
+    <div class="graph-container" id="graph-3">
+      <img src="{% static 'dashboard/images/SampleGraphClear.png' %}" alt="Graph 3">
+    </div>
+  </div>
+
+</div>
 
 {% endblock %}
 
 {% block extra_js %}
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 
 <script>
 // ── MAP INIT ───────────────────────────────────────────────────────────────
@@ -141,8 +226,7 @@
             btn.style.width = '30px';
             btn.style.height = '30px';
             btn.style.cursor = 'pointer';
-            btn.innerHTML = '<span style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; font-weight: bold;">&#8962;</span>'; //unicode house outline symbol is &#8962, would be nice to use font awesome home symbol instead but it doesn't want to show up
-            //btn.innerHTML = '<center><i class="fa-solid fa-home" style="font-weight:900;"></i></center>'; //did not show any symbol in home button
+            btn.innerHTML = '<span style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; font-weight: bold;">&#8962;</span>';
             btn.title = 'Zoom to Home';
 
             btn.onclick = function(){
@@ -160,7 +244,6 @@
     maxZoom: 15
   }).addTo(map);
 
-
   // ── CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
   fetch("{% static 'dashboard/layers/Chicago.geojson' %}") //load Chicago boundary
     .then(response => response.json())
@@ -177,11 +260,11 @@
   const highlightStyle = {color: "#000000", weight: 2.5, fillColor: "#fbf719"}
 
   var selectedCommunity = null //keep track of clicked community
+  var CommunityAreas = null    //keep reference to community layer for dropdown zoom
 
   //load dropdown
   var dropdownCommunity = document.getElementById('community-dropdown');
-
-
+  
   fetch("{% static 'dashboard/layers/ChicagoCommunityAreas.geojson' %}")
     .then(response => response.json())
     .then(data => {
@@ -192,9 +275,10 @@
               var option = document.createElement('option');
               option.value = feature.properties.community;
               option.textContent = feature.properties.community;
+              option.idNumber = feature.properties.area_num_1;
               dropdownCommunity.appendChild(option);
               
-              // add pop-up with name for community in bold, can add something about NO2 to pop up later if add an attribute to the geojson
+              // add pop-up with name for community in bold
               layer.bindPopup("<b>" + feature.properties.community + "</b>")
               
               layer.on('click', function (e) {
@@ -207,78 +291,39 @@
                 //zoom to community
                 var bounds = layer.getBounds();
                 map.fitBounds(bounds, {padding: [15, 15]});
-              
-              //this highlight also doesn't work
-              //layer.on({
-                //popupopen: function(e) {
-                  //selectedCommunity = e.target; //save selected layer
-                  //selectedCommunity.setStyle(highlightStyle);
-                //},   
-                //popupclose: function(e) {
-                  //selectedCommunity.setStyle(defaultStyle);
-                  //selectedCommunity = null;
-                //}        
-              //})
-
-              //this highlight doesn't work either   
-              //layer.on('popupopen', function(e) {
-                //e.target.setStyle(highlightStyle)});
-              //layer.on('popupclose', function(e) {
-                //CommunityAreas.resetStyle(e.target)})
-
-                // keep highlighted on click (NOT WORKING!!!)
-                //if (selectedCommunity && selectedCommunity !== layer) {
-                //  CommunityAreas.resetStyle(selectedCommunity);} //reset previously clicked community (if any) to default 
-                //layer.setStyle(highlightStyle)  //highlight selected community
-                //selectedCommunity = layer //track selected community
-                //layer.bringToFront();
               });
-             
-            //highlight on hover (keep outside of onEachFeature otherwise doesn't work?)
+              
+            //highlight on hover
             layer.on({
               mouseover: function(e) {
                 e.target.setStyle(highlightStyle);
-                e.target.bringToFront() //brings the highlighted layer to front so it shows up
+                e.target.bringToFront()
                 },
               mouseout: function(e) {
-                  CommunityAreas.setStyle(defaultStyle); // reset to default style
+                  CommunityAreas.setStyle(defaultStyle);
                   }
                 });    
       }}).addTo(map)
         map.fitBounds(ChicagoBounds.getBounds())
-      })
-  
-  //choose name from dropdown and zoom in on map (not working yet!)
-  dropdownCommunity.addEventListener('change', function(e) {
-    var selectedArea = e.target.value;
-    if (!selectedArea) return;
 
-    //find feature with matching name
-    CommunityAreas.eachLayer(function (layer) {
-      if (feature.properties.community === selectedArea) {
-        map.fitBounds(layer.getBounds());
-      }
-    });
-  });
+      //choose name from dropdown and zoom in on map
+      dropdownCommunity.addEventListener('change', function(e) {
+        var selectedArea = e.target.value;
+        if (!selectedArea) return;
 
-
-  // ── MAP COORDS BAR ─────────────────────────────────────────────────────────────
-  map.on('mousemove', e => {
-  document.getElementById('coords-text').textContent =
-    `Lat: ${e.latlng.lat.toFixed(5)}  Lng: ${e.latlng.lng.toFixed(5)}`;
-  });
-  map.on('zoomend', () => {
-    document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
-  });
-  document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
-
-  // ── MAP coords PANEL ───────────────────────────────────────────────────────────────
-  map.on('mousemove', e => {
-  document.getElementById('coords-panel').innerHTML =
-    `<strong>Lat:</strong> ${e.latlng.lat.toFixed(6)}<br>
-     <strong>Lng:</strong> ${e.latlng.lng.toFixed(6)}<br>
-     <strong>Zoom:</strong> ${map.getZoom()}`;
-  });
+        //find feature with matching name and zoom to it
+        CommunityAreas.eachLayer(function (layer) {
+          if (layer.feature.properties.community === selectedArea) {
+            map.fitBounds(layer.getBounds(), {padding: [15, 15]});
+            layer.setStyle(highlightStyle);
+            layer.bringToFront();
+            const center = layer.getBounds().getCenter();
+            layer.bindPopup("<b>" + layer.feature.properties.community + "</b>");
+            layer.openPopup(center);
+          }
+        });
+      });
+    })
 
 </script>
 
