@@ -3,6 +3,24 @@
     "type": "server_start",
     "title": "Dashboard server started",
     "details": "",
+    "timestamp": "2026-07-15 16:25:50"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-15 16:23:46"
+  },
+  {
+    "type": "server_start",
+    "title": "Dashboard server started",
+    "details": "",
+    "timestamp": "2026-07-15 16:23:40"
+  },
+  {
+    "type": "server_start",
+    "title": "Dashboard server started",
+    "details": "",
     "timestamp": "2026-07-15 16:21:04"
   },
   {
@@ -280,23 +298,5 @@
     "title": "User viewed hourly map",
     "details": "",
     "timestamp": "2026-07-15 15:35:13"
-  },
-  {
-    "type": "map_export",
-    "title": "User opened export tool",
-    "details": "",
-    "timestamp": "2026-07-15 15:35:02"
-  },
-  {
-    "type": "community_analysis",
-    "title": "User opened community analysis tool",
-    "details": "",
-    "timestamp": "2026-07-15 15:32:02"
-  },
-  {
-    "type": "server_start",
-    "title": "Dashboard server started",
-    "details": "",
-    "timestamp": "2026-07-15 15:31:02"
   }
 ]
