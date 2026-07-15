@@ -269,7 +269,7 @@
     maxZoom: 15
   }).addTo(map);
 
-  // ── CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
+  // ── CHICAGO BORDERS & COMMUNITIES, SENSORS LAYERS ───────────────────────────────────────────────────────────────
   fetch("{% static 'dashboard/layers/Chicago.geojson' %}") //load Chicago boundary
     .then(response => response.json())
     .then(data => {
@@ -348,6 +348,24 @@
           }
         });
       });
+    })
+
+  fetch("{% static 'dashboard/layers/oacd.geojson' %}") //load sensors
+  .then(response => response.json())
+  .then(data => {
+    var circleOptions = {
+      radius: 1,
+      fillColor: "#263766",
+      opacity: 1,
+      color: "#263766",
+      weight: 2,
+    };
+
+      var Sensors = L.geoJSON(data, {
+         pointToLayer: function (feature, latlng) {
+          return L.circleMarker(latlng, circleOptions);
+        },
+      }).addTo(map);
     })
 
 </script>
