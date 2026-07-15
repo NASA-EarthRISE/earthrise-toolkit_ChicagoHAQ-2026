@@ -23,6 +23,7 @@ urlpatterns = [
 
     # ── API Endpoints ───────────────────────────────────────────
     path("api/data-status/", views.data_status_api, name="data_status_api"),
+    path("api/community-rankings/", views.community_rankings_api, name="community_rankings_api"),
 
     # ── Clarity Data Files (served from dashboard/data/clarity/) ──
     path("data/clarity/<path:filename>", views.clarity_data_file, name="clarity_data_file"),

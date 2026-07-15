@@ -533,24 +533,7 @@
 
       let requests = [];
 
-      if (prevDate) {
-          requests.push(
-              fetch(`data/clarity/${date}.geojson`)
-              .then(r => r.ok ? r.json() : null)
-          );
-      }
-
-      requests.push(
-          fetch(`data/clarity/${nextDate}.geojson`)
-          .then(r => r.ok ? r.json() : null)
-      );
-
-      if (afterNextDate) {
-          requests.push(
-              fetch(`data/clarity/${afterNextDate}.geojson`)
-              .then(r => r.ok ? r.json() : null)
-          );
-      }
+       if (prevDate)
 
       Promise.all(requests)
       .then(files => {

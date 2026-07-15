@@ -441,6 +441,31 @@ def _geojson_to_csv(data):
     return '\ufeff'.encode('utf-8') + output.getvalue().encode('utf-8')
 
 
+def community_rankings_api(request):
+    """
+    GET /api/community-rankings/
+    Returns the community_rankings_ground_vs_tempo.csv as a JSON array.
+    """
+    csv_path = os.path.join(settings.BASE_DIR, 'dashboard', 'data',
+                            'community_statistics', 'community_rankings_ground_vs_tempo.csv')
+    if not os.path.isfile(csv_path):
+        return JsonResponse({"error": "Rankings file not found"}, status=404)
+
+    rows = []
+    with open(csv_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            converted = {}
+            for k, v in row.items():
+                try:
+                    converted[k] = float(v) if v.strip() else None
+                except ValueError:
+                    converted[k] = v
+            rows.append(converted)
+
+    return JsonResponse({"rankings": rows})
+
+
 def export_data_file(request):
     """
     GET /api/export-data-file/?source=clarity&file=2025-09-01.geojson&format=geojson

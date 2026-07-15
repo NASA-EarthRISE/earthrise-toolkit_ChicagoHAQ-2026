@@ -2,13 +2,92 @@
 
 {% load static %}
 
-{%block title%} Tutorial {% endblock %}
+{%block title%} Dashboard User Guide {% endblock %}
+
+{%block extra_css %}
+<style>
+
+/* Hero (Heading) banner */
+  .hero {
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .hero .subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    max-width: 75vw;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+/*user manual blocks of text*/
+.tutorial-block {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.tutorial-block-heading {
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="hero">
-  <h1>Tutorial</h1>
+  <h1>User Guide</h1>
   <p class="subtitle">
-    Welcome to the dashboard tutorial. Using platforms like these to model and export atmospheric and Earth observations can seem complicated. Below are instructions on how to do everything from visulize hourly concentration layers to understanding the server commands.
+    Welcome to the Chicago Regional NO<sub>2</sub> Precursor Dashboard! This user-friendly tool is designed to allow users to visualize spatiotemporal trends of NO<sub>2</sub> pollution across Chicago and its community areas. This manual will guide you through interacting with the different pages of this dashboard. 
+  </p>
+</div>
+
+<div class="tutorial-block">
+  <div class="tutorial-block-heading"><strong style="color: #96a2bf;">Pollution Map</strong>
+  </div>
+  <p>
+    The Pollution Map homepage visualizes NO<sub>2</sub> data for each of the data products: TEMPO, Open Air Chicago ground sensors, and the fused data product. Use the <b>+</b> and <b>-</b> symbols in the top left to zoom in and out of the map. In the left sidebar, choose a Time Scale, Observation Window, Data Product, and Spatial Scale to see the corresponding data layer appear on the map to the right. 
+  </p>
+  <p>
+    Choosing the <i>Hourly</i> time scale will prompt you to enter a single date in the Observation Window. For both the <i>Daily</i> and <i>Monthly</i> time scales, you will need to enter a start and end date in the Observation Window. Please note that the study period for this project was September 2025 to June 2026, and data is available only for this timeframe. Valid observation dates for each data product are listed below: 
+    <ul style="padding-left: 36px; text-indent: -36px;">
+      <li style="padding-left: 36px; text-indent: -36px;">TEMPO: September 4, 2025 — June 1, 2026</li>
+      <li style="padding-left: 36px; text-indent: -36px;">Open Air Chicago: September 1, 2025 — June 1, 2026</li>
+      <li style="padding-left: 36px; text-indent: -36px;">Fused Dataset: September 4, 2025 — June 1, 2026</li>
+    </ul>
+    Select TEMPO, Open Air Chicago, or the fused data product depending on what you want to visualize. Finally, select the spatial scale you would like to see the data displayed at. TEMPO and the fused dataset are available at a pixel-level and community area aggregate. Open Air Chicago data is available at the individual sensor level and the community area aggregate. 
+  </p>
+</div>
+
+<div class="tutorial-block">
+  <div class="tutorial-block-heading"><strong style="color: #96a2bf;">Community Statistics</strong>
+  </div>
+  <p>
+    This page visualizes NO<sub>2</sub> data for each of the data products: TEMPO, Open Air Chicago ground sensors, and the fused data product on a community scale. Select a community from the dropdown on the left to visualize key statistics for that community regarding NO<sub>2</sub> pollution. If you do not know your community, click on "Get Help" below the map. This will take you to an external map created by the City of Chicago where you can press the search magnifying glass in the top left corner and search up an address to identify the community the address is in.  
+  </p>
+</div>
+
+<div class="tutorial-block">
+  <div class="tutorial-block-heading"><strong style="color: #96a2bf;">Export Data</strong>
+  </div>
+  <p>
+    This page allows you to export the data both as a pdf of the map and the raw data behind the map. 
   </p>
 </div>
 {% endblock %}

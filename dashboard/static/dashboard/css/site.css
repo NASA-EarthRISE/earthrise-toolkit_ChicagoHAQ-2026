@@ -2,24 +2,24 @@
 :root {
   /* ESD Color Palette*/
   --primary: #005a9e;
-  --primary-dark: #10214B;
-  --primary-light: #63b3ed;
-  --accent: #3182ce;
+  --primary-dark: #263766;
+  --primary-light: #1096fd;
+  --accent: #96a2bf;
 
   --bg: #f7fafc;
   --bg-card: #ffffff;
   --bg-sidebar: #ffffff;
   --bg-nav: #005a9e;
-  --text: #1a202c;
-  --text-muted: #718096;
-  --text-light: #a0aec0;
-  --border: #e2e8f0;
-  --border-dark: #cbd5e0;
+  --text: #17171b;
+  --text-muted: #444447;
+  --text-light: #77777a;
+  --border: #d1d1d1;
+  --border-dark: #959599;
 
-  /* Status Colors Palette*/
-  --success: #48bb78;
-  --warning: #ecc94b;
-  --danger: #fc8181;
+  /* Status colors */
+  --success: #5b7b2e;
+  --warning: #f3b44e;
+  --danger: #c33c27;
 
   /* Spacing */
   --nav-height: 56px;
