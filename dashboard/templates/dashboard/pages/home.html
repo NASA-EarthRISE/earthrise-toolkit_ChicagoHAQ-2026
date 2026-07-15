@@ -56,15 +56,15 @@
 
     <!-- Stat Card 2 -->
     <div class="stat-card">
-        <div class="stat-label">Data Status</div>
+        <div class="stat-label">Data Load Status</div>
         <div class="stat-value" style="color: var(--success);">Good</div>
-        <div class="stat-sub">Files/Points Loaded: 42</div>
+        <div class="stat-sub">Static Files/Points Loaded: 42</div>
     </div>
 
     <!-- Stat Card 3 -->
     <div class="stat-card">
         <div class="stat-label">Sensor Network</div>
-        <div class="stat-value">271</div>
+        <div class="stat-value" style="color:#b7791f;">271</div>
         <div class="stat-sub">TEMPO + OpenAir Clarity</div>
     </div>
 
@@ -161,18 +161,21 @@
             <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
                 Tropospheric Emissions: Monitoring of Pollution (TEMPO). Geostationary satellite providing hourly NO₂, O₃, and AOD measurements over North America.
             </p>
+            <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted)grey;">Learn More</a>
         </div>
         <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--success);">
             <strong style="color:var(--success);">OpenAir Chicago</strong>
             <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
                 Ground-based air quality monitoring network. Surface NO₂ and PM 2.5 concentrations from air quality sensors around the Cook County, Chicago region.
             </p>
+            <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted);">Learn More</a>
         </div>
         <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--warning);">
             <strong style="color:#b7791f;">Fusion Layer</strong>
             <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
                 Combined TEMPO satellite + OpenAir Chicago ground sensor data for higher resolution air quality estimates.
             </p>
+            <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted);">Learn More</a>
         </div>
     </div>
 </div>

@@ -31,7 +31,7 @@
 
         <!-- Mobile menu toggle (shown only on small screens) -->
         <div class="mobile-menu-container" id="mobile-menu-container" onclick="MenuToggle(this)" style="display:none;">
-            &#11167;
+            <span class="mobile-menu-arrow">&#11167;</span>
         </div>
 
         <div class="nav-links" id="nav-links">
@@ -93,7 +93,7 @@
         // Show mobile menu container only on small screens
         function checkMobileMenu() {
             const mobileMenu = document.getElementById('mobile-menu-container');
-            if (window.innerWidth <= 768) {
+            if (window.innerWidth <= 992) {
                 mobileMenu.style.display = 'block';
             } else {
                 mobileMenu.style.display = 'none';

@@ -40,6 +40,8 @@
     flex-wrap: wrap;
     gap: 1.5rem;
     width: 100%;
+    height: 1000px;
+    align-items: flex-start;
   }
 
   /* Left column: map + help */
@@ -50,21 +52,27 @@
     gap: 1rem;
     padding: 1rem;
     border-radius: 5px;
+    flex-shrink: 0;
     position: sticky;
-    top: 1rem;
+    top: 80px;
     align-self: flex-start;
+    z-index: 1000; /*change to 900 once figure out how to make it actually sticky and scroll down with page*/
+    background-color: blue; /*remove after figuring out the stickiness*/
+    overflow-y: auto;
   }
 
   /* Right column: graphs */
   .community-right {
-    flex: 1;
+    flex: 2;
     display: flex;
     flex-direction: column;
+    height: 1000px;
     gap: 1rem;
   }
 
   /* Dropdown styling */
   #community-dropdown {
+    overflow: auto;
     width: 100%;
     padding: 0.5rem;
     font-size: 1rem;
@@ -75,21 +83,20 @@
 
   /* Map container for community */
   .community-map-container {
+    overflow: auto;
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 20px;
-    overflow: hidden;
     position: relative;
-    min-height: 280px;
-    max-height: 320px;
+    min-height: 400px;
+    max-height: 450px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    position: sticky;
   }
 
   #community-map {
     width: 100%;
     height: 100%;
-    min-height: 280px;
+    min-height: 400px;
     z-index: 0;
   }
 
@@ -138,7 +145,7 @@
   }
 
   .graph-container img {
-    max-width: 100%;
+    max-width: 50%;
     height: auto;
   }
 
@@ -181,20 +188,15 @@
     <!-- Help container -->
     <div class="help-container">
       <p>Need help finding a community?</p>
-      <a href="https://example.com/community-help" target="_blank" rel="noopener noreferrer">Get Help</a>
+      <a href="https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-Community-Areas-Map/cauq-8yn6" target="_blank" rel="noopener noreferrer">Get Help</a>
     </div>
   </div>
 
   <!-- RIGHT COLUMN: Three graphs -->
   <div class="community-right">
+    This is where all the plots will go!
     <div class="graph-container" id="graph-1">
       <img src="{% static 'dashboard/images/SampleGraphClear.png' %}" alt="Graph 1">
-    </div>
-    <div class="graph-container" id="graph-2">
-      <img src="{% static 'dashboard/images/SampleGraphClear.png' %}" alt="Graph 2">
-    </div>
-    <div class="graph-container" id="graph-3">
-      <img src="{% static 'dashboard/images/SampleGraphClear.png' %}" alt="Graph 3">
     </div>
   </div>
 
@@ -211,10 +213,20 @@
   const map = L.map('community-map', {
     center: [41.83772083187901, -87.68664593458594], //chicago boundary centroid
     zoom: 10,
-    zoomControl: true
+    zoomControl: true,
+    scrollWheelZoom:false //disable zoom when scrolling down page
   });
 
-  //home button
+  map.on('click', function() { //enable zoom when clicking map
+    if (!map.scrollWheelZoom.enabled()) {
+        map.scrollWheelZoom.enable();
+      }
+    });
+  map.on('mouseout', function() { //disable zooming in/out after mouse leaves map
+    map.scrollWheelZoom.disable();
+  });
+
+    // ── HOME BUTTON (reset view to Chicago) ──────────────────────────────────
   const homeCoords = [41.83772083187901, -87.68664593458594];
   const homeZoom = 10;
 
@@ -229,10 +241,23 @@
             btn.innerHTML = '<span style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; font-weight: bold;">&#8962;</span>';
             btn.title = 'Zoom to Home';
 
-            btn.onclick = function(){
-                map.setView(homeCoords, homeZoom);
-            }
-            return btn;
+      // inline SVG house icon – no external dependencies
+      btn.innerHTML =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" ' +
+        'width="16" height="16" style="vertical-align:middle;display:block;margin:5px auto 0" ' +
+        'fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M3 12L5 10M19 10L21 12M12 2L4 10V20H9V15H15V20H20V10L12 2Z"/>' +
+        '</svg>';
+
+      L.DomEvent.disableClickPropagation(btn);
+      L.DomEvent.disableScrollPropagation(btn);
+
+      L.DomEvent.on(btn, 'click', L.DomEvent.preventDefault);
+      L.DomEvent.on(btn, 'click', function () {
+        map.flyTo(homeCoords, homeZoom, { duration: 0.5 });
+      });
+
+      return btn;
     }
   });
 
