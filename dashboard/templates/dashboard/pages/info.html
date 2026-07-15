@@ -5,6 +5,16 @@
 
 {% block content %}
 <style>
+
+    /* Background image for about page */
+    main.content {
+        background-image: url({% static 'dashboard/images/aboutpage.png' %});
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: right center;
+        background-attachment: fixed;
+    }
+    
     .info-header {
         text-align: center;
         margin-bottom: 2rem;

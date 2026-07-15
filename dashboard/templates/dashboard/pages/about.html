@@ -6,6 +6,15 @@
 {% block extra_css %}
 <style>
 
+  /* Background image for about page */
+  main.content {
+    background-image: url({% static 'dashboard/images/aboutpage.png' %});
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: right center;
+    background-attachment: fixed;
+  }
+
   /* Hero (Heading) banner */
   .hero {
     text-align: center;

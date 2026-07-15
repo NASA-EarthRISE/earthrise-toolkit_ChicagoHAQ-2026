@@ -22,6 +22,13 @@ urlpatterns = [
     path("map/monthly/", views.map_monthly, name="map_monthly"),
 
     # ── API Endpoints ───────────────────────────────────────────
-    path("api/tempo-data/<str:date_str>/", views.tempo_data_api, name="tempo_data_api"),
-    path("api/openaq-sites/", views.openaq_sites_api, name="openaq_sites_api"),
+    path("api/data-status/", views.data_status_api, name="data_status_api"),
+    path("api/community-rankings/", views.community_rankings_api, name="community_rankings_api"),
+
+    # ── Clarity Data Files (served from dashboard/data/clarity/) ──
+    path("data/clarity/<path:filename>", views.clarity_data_file, name="clarity_data_file"),
+
+    # ── Data File Export API ──────────────────────────────────────
+    path("api/list-data-files/", views.list_data_files_api, name="list_data_files_api"),
+    path("api/export-data-file/", views.export_data_file, name="export_data_file"),
 ]

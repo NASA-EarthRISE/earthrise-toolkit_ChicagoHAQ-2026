@@ -1,27 +1,25 @@
 {% load static %}
 
-<!-- Map-specific sidebar with controls -->
-
 <div class="sidebar-section">
-    <h3>Search Region</h3>
-    <div class="search-wrap">
-        <input id="search-input" type="text" placeholder="Select location..." />
-        <button id="search-btn">Go</button>
-    </div>
-    <div id="search-results" class="search-results"></div>
-</div>
-
-<div class="sidebar-section">
-    <h3>Time Scale</h3>
-    <div class="map-type-grid">
-        <button class="map-type-btn {% if time_scale == 'hourly' %}active{% endif %}" data-type="hourly" data-url="{% url 'map_hourly' %}" onclick="handleMapTypeClick(event, 'hourly');">Hourly</button>
-        <button class="map-type-btn {% if time_scale == 'daily' %}active{% endif %}" data-type="daily" data-url="{% url 'map_daily' %}" onclick="handleMapTypeClick(event, 'daily');">Daily</button>
-        <button class="map-type-btn {% if time_scale == 'monthly' %}active{% endif %}" data-type="monthly" data-url="{% url 'map_monthly' %}" onclick="handleMapTypeClick(event, 'monthly');">Monthly</button>
+    <h3>Region</h3>
+    <div class="form-group" style="margin-bottom:0;">
+      <select id="region-dropdown">
+        <option value="">Select a region...</option>
+        <option value="cook_county">Cook County, Chicago</option>
+      </select>
     </div>
 </div>
 
-<div class = "sidebar-section">
+<div class="sidebar-section">
     <h3>Observation Window</h3>
+    <div class="map-type-grid">
+        <button class="map-type-btn {% if time_scale == 'hourly' %}active{% endif %}" style = "background-color: var(--warning)" data-type="hourly" data-url="{% url 'map_hourly' %}" onclick="handleMapTypeClick(event, 'hourly');">Hourly</button>
+        <button class="map-type-btn {% if time_scale == 'daily' %}active{% endif %}" style = "background-color: var(--success)" data-type="daily" data-url="{% url 'map_daily' %}" onclick="handleMapTypeClick(event, 'daily');">Daily</button>
+        <button class="map-type-btn {% if time_scale == 'monthly' %}active{% endif %}" style = "background-color: var(--primary-light)" data-type="monthly" data-url="{% url 'map_monthly' %}" onclick="handleMapTypeClick(event, 'monthly');">Monthly</button>
+    </div>
+</div>
+
+<div class = "sidebar-section" style="background-color:var(--primary-dark);">
     <!-- Date Selection (only for hourly) -->
     <div class="form-group" id="single-date-group">
       <label for="map-date">Select Date</label>
@@ -75,7 +73,7 @@
   </div>
 
 <div class="sidebar-section">
-    <h3>Data Visualization</h3>
+    <h3>Spatial Scale</h3>
     <div style="margin-bottom:.75rem;">
       <label class="layer-item" style="display:block; margin-bottom:.4rem;">
         <input type="radio" name="displayMode" value="sensor" checked /> Individual Sensors
