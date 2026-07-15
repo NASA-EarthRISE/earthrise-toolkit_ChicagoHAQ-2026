@@ -311,6 +311,66 @@ def clarity_dates_index(request):
     return JsonResponse(data if isinstance(data, dict) else {"dates": data})
 
 
+def tempo_data_file(request, filename):
+    """
+    Serve TEMPO data files (GeoJSON or JSON) from dashboard/data/tempo/.
+    URL pattern: /data/tempo/<filename>
+    Examples:
+      /data/tempo/2025-09-01.geojson
+      /data/tempo/TEMPOdates.json
+      /data/tempo/TEMPOdaily_dates.json
+      /data/tempo/day_2025-09-01.geojson
+    """
+    tempo_dir = os.path.join(settings.BASE_DIR, 'dashboard', 'data', 'tempo')
+    file_path = os.path.join(tempo_dir, filename)
+
+    # Prevent path traversal attacks
+    if not os.path.abspath(file_path).startswith(os.path.abspath(tempo_dir)):
+        return HttpResponseNotFound("Invalid file path")
+
+    if not os.path.isfile(file_path):
+        return HttpResponseNotFound(f"File not found: {filename}")
+
+    # Determine content type
+    content_type, _ = mimetypes.guess_type(filename)
+    if content_type is None:
+        content_type = 'application/octet-stream'
+
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    return HttpResponse(content, content_type=content_type)
+
+
+def fused_data_file(request, filename):
+    """
+    Serve fused data files (GeoJSON or JSON) from dashboard/data/fused/.
+    URL pattern: /data/fused/<filename>
+    Examples:
+      /data/fused/2025-09-01.geojson
+      /data/fused/dates.json
+    """
+    fused_dir = os.path.join(settings.BASE_DIR, 'dashboard', 'data', 'fused')
+    file_path = os.path.join(fused_dir, filename)
+
+    # Prevent path traversal attacks
+    if not os.path.abspath(file_path).startswith(os.path.abspath(fused_dir)):
+        return HttpResponseNotFound("Invalid file path")
+
+    if not os.path.isfile(file_path):
+        return HttpResponseNotFound(f"File not found: {filename}")
+
+    # Determine content type
+    content_type, _ = mimetypes.guess_type(filename)
+    if content_type is None:
+        content_type = 'application/octet-stream'
+
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    return HttpResponse(content, content_type=content_type)
+
+
 # ── DATA FILE EXPORT API ─────────────────────────────────────────────
 # Allows browsing and exporting (GeoJSON/JSON or CSV) of data files from
 # dashboard/data/{tempo,clarity,fused}/ directories.
