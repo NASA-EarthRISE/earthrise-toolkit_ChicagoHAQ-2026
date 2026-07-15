@@ -39,60 +39,41 @@
 {% block content %}
 
 <div class="hero">
-    <h1>Welcome to the Regional Ozone Precoursor Dashboard</h1>
+    <h1>Welcome to the Regional Ozone Precursor Dashboard</h1>
     <p class="subtitle">
-      The Regional Ozone Precoursor Dashboard is a real-time visualization tool for TEMPO satellite and Open Air Clarity ground sensor NO₂ data, developed by the
+      The Regional Ozone Precursor Dashboard is a real-time visualization tool for TEMPO satellite and Open Air Clarity ground sensor NO₂ data, developed by the
       EarthRISE Developers Academy in collaboration with NASA LaRC and community partners.
     </p>
   </div>
 
+<!--Stats-->
 <div class="dashboard-grid">
     <!-- Stat Card 1 -->
-    <!--<div class="stat-card">
-        <div class="stat-label">Latest NO₂ Reading</div>
-        <div class="stat-value">3.2</div>
-        <div class="stat-sub">×10¹⁵ molec/cm²</div>
-    </div>-->
+    <div class="stat-card">
+        <div class="stat-label">Data Load Status</div>
+        <div class="stat-value" id="data-status-value" style="color: var(--text-muted);">Checking...</div>
+        <div class="stat-sub" id="data-status-sub">Static Files Loaded: ...</div>
+    </div>
 
     <!-- Stat Card 2 -->
     <div class="stat-card">
-        <div class="stat-label">Data Load Status</div>
-        <div class="stat-value" style="color: var(--success);">Good</div>
-        <div class="stat-sub">Static Files/Points Loaded: 42</div>
+        <div class="stat-label">Ground Sensor Network</div>
+        <div class="stat-value" style="color:#b7791f;">271</div>
+        <div class="stat-sub">OpenAir Clarity</div>
     </div>
 
     <!-- Stat Card 3 -->
     <div class="stat-card">
-        <div class="stat-label">Sensor Network</div>
-        <div class="stat-value" style="color:#b7791f;">271</div>
-        <div class="stat-sub">TEMPO + OpenAir Clarity</div>
-    </div>
-
-    <!-- Stat Card 4 -->
-    <div class="stat-card">
         <div class="stat-label">Last Server Update</div>
-        <div class="stat-value" style="font-size:1.25rem;">{{ server_start_time|time:"H:i" }}</div>
+        <div class="stat-value" style="font-size:1.25rem;">{{ server_start_time|time:"H:i" }} CDT</div>
         <div class="stat-sub">{{ server_start_time|date:"M d, Y" }}</div>
     </div>
 </div>
 
-<!-- Quick Actions Section -->
+<!-- Quick Actions -->
 <div class="dashboard-section">
     <h2>Quick Actions</h2>
     <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-        <a href="{% url 'map_hourly' %}" style="
-            display:inline-block;
-            padding:0.75rem 1.5rem;
-            background:var(--accent);
-            color:#fff;
-            text-decoration:none;
-            border-radius:8px;
-            font-weight:600;
-            font-size:0.9rem;
-            transition:background .2s;
-        " onmouseover="this.style.background='var(--primary)'" onmouseout="this.style.background='var(--accent)'">
-            Explore Hourly Data
-        </a>
         <a href="{% url 'map_daily' %}" style="
             display:inline-block;
             padding:0.75rem 1.5rem;
@@ -107,7 +88,7 @@
         " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
             Explore Daily Averages
         </a>
-        <a href="{% url 'map_monthly' %}" style="
+        <a href="{% url 'community' %}" style="
             display:inline-block;
             padding:0.75rem 1.5rem;
             background:var(--bg-card);
@@ -119,7 +100,7 @@
             font-size:0.9rem;
             transition:all .2s;
         " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
-            Explore Monthly Patterns
+            Community Analysis
         </a>
         <a href="{% url 'tutorial' %}" style="
             display:inline-block;
@@ -147,12 +128,12 @@
             font-size:0.9rem;
             transition:all .2s;
         " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
-            Export a Map
+            Export Datafiles
         </a>
     </div>
 </div>
 
-<!-- Data Sources Section -->
+<!-- Data Sources -->
 <div class="dashboard-section">
     <h2>Data Sources</h2>
     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
@@ -161,7 +142,7 @@
             <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
                 Tropospheric Emissions: Monitoring of Pollution (TEMPO). Geostationary satellite providing hourly NO₂, O₃, and AOD measurements over North America.
             </p>
-            <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted)grey;">Learn More</a>
+            <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted);">Learn More</a>
         </div>
         <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--success);">
             <strong style="color:var(--success);">OpenAir Chicago</strong>
@@ -180,22 +161,126 @@
     </div>
 </div>
 
-<!-- Recent Activity Section -->
+<!-- System Status -->
 <div class="dashboard-section">
-    <h2>Recent Activity</h2>
-    <div style="font-size:0.85rem; color:var(--text-muted);">
-        <div style="padding:0.5rem 0; border-bottom:1px solid var(--border);">
-            <strong style="color:var(--text);">{% now "H:i" %}</strong> — Dashboard Loaded
-        </div>
-        <div style="padding:0.5rem 0; border-bottom:1px solid var(--border);">
-            <strong style="color:var(--text);">{% now "H:i" %}</strong> — TEMPO Data Ingestion Complete
-        </div>
-        <div style="padding:0.5rem 0; border-bottom:1px solid var(--border);">
-            <strong style="color:var(--text);">{% now "H:i" %}</strong> — OpenAir CLARITY Data Ingestion Complete
-        </div>
-        <div style="padding:0.5rem 0;">
-            <strong style="color:var(--text);">{% now "H:i" %}</strong> — System Status: <span style="color:var(--success);">All Services Operational</span>
-        </div>
+    <h2>System Status</h2>
+    <div id="status-feed">
+        <div style="padding:0.5rem 0; font-size:0.85rem; color:var(--text-muted);">Loading...</div>
     </div>
 </div>
+
+<script>
+// ── HELPERS ──────────────────────────────────────────────────────────────
+
+function formatTimeAgo(timestamp) {
+  const date = new Date(timestamp + 'Z');
+  const now = new Date();
+  const diffMin = Math.floor((now - date) / 60000);
+  if (diffMin < 1) return 'Just now';
+  if (diffMin < 60) return diffMin + 'm ago';
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return diffHr + 'h ago';
+  return Math.floor(diffHr / 24) + 'd ago';
+}
+
+// ── RENDER STATUS FEED ──
+
+function renderStatusFeed(data) {
+  const feed = document.getElementById('status-feed');
+  let html = '';
+
+  // ── Server Started ──
+  html += `
+    <div style="padding:0.6rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <span style="color:var(--text); font-size:0.9rem;">Server Started</span>
+      <span style="color:var(--text-muted); font-size:0.82rem; white-space:nowrap;">${formatTimeAgo(data.server_start)}</span>
+    </div>`;
+
+  // ── Dashboard Page Reloaded (from most recent page_refresh activity) ──
+  const activities = data.recent_activities || [];
+  const pageRefresh = activities.find(a => a.type === 'page_refresh');
+  if (pageRefresh) {
+    html += `
+      <div style="padding:0.6rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+        <span style="color:var(--text); font-size:0.9rem;">Dashboard Reloaded</span>
+        <span style="color:var(--text-muted); font-size:0.82rem; white-space:nowrap;">${formatTimeAgo(pageRefresh.timestamp)}</span>
+      </div>`;
+  }
+
+  // ── Data Source Entries ──
+  data.sources.forEach((src, idx) => {
+    const fileCountText = src.file_count > 0
+      ? `${src.file_count} file${src.file_count !== 1 ? 's' : ''} loaded`
+      : 'No files loaded';
+    const fileColor = src.file_count > 0 ? 'var(--success)' : '#e53e3e';
+    // Use time ago from server_start as the reference for data sources
+    const isLast = idx === data.sources.length - 1;
+    const borderBottom = isLast ? '' : 'border-bottom:1px solid var(--border);';
+
+    html += `
+      <div style="padding:0.6rem 0; ${borderBottom}">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="color:var(--text); font-size:0.9rem;">${src.name}</span>
+          <span style="color:var(--text-muted); font-size:0.82rem; white-space:nowrap;">${formatTimeAgo(data.server_start)}</span>
+        </div>
+        <div style="margin-top:0.25rem; font-size:0.78rem; color:${fileColor};">${fileCountText}</div>
+      </div>`;
+  });
+
+  feed.innerHTML = html;
+}
+
+// ── LOAD DATA STATUS FOR STAT CARD ─────────────────────────────────────
+
+function loadDataStatus(data) {
+  const valueEl = document.getElementById('data-status-value');
+  const subEl = document.getElementById('data-status-sub');
+  
+  if (!data || !data.sources) {
+    valueEl.textContent = 'Error';
+    valueEl.style.color = '#e53e3e';
+    subEl.textContent = 'Failed to load status';
+    return;
+  }
+  
+  const totalFiles = data.sources.reduce((sum, src) => sum + src.file_count, 0);
+  const allLoaded = data.sources.every(src => src.file_count > 0);
+  const noneLoaded = data.sources.every(src => src.file_count === 0);
+  
+  if (allLoaded) {
+    valueEl.textContent = 'Complete';
+    valueEl.style.color = 'var(--success)';
+  } else if (noneLoaded) {
+    valueEl.textContent = 'Failed';
+    valueEl.style.color = '#e53e3e';
+  } else {
+    valueEl.textContent = 'Incomplete';
+    valueEl.style.color = 'var(--warning)';
+  }
+  
+  subEl.textContent = `Static Files Loaded: ${totalFiles}`;
+}
+
+// ── FETCH DATA ───────────────────────────────────────────────────────────
+
+function fetchData() {
+  fetch('{% url "data_status_api" %}')
+    .then(res => res.json())
+    .then(data => {
+      renderStatusFeed(data);
+      loadDataStatus(data);
+    })
+    .catch(() => {
+      document.getElementById('status-feed').innerHTML =
+        '<div style="padding:0.5rem 0; color:#e53e3e;">Failed to load status.</div>';
+      loadDataStatus(null);
+    });
+}
+
+// Initial load
+fetchData();
+
+// Auto-refresh every 60 seconds
+setInterval(fetchData, 60000);
+</script>
 {% endblock %}

@@ -176,10 +176,10 @@
   </div>
 </div>
 
-<!-- Map layout: sidebar + map container -->
+<!-- Map layout: sidebar and map container -->
 <div class="map-layout">
 
-  <!-- Map-specific sidebar -->
+  <!-- Map sidebar (draws from map_sidebar.html)-->
   <aside class= "sidebar" id="map-controls">
     {% include 'dashboard/includes/map_sidebar.html' %}
   </aside>
@@ -188,7 +188,7 @@
   <div class="map-container">
     <div id="map"></div>
 
-    <!-- Explore panel overlay — retractable circle with "!" -->
+    <!-- Explore "!" button -->
     <div id="explore-panel">
       <button id="explore-panel-toggle" class="explore-panel-toggle" title="Toggle explore panel" aria-label="Toggle explore panel">?</button>
       <div id="explore-panel-body">
@@ -197,7 +197,7 @@
       </div>
     </div>
   
-    <!-- Legend overlay — top right of map container -->
+    <!-- Legend -->
     <div class="map-legend-overlay" id="map-legend-overlay">
       <span class="legend-title">NO₂ (ppb)</span>
       <div class="legend-gradient-bar"></div>
@@ -208,7 +208,7 @@
       </div>
     </div>
 
-    <!-- Bottom slider bar (hourly time + date sliders) -->
+    <!-- Time slider bars for all Map Types -->
     <div class="bottom-slider-bar" id="bottom-slider-bar">
 
         <div class="playback-controls">
@@ -216,7 +216,7 @@
           <button id="pauseBtn">⏸ Pause</button>
         </div>
 
-      <!-- Hourly time slider (shown only when hourly aggregation is active) -->
+      <!-- Hourly time slider -->
       <div id="hourControls" class="hour-controls">
         <div class="slider-row">
           <label>Hour</label>
@@ -228,14 +228,14 @@
         </div>
       </div>
 
-      <!-- Date slider (all aggregations) -->
+      <!-- Daily & Monthly Date slider -->
       <div class="slider-row">
         <label>Date</label>
         <input type="range" min="0" max="0" value="0" id="dateSlider">
         <span class="date-label-display" id="dateLabel">Loading dates...</span>
       </div>
 
-      <!-- Date range controls (shown only when range aggregation is active) -->
+      <!-- Date range controls -->
       <div id="rangeControls" style="display:none;">
         <div class="slider-row">
           <label>Start</label>
@@ -247,7 +247,7 @@
 
     </div>
 
-    <!-- Coords bar at bottom -->
+    <!-- Coords bar -->
     <div id="coords-bar">
       <span id="coords-text">Lat: —  Lng: —</span>
       <span id="zoom-text">Zoom: —</span>
@@ -268,27 +268,27 @@
   <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 
   <script>
+
   // EDIT for TEMPO & Clarity Data Sources── CONFIGURATION ──────────────────────────────────────────────────────────
   let TIME_SCALE = '{{ time_scale|default:"hourly" }}';  // hourly, daily, monthly
-  const API_BASE = '{% url "tempo_data_api" "2025-09-09" %}'.replace('2025-09-09', '');
 
   // ── BASEMAP LAYERS ────────────────────────────────────────────────────
-  const tileLayers = {
+    const tileLayers = {
     osm: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Tiles &copy; Esri',
-      maxZoom: 19
+        attribution: 'Tiles &copy; Esri',
+        maxZoom: 19
     }),
-  };
+    };
 
 
   // ── MAP INIT ───────────────────────────────────────────────────────────────
-  var map = L.map('map', {
+    var map = L.map('map', {
     center: [41.52, -87.37],  // Chicago, IL default
     zoom: 10,
     layers: [tileLayers.osm],
     zoomControl: true,
     preferCanvas: true
-  });
+    });
 
   // ── HOME BUTTON (reset view to Chicago) ──────────────────────────────────
   const homeCoords = [41.83772083187901, -87.68664593458594];
@@ -332,18 +332,32 @@
 
   // ── GLOBAL VARIABLES (from V4) ──────────────────────────────────────────────────────────
   var currentLayer = null;
-  const GLOBAL_MAX = 50;
-  const GLOBAL_MIN = 0;
+
+  // Clarity (Open Air) color scale – linear, ppb
+  const CLARITY_GLOBAL_MAX = 50;
+  const CLARITY_GLOBAL_MIN = 0;
+
+  // TEMPO color scale – sqrt-based, molecules/cm²
+  const TEMPO_GLOBAL_MAX = 5e16;
+  const TEMPO_GLOBAL_MIN = 1e9;
+
   let selectedHour = 0;
   let communityData = null;
   let ChicagoCommunityAreas = null;
-  let displayMode = "sensor";
+  let displayMode = "sensor";       // "sensor" (Clarity) or "grid" (TEMPO) or "community"
+  let currentDataProduct = "clarity"; // "clarity" or "tempo"
   let rangeStartDate = null;
   let rangeEndDate = null;
   let rangeCurrentEndDate = null;
 
   let dates = [];
   let rangeDates = [];
+
+  // TEMPO-specific date arrays (hourly and daily can differ)
+  let tempoHourlyDates = [];
+  let tempoDailyDates = [];
+  let communityHourLookup = null;   // TEMPO community hourly lookup
+
   let communityLayer = null;      // colored data layer
   let loadingControl = null;
 
@@ -379,48 +393,50 @@
 
 
   // ── CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
-  fetch("{% static 'dashboard/layers/Chicago.geojson' %}")
-    .then(response => response.json())
-    .then(data => {
-        var ChicagoBounds = L.geoJSON(data, {
-            style:{
-              color: "#636363", // Outline color
-              weight: 1.5,
-              fillColor: "#00000000" //make fill transparent
-            }
-        }).addTo(map);
-        map.fitBounds(ChicagoBounds.getBounds())
-      })
+    function loadChicagoBorder(){
+        fetch("{% static 'dashboard/layers/Chicago.geojson' %}")
+        .then(response => response.json())
+        .then(data => {
+            var ChicagoBounds = L.geoJSON(data, {
+                style:{
+                color: "#636363", // Outline color
+                weight: 1.5,
+                fillColor: "#00000000" //make fill transparent
+                }
+            }).addTo(map);
+            map.fitBounds(ChicagoBounds.getBounds())
+        })
+    }
 
-  function loadCommunityAreas() {
+    function loadCommunityAreas() {
     fetch("{% static 'dashboard/layers/ChicagoCommunityAreas.geojson' %}")
         .then(response => response.json())
         .then(data => {
             communityData = data;
             ChicagoCommunityAreas = L.geoJSON(data, {
 
-              style: function(feature) {
+                style: function(feature) {
                 return {
-                  color: "#636363", 
-                  weight: 1, 
-                  fillOpacity: 0,
-                  opacity: 0.8
-              };
+                    color: "#636363", 
+                    weight: 1, 
+                    fillOpacity: 0,
+                    opacity: 0.8
+                };
             },
-              onEachFeature: function(feature, layer) {
+                onEachFeature: function(feature, layer) {
 
-                  // Display whatever property exists
-                  let props = feature.properties;
+                    // Display whatever property exists
+                    let props = feature.properties;
 
-                  let label =
-                      props.community ||
-                      props.COMMUNITY ||
-                      props.community_name ||
-                      props.name ||
-                      "Community Area";
+                    let label =
+                        props.community ||
+                        props.COMMUNITY ||
+                        props.community_name ||
+                        props.name ||
+                        "Community Area";
 
-                  layer.bindTooltip(label);
-              }
+                    layer.bindTooltip(label);
+                }
 
             });
 
@@ -437,39 +453,54 @@
         .catch(err => {
             console.error("Could not load community boundaries:", err);
         });
+    }
+
+    // ── LAYER GROUPS ───────────────────────────────────────────────────────────
+    const markerGroup = L.layerGroup().addTo(map);
+    const tempoLayerGroup = L.layerGroup().addTo(map);
+    const openaqLayerGroup = L.layerGroup();
+    const fusionLayerGroup = L.layerGroup();
+    const windLayerGroup = L.layerGroup();
+    let heatLayer = null;
+    let savedMarkers = [];
+    let markerIdSeq = 0;
+
+
+  // ── COLOR SCALES ──────────────────────────────────────────────────────────────────────────────
+  // Clarity color scale – linear, ppb (0–50)
+  function getColorClarity(no2) {
+    if (no2 === null || no2 === undefined || isNaN(no2)) return "gray";
+    if (CLARITY_GLOBAL_MAX === CLARITY_GLOBAL_MIN) return "blue";
+    let t = (no2 - CLARITY_GLOBAL_MIN) / (CLARITY_GLOBAL_MAX - CLARITY_GLOBAL_MIN);
+    t = Math.max(0, Math.min(1, t));
+    let r = Math.floor(255 * t);
+    let g = Math.floor(255 * (1 - Math.abs(t - 0.5) * 2));
+    let b = Math.floor(255 * (1 - t));
+    return `rgb(${r}, ${g}, ${b})`;
   }
 
-  // ── LAYER GROUPS ───────────────────────────────────────────────────────────
-  const markerGroup = L.layerGroup().addTo(map);
-  const tempoLayerGroup = L.layerGroup().addTo(map);
-  const openaqLayerGroup = L.layerGroup();
-  const fusionLayerGroup = L.layerGroup();
-  const windLayerGroup = L.layerGroup();
-  let heatLayer = null;
-  let savedMarkers = [];
-  let markerIdSeq = 0;
-
-
-  // ── COLOR NO2 SCALE ─────────────────────────────────────────────────────────────────────────────
-  function getColor(no2) {
-    // Handle missing values
-    if (no2 === null || no2 === undefined || isNaN(no2)) {
-        return "gray";
-    }
-
-    // Avoid divide-by-zero
-    if (GLOBAL_MAX === GLOBAL_MIN) {
-        return "blue";
-    }
-
-    let t = (no2 - GLOBAL_MIN) / (GLOBAL_MAX - GLOBAL_MIN);
-    t = Math.max(0, Math.min(1, t)); // clamp
-
+  // TEMPO color scale – sqrt-based, molecules/cm² (1e9 – 5e16)
+  function getColorTempo(no2) {
+    if (no2 === null || no2 === undefined || isNaN(no2)) return "gray";
+    if (TEMPO_GLOBAL_MAX === TEMPO_GLOBAL_MIN) return "blue";
+    let Min = Math.sqrt(TEMPO_GLOBAL_MIN);
+    let Max = Math.sqrt(TEMPO_GLOBAL_MAX);
+    let Value = Math.sqrt(no2);
+    let t = (Value - Min) / (Max - Min);
+    t = Math.max(0, Math.min(1, t));
     let r = Math.floor(255 * t);
     let g = Math.floor(255 * (1 - Math.abs(t - 0.5) * 2));
     let b = Math.floor(255 * (1 - t));
 
     return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  // Unified getColor – delegates to the correct scale based on current data product
+  function getColor(no2) {
+    if (currentDataProduct === "tempo") {
+        return getColorTempo(no2);
+    }
+    return getColorClarity(no2);
   }
 
 
@@ -504,19 +535,19 @@
 
       if (prevDate) {
           requests.push(
-              fetch(`output_by_date/${prevDate}.geojson`)
+              fetch(`data/clarity/${date}.geojson`)
               .then(r => r.ok ? r.json() : null)
           );
       }
 
       requests.push(
-          fetch(`output_by_date/${nextDate}.geojson`)
+          fetch(`data/clarity/${nextDate}.geojson`)
           .then(r => r.ok ? r.json() : null)
       );
 
       if (afterNextDate) {
           requests.push(
-              fetch(`output_by_date/${afterNextDate}.geojson`)
+              fetch(`data/clarity/${afterNextDate}.geojson`)
               .then(r => r.ok ? r.json() : null)
           );
       }
@@ -870,6 +901,474 @@
       });
   }
 
+  // ── TEMPO DATA LOADING FUNCTIONS ──────────────────────────────────────────────────
+
+  function formatCentralTimePretty(utcString) {
+      let d = new Date(utcString + "Z");
+      return d.toLocaleTimeString("en-US", {
+          timeZone: "America/Chicago",
+          hour: "numeric",
+          hour12: true,
+          timeZoneName: "short"
+      });
+  }
+
+  // TEMPO Daily – renders grid cells as colored GeoJSON polygons
+  function loadDailyTempo(date) {
+      if (currentLayer) {
+          map.removeLayer(currentLayer);
+          currentLayer = null;
+      }
+
+      fetch(`data/tempo/day_${date}.geojson`)
+      .then(r => {
+          if (!r.ok) return null;
+          return r.json();
+      })
+      .then(data => {
+          if (!data || !data.features || data.features.length === 0) {
+              hideLoading();
+              showLoading(`No Data Available<br>${utcDateToCentralPretty(date)}`);
+              return;
+          }
+
+          currentLayer = L.layerGroup();
+          data.features.forEach(f => {
+              let p = f.properties;
+              let value = parseFloat(p.vertical_column_troposphere);
+              if (isNaN(value)) return;
+
+              let geoJsonLayer = L.geoJSON(f, {
+                  style: {
+                      color: getColorTempo(value),
+                      fillColor: getColorTempo(value),
+                      weight: 0,
+                      fillOpacity: 0.77,
+                      opacity: 0.78
+                  },
+                  onEachFeature: function(feature, layer) {
+                      layer.bindTooltip(`
+                          <b>${p.sensor_name || "TEMPO Cell"}</b><br>
+                          Daily Avg NO₂: ${value.toExponential(2)} (molecules/cm<sup>2</sup>)
+                      `);
+                  }
+              });
+              currentLayer.addLayer(geoJsonLayer);
+          });
+
+          currentLayer.addTo(map);
+          hideLoading();
+      })
+      .catch(err => {
+          console.error("Could not load TEMPO daily file:", err);
+      });
+  }
+
+  // TEMPO Monthly – renders grid cells as colored GeoJSON polygons
+  function loadMonthlyTempo(month) {
+      if (currentLayer) {
+          map.removeLayer(currentLayer);
+          currentLayer = null;
+      }
+
+      fetch(`data/tempo/month_${month}.geojson`)
+      .then(r => r.json())
+      .then(data => {
+          currentLayer = L.layerGroup();
+          data.features.forEach(f => {
+              let p = f.properties;
+              let value = parseFloat(p.vertical_column_troposphere);
+              if (isNaN(value)) return;
+
+              let geoJsonLayer = L.geoJSON(f, {
+                  style: {
+                      color: getColorTempo(value),
+                      fillColor: getColorTempo(value),
+                      weight: 0,
+                      fillOpacity: 0.77,
+                      opacity: 0.78
+                  },
+                  onEachFeature: function(feature, layer) {
+                      layer.bindTooltip(`
+                          <b>${p.sensor_name || "TEMPO Cell"}</b><br>
+                          Monthly Avg NO₂: ${value.toExponential(2)} (molecules/cm<sup>2</sup>)
+                      `);
+                  }
+              });
+              currentLayer.addLayer(geoJsonLayer);
+          });
+
+          currentLayer.addTo(map);
+          hideLoading();
+      })
+      .catch(err => {
+          console.error("Could not load TEMPO monthly file:", err);
+      });
+  }
+
+  // TEMPO Daily Communities
+  function loadTempoDailyCommunities(date) {
+      if (currentLayer) {
+          map.removeLayer(currentLayer);
+          currentLayer = null;
+      }
+
+      fetch(`data/tempo/day_community_${date}.geojson`)
+      .then(r => {
+          if (!r.ok) return null;
+          return r.json();
+      })
+      .then(data => {
+          if (!data || !data.features || data.features.length === 0) {
+              if (communityLayer) {
+                  map.removeLayer(communityLayer);
+                  communityLayer = null;
+              }
+              hideLoading();
+              showLoading(`No Data Available<br>${utcDateToCentralPretty(date)}`);
+              return;
+          }
+
+          if (communityLayer) {
+              map.removeLayer(communityLayer);
+          }
+
+          communityLayer = L.geoJSON(data, {
+              style: function(feature) {
+                  let raw = feature.properties.vertical_column_troposphere;
+                  let avg = raw === null || raw === "" ? null : Number(raw);
+                  return {
+                      color: "#222",
+                      weight: 1,
+                      fillColor: avg === null ? "transparent" : getColorTempo(avg),
+                      fillOpacity: avg === null ? 0 : 0.65
+                  };
+              },
+              onEachFeature: function(feature, layer) {
+                  let p = feature.properties;
+                  layer.bindTooltip(`
+                      <b>${p.community || p.COMMUNITY || p.community_name || p.name}</b><br>
+                      Avg NO₂: ${
+                          p.vertical_column_troposphere == null
+                              ? "No Data"
+                              : Number(p.vertical_column_troposphere).toExponential(2)
+                      }
+                  `);
+              }
+          });
+
+          communityLayer.addTo(map);
+          hideLoading();
+      })
+      .catch(err => {
+          console.warn("No TEMPO community data for", date);
+      });
+  }
+
+  // TEMPO Monthly Communities
+  function loadTempoMonthlyCommunities(month) {
+      if (currentLayer) {
+          map.removeLayer(currentLayer);
+          currentLayer = null;
+      }
+
+      fetch(`data/tempo/monthly_community_${month}.geojson`)
+      .then(r => r.json())
+      .then(data => {
+          if (communityLayer) {
+              map.removeLayer(communityLayer);
+          }
+
+          communityLayer = L.geoJSON(data, {
+              style: function(feature) {
+                  let raw = feature.properties.vertical_column_troposphere;
+                  let avg = raw === null || raw === "" ? null : Number(raw);
+                  return {
+                      color: "#222",
+                      weight: 1,
+                      fillColor: avg === null ? "transparent" : getColorTempo(avg),
+                      fillOpacity: avg === null ? 0 : 0.65
+                  };
+              },
+              onEachFeature: function(feature, layer) {
+                  let p = feature.properties;
+                  layer.bindTooltip(`
+                      <b>${p.community || p.COMMUNITY || p.community_name || p.name}</b><br>
+                      Avg NO₂: ${
+                          p.vertical_column_troposphere == null
+                              ? "No Data"
+                              : Number(p.vertical_column_troposphere).toExponential(2)
+                      }
+                  `);
+              }
+          });
+
+          communityLayer.addTo(map);
+          hideLoading();
+      })
+      .catch(err => {
+          console.error("Could not load TEMPO monthly community file:", err);
+      });
+  }
+
+  // TEMPO Date Range – average grid cells across selected dates
+  function loadTempoDateRange() {
+      if (!timeInterval) {
+          showLoading(`Loading ${rangeStartDate} to ${rangeCurrentEndDate}`);
+      }
+
+      let selectedDates = rangeDates.length > 0
+          ? rangeDates
+          : dates.filter(d => d >= rangeStartDate && d <= rangeCurrentEndDate);
+
+      Promise.all(
+          selectedDates.map(date =>
+              fetch(`data/tempo/day_${date}.geojson`)
+              .then(r => {
+                  if (!r.ok) {
+                      console.warn("Missing TEMPO daily file:", date);
+                      return null;
+                  }
+                  return r.json();
+              })
+          )
+      )
+      .then(files => {
+          files = files.filter(f => f !== null);
+          if (files.length === 0) {
+              console.warn("No TEMPO daily files found in range.");
+              hideLoading();
+              return;
+          }
+
+          let cellStats = {};
+          files.forEach(data => {
+              data.features.forEach(f => {
+                  let value = Number(f.properties.vertical_column_troposphere);
+                  if (isNaN(value)) return;
+                  let key = JSON.stringify(f.geometry);
+                  if (!cellStats[key]) {
+                      cellStats[key] = {
+                          feature: structuredClone(f),
+                          sum: 0,
+                          count: 0
+                      };
+                  }
+                  cellStats[key].sum += value;
+                  cellStats[key].count++;
+              });
+          });
+
+          if (currentLayer) {
+              map.removeLayer(currentLayer);
+          }
+          currentLayer = L.layerGroup();
+
+          Object.values(cellStats).forEach(cell => {
+              let avg = cell.sum / cell.count;
+              cell.feature.properties.vertical_column_troposphere = avg;
+              let geoJsonLayer = L.geoJSON(cell.feature, {
+                  style: {
+                      color: getColorTempo(avg),
+                      fillColor: getColorTempo(avg),
+                      weight: 0,
+                      fillOpacity: 0.77,
+                      opacity: 0.78
+                  },
+                  onEachFeature: function(feature, layer) {
+                      layer.bindTooltip(`
+                          <b>TEMPO Cell</b><br>
+                          ${utcDateToCentralPretty(rangeStartDate)} to ${utcDateToCentralPretty(rangeCurrentEndDate)}<br>
+                          Average NO₂: ${avg.toExponential(2)} molecules/cm²<br>
+                          Days: ${cell.count}
+                      `);
+                  }
+              });
+              currentLayer.addLayer(geoJsonLayer);
+          });
+
+          currentLayer.addTo(map);
+          hideLoading();
+      })
+      .catch(err => {
+          console.error("TEMPO date range load failed:", err);
+      });
+  }
+
+  // TEMPO Community Date Range
+  function loadTempoCommunityDateRange() {
+      if (!timeInterval) {
+          showLoading(`Loading ${rangeStartDate} to ${rangeCurrentEndDate}`);
+      }
+
+      let selectedDates = rangeDates.length > 0
+          ? rangeDates
+          : dates.filter(d => d >= rangeStartDate && d <= rangeCurrentEndDate);
+
+      Promise.all(
+          selectedDates.map(date =>
+              fetch(`data/tempo/day_community_${date}.geojson`)
+              .then(r => {
+                  if (!r.ok) return null;
+                  return r.json();
+              })
+          )
+      )
+      .then(files => {
+          files = files.filter(f => f !== null);
+          if (files.length === 0) {
+              hideLoading();
+              return;
+          }
+
+          let stats = {};
+          files.forEach(data => {
+              data.features.forEach(f => {
+                  let community = f.properties.community;
+                  let value = Number(f.properties.vertical_column_troposphere);
+                  if (isNaN(value)) return;
+                  if (!stats[community]) {
+                      stats[community] = { sum: 0, count: 0 };
+                  }
+                  stats[community].sum += value;
+                  stats[community].count++;
+              });
+          });
+
+          if (communityLayer) {
+              map.removeLayer(communityLayer);
+          }
+
+          communityLayer = L.geoJSON(communityData, {
+              style: function(feature) {
+                  let community = feature.properties.community;
+                  let avg = null;
+                  if (stats[community]) {
+                      avg = stats[community].sum / stats[community].count;
+                  }
+                  return {
+                      color: "#222",
+                      weight: 1,
+                      fillColor: avg == null ? "transparent" : getColorTempo(avg),
+                      fillOpacity: avg == null ? 0 : 0.65
+                  };
+              },
+              onEachFeature: function(feature, layer) {
+                  let community = feature.properties.community;
+                  let avg = null;
+                  let count = 0;
+                  if (stats[community]) {
+                      avg = stats[community].sum / stats[community].count;
+                      count = stats[community].count;
+                  }
+                  layer.bindTooltip(`
+                      <b>${community}</b><br>
+                      Average NO₂:<br>
+                      ${avg == null ? "No Data" : avg.toExponential(2)}<br>
+                      Days: ${count}
+                  `);
+              }
+          });
+
+          communityLayer.addTo(map);
+          hideLoading();
+      })
+      .catch(err => {
+          console.error("TEMPO community range load failed:", err);
+      });
+  }
+
+  // TEMPO renderFeatures – renders hourly grid cells as GeoJSON polygons
+  function renderTempoFeatures(filteredFeatures, date) {
+      if (currentLayer) {
+          map.removeLayer(currentLayer);
+      }
+      currentLayer = L.layerGroup();
+
+      filteredFeatures.forEach(f => {
+          let p = f.properties;
+          let value = parseFloat(p.vertical_column_troposphere);
+          if (isNaN(value)) return;
+
+          let geoJsonLayer = L.geoJSON(f, {
+              style: {
+                  color: getColorTempo(value),
+                  fillColor: getColorTempo(value),
+                  weight: 0,
+                  fillOpacity: 0.77,
+                  opacity: 0.78
+              },
+              onEachFeature: function(feature, layer) {
+                  layer.bindTooltip(`
+                      <b>${p.sensor_name || "TEMPO Cell"}</b><br>
+                      NO₂: ${value.toExponential(2)} (molecules/cm²)<br>
+                      Time: ${formatCentralTimePretty(p.time)}
+                  `);
+              }
+          });
+          currentLayer.addLayer(geoJsonLayer);
+      });
+
+      currentLayer.addTo(map);
+      hideLoading();
+  }
+
+  // TEMPO prefetch next day
+  function prefetchTempoNextDay(date) {
+      let currentIndex = dates.indexOf(date);
+      if (currentIndex < 0 || currentIndex >= dates.length - 1) return;
+
+      let nextDate = dates[currentIndex + 1];
+      if (nextCachedDate === nextDate) return;
+
+      let prevDate = currentIndex >= 0 ? dates[currentIndex] : null;
+      let afterNextDate = currentIndex < dates.length - 2 ? dates[currentIndex + 2] : null;
+
+      let requests = [];
+      if (prevDate) {
+          requests.push(
+              fetch(`data/tempo/${prevDate}.geojson`)
+              .then(r => r.ok ? r.json() : null)
+          );
+      }
+      requests.push(
+          fetch(`data/tempo/${nextDate}.geojson`)
+          .then(r => r.ok ? r.json() : null)
+      );
+      if (afterNextDate) {
+          requests.push(
+              fetch(`data/tempo/${afterNextDate}.geojson`)
+              .then(r => r.ok ? r.json() : null)
+          );
+      }
+
+      Promise.all(requests).then(files => {
+          let combinedFeatures = [];
+          files.forEach(data => {
+              if (data) combinedFeatures.push(...data.features);
+          });
+
+          let filteredFeatures = combinedFeatures.filter(f => {
+              let utcDate = new Date(f.properties.time + "Z");
+              let chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
+              let y = chicagoParts.find(p => p.type === "year").value;
+              let m = chicagoParts.find(p => p.type === "month").value.padStart(2, "0");
+              let d = chicagoParts.find(p => p.type === "day").value.padStart(2, "0");
+              let chicagoDateStr = `${y}-${m}-${d}`;
+
+              f._chicagoHour = Number(
+                  chicagoHourFormatter.formatToParts(utcDate)
+                      .find(x => x.type === "hour").value
+              );
+              return chicagoDateStr === nextDate;
+          });
+
+          nextCachedDate = nextDate;
+          nextCachedHourBuckets = buildHourBuckets(filteredFeatures);
+          console.log("TEMPO Prefetched:", nextDate);
+      });
+  }
+
   function loadDateRange() {
       if (!timeInterval) {
           showLoading(`Loading ${rangeStartDate} to ${rangeCurrentEndDate}`);
@@ -970,7 +1469,7 @@
       communityLayer = L.geoJSON(communityData, {
           style: function(feature) {
               let props = feature.properties;
-              let name = props.community || props.COMMUNITY || props.community_name || p.name;
+              let name = props.community || props.COMMUNITY || props.community_name || props.name;
               let avg = null;
               if (stats[name] && stats[name].count > 0) {
                   avg = stats[name].sum / stats[name].count;
@@ -1005,6 +1504,129 @@
       hideLoading();
   }
 
+  // -- SELECT MAP TYPE ------
+    let currentMapType = TIME_SCALE;
+
+    function selectMapType(type) {
+    currentMapType = type;
+
+    // Update active state on buttons
+    document.querySelectorAll('.map-type-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === type);
+    });
+
+    // Update active state on parent link elements
+    document.querySelectorAll('.map-type-link').forEach(link => {
+        link.classList.toggle('active', link.dataset.type === type);
+    });
+
+    // Show/hide date controls based on map type
+    const singleDateGroup = document.getElementById('single-date-group');
+    const dateRangeGroup = document.getElementById('date-range-group');
+    const monthRangeGroup = document.getElementById('month-range-group');
+    const dateSectionLabel = document.getElementById('date-section-label');
+
+    if (type === 'hourly') {
+        if (singleDateGroup) singleDateGroup.style.display = 'block';
+        if (dateRangeGroup) dateRangeGroup.style.display = 'none';
+        if (monthRangeGroup) monthRangeGroup.style.display = 'none';
+        if (dateSectionLabel) dateSectionLabel.textContent = 'Date';
+    } else if (type === 'daily') {
+        if (singleDateGroup) singleDateGroup.style.display = 'none';
+        if (dateRangeGroup) dateRangeGroup.style.display = 'block';
+        if (monthRangeGroup) monthRangeGroup.style.display = 'none';
+        if (dateSectionLabel) dateSectionLabel.textContent = 'Date Range';
+    } else if (type === 'monthly') {
+        if (singleDateGroup) singleDateGroup.style.display = 'none';
+        if (dateRangeGroup) dateRangeGroup.style.display = 'none';
+        if (monthRangeGroup) monthRangeGroup.style.display = 'block';
+        if (dateSectionLabel) dateSectionLabel.textContent = 'Month Range';
+    }
+    }
+
+    // Initialize the correct date control visibility on page load
+    selectMapType(TIME_SCALE);
+    // Also initialize hour-controls / range-controls visibility to match the current view
+    changeAggregation(TIME_SCALE);
+
+    // Handle click on map type buttons: update UI, then navigate to the matching view
+    function handleMapTypeClick(event, type) {
+    // Update the local UI (active button highlight, date-control visibility, etc.)
+    selectMapType(type);
+
+    // Also update the V4 slider control radio buttons and trigger aggregation change
+    changeAggregation(type);
+
+    // Navigate to the corresponding map view (/hourly/, /daily/, /monthly/)
+    const btn = event && event.currentTarget;
+    if (btn && btn.dataset.url) {
+        window.location.href = btn.dataset.url;
+    }
+    }
+    window.handleMapTypeClick = handleMapTypeClick;
+
+    // ── CHANGE AGGREGATION (unified function for sidebar + in-map controls) ──
+    function changeAggregation(type) {
+    TIME_SCALE = type;
+
+    // Update the V4 slider radio buttons to match
+    document.querySelectorAll('input[name="TIME_SCALE"]').forEach(radio => {
+        radio.checked = radio.value === type;
+    });
+
+    // Reset date slider
+    var dateSlider = document.getElementById("dateSlider");
+    if (dateSlider) {
+        if (TIME_SCALE === "range") {
+            rangeDates = dates.filter(d =>
+                d >= rangeStartDate && d <= rangeEndDate
+            );
+            dateSlider.min = 0;
+            dateSlider.max = Math.max(0, rangeDates.length - 1);
+            dateSlider.value = 0;
+        } else {
+            dateSlider.min = 0;
+            dateSlider.max = dates.length - 1;
+            dateSlider.value = 0;
+        }
+    }
+
+    console.log("Aggregation:", TIME_SCALE);
+
+    let hourControls = document.getElementById("hourControls");
+    let rangeControls = document.getElementById("rangeControls");
+
+    if (hourControls) {
+        hourControls.style.display = TIME_SCALE === "hourly" ? "block" : "none";
+    }
+    if (rangeControls) {
+        rangeControls.style.display = TIME_SCALE === "range" ? "block" : "none";
+    }
+
+    let currentDate = dates.length > 0 ? dates[0] : null;
+    var dateLabel = document.getElementById("dateLabel");
+
+    if (currentDate) {
+        if (TIME_SCALE === "monthly") {
+            if (dateLabel) dateLabel.innerHTML = formatMonthForDisplay(currentDate);
+        } else {
+            if (dateLabel) dateLabel.innerHTML = utcDateToCentralPretty(currentDate);
+        }
+    }
+
+    // Clear layers
+    if (currentLayer) {
+        map.removeLayer(currentLayer);
+        currentLayer = null;
+    }
+    if (communityLayer) {
+        map.removeLayer(communityLayer);
+        communityLayer = null;
+    }
+
+    refreshMap();
+    }
+    
   // ── V4 RENDER FEATURES ──────────────────────────────────────────────────────
 
   function renderFeatures(filteredFeatures, date){
@@ -1100,11 +1722,10 @@
       hideLoading();
   }
 
-  // ── V4 LOAD DATE ──────────────────────────────────────────────────────────────
+  // ── UNIFIED LOAD DATE (routes to Clarity or TEMPO based on currentDataProduct) ──
 
   function loadDate(date) {
-      console.log("Loading:", date);
-      console.log("Display:", displayMode, "Aggregation:", TIME_SCALE);
+      console.log("Loading:", date, "Product:", currentDataProduct, "Display:", displayMode, "Aggregation:", TIME_SCALE);
 
       let loadingText;
       if (TIME_SCALE === "monthly") {
@@ -1122,9 +1743,115 @@
       let currentIndex = dates.indexOf(date);
       let prevDate = currentIndex > 0 ? dates[currentIndex - 1] : null;
       let nextDate = currentIndex < dates.length - 1 ? dates[currentIndex + 1] : null;
-
       let selectedMonth = date.substring(0, 7);
 
+      // ── TEMPO ROUTING ──
+      if (currentDataProduct === "tempo") {
+          // Range mode
+          if (TIME_SCALE === "range") {
+              if (displayMode === "community") {
+                  loadTempoCommunityDateRange();
+              } else {
+                  loadTempoDateRange();
+              }
+              return;
+          }
+
+          // Daily mode
+          if (TIME_SCALE === "daily") {
+              if (displayMode === "community") {
+                  loadTempoDailyCommunities(date);
+              } else {
+                  loadDailyTempo(date);
+              }
+              return;
+          }
+
+          // Monthly mode
+          if (TIME_SCALE === "monthly") {
+              if (displayMode === "community") {
+                  loadTempoMonthlyCommunities(selectedMonth);
+              } else {
+                  loadMonthlyTempo(selectedMonth);
+              }
+              return;
+          }
+
+          // Hourly mode – use cached or fetch
+          if (TIME_SCALE === "hourly" && cachedDate === date && cachedHourBuckets) {
+              renderTempoFeatures(cachedHourBuckets[selectedHour], date);
+              return;
+          }
+
+          // Fetch TEMPO hourly data
+          let tRequests = [];
+          if (prevDate) {
+              tRequests.push(
+                  fetch(`data/tempo/${prevDate}.geojson`)
+                      .then(r => r.ok ? r.json() : null)
+              );
+          }
+          tRequests.push(
+              fetch(`data/tempo/${date}.geojson`)
+                  .then(r => r.ok ? r.json() : null)
+          );
+          if (nextDate) {
+              tRequests.push(
+                  fetch(`data/tempo/${nextDate}.geojson`)
+                      .then(r => r.ok ? r.json() : null)
+              );
+          }
+
+          Promise.all(tRequests).then(files => {
+              let combinedFeatures = [];
+              files.forEach(data => {
+                  if (data) combinedFeatures.push(...data.features);
+              });
+
+              let filteredFeatures = combinedFeatures.filter(f => {
+                  let utcDate = new Date(f.properties.time + "Z");
+                  let chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
+                  let y = chicagoParts.find(p => p.type === "year").value;
+                  let m = chicagoParts.find(p => p.type === "month").value.padStart(2, '0');
+                  let d = chicagoParts.find(p => p.type === "day").value.padStart(2, '0');
+                  let chicagoDateStr = `${y}-${m}-${d}`;
+
+                  f._chicagoHour = Number(
+                      chicagoHourFormatter.formatToParts(utcDate)
+                          .find(x => x.type === "hour").value
+                  );
+                  return chicagoDateStr === date;
+              });
+
+              cachedDate = date;
+              cachedFeatures = filteredFeatures;
+              cachedHourBuckets = buildHourBuckets(filteredFeatures);
+              prefetchTempoNextDay(date);
+
+              let hasValidData = filteredFeatures.some(f => {
+                  let val = parseFloat(f.properties.vertical_column_troposphere);
+                  return !isNaN(val);
+              });
+
+              if (!hasValidData) {
+                  console.warn("No valid TEMPO data for", date);
+                  hideLoading();
+                  return;
+              }
+
+              if (displayMode === "community") {
+                  drawTempoCommunityAreas(filteredFeatures);
+              } else if (TIME_SCALE === "hourly") {
+                  renderTempoFeatures(cachedHourBuckets[selectedHour], date);
+              } else {
+                  renderTempoFeatures(filteredFeatures, date);
+              }
+          });
+
+          return;
+      }
+
+      // ── CLARITY (Open Air) ROUTING (existing behavior) ──
       if (TIME_SCALE === "range") {
           loadDateRange();
           return;
@@ -1160,19 +1887,19 @@
       let requests = [];
       if (prevDate) {
           requests.push(
-              fetch(`output_by_date/${prevDate}.geojson`)
+              fetch(`data/clarity/${prevDate}.geojson`)
                   .then(r => r.ok ? r.json() : null)
           );
       }
 
       requests.push(
-          fetch(`output_by_date/${date}.geojson`)
+          fetch(`data/clarity/${date}.geojson`)
               .then(r => r.ok ? r.json() : null)
       );
 
       if (nextDate) {
           requests.push(
-              fetch(`output_by_date/${nextDate}.geojson`)
+              fetch(`data/clarity/${nextDate}.geojson`)
                   .then(r => r.ok ? r.json() : null)
           );
       }
@@ -1224,6 +1951,93 @@
               renderFeatures(filteredFeatures, date);
           }
       });
+  }
+
+  // ── TEMPO COMMUNITY AREAS (hourly) ──────────────────────────────────────────────
+  // Aggregates TEMPO grid cell values into Chicago community areas
+  function drawTempoCommunityAreas(filteredFeatures) {
+      if (!communityData) {
+          console.warn("Community data not loaded");
+          return;
+      }
+
+      let stats = {};
+      communityData.features.forEach(poly => {
+          let props = poly.properties;
+          let name = props.community || props.COMMUNITY || props.community_name || props.name || "Unknown";
+          stats[name] = { sum: 0, count: 0 };
+      });
+
+      filteredFeatures.forEach(f => {
+          let p = f.properties;
+          let value = parseFloat(p.vertical_column_troposphere);
+          if (isNaN(value)) return;
+          let hour = f._chicagoHour;
+
+          if (TIME_SCALE === "hourly" && hour !== selectedHour) return;
+
+          // TEMPO grid cells use geometry coordinates
+          let coords = f.geometry.coordinates;
+          let lon, lat;
+          if (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon") {
+              // Use centroid – take first ring first coordinate as approximation
+              let rings = f.geometry.type === "MultiPolygon" ? f.geometry.coordinates[0] : f.geometry.coordinates;
+              let ring = rings[0];
+              lon = ring[0][0];
+              lat = ring[0][1];
+          } else {
+              lon = coords[0];
+              lat = coords[1];
+          }
+
+          let point = turf.point([lon, lat]);
+
+          communityData.features.forEach(poly => {
+              if (turf.booleanPointInPolygon(point, poly)) {
+                  let props = poly.properties;
+                  let name = props.community || props.COMMUNITY || props.community_name || props.name || "Unknown";
+                  stats[name].sum += value;
+                  stats[name].count += 1;
+              }
+          });
+      });
+
+      if (communityLayer) {
+          map.removeLayer(communityLayer);
+      }
+
+      communityLayer = L.geoJSON(communityData, {
+          style: function(feature) {
+              let props = feature.properties;
+              let name = props.community || props.COMMUNITY || props.community_name || props.name || "Unknown";
+              let avg = null;
+              if (stats[name].count > 0) {
+                  avg = stats[name].sum / stats[name].count;
+              }
+              return {
+                  color: "#222",
+                  weight: 1,
+                  fillColor: getColorTempo(avg),
+                  fillOpacity: avg === null ? 0 : 0.65
+              };
+          },
+          onEachFeature: function(feature, layer) {
+              let props = feature.properties;
+              let name = props.community || props.COMMUNITY || props.community_name || props.name || "Unknown";
+              let avg = null;
+              if (stats[name].count > 0) {
+                  avg = stats[name].sum / stats[name].count;
+              }
+              layer.bindTooltip(`
+                  <b>${name}</b><br>
+                  Avg NO₂: ${avg === null ? "No Data" : avg.toExponential(2)}<br>
+                  Measurements: ${stats[name].count}
+              `);
+          }
+      });
+
+      communityLayer.addTo(map);
+      hideLoading();
   }
 
   // ── SLIDER EVENT HOOKS (from V4) ──────────────────────────────────────────────────
@@ -1431,9 +2245,10 @@
 
       // Load community areas using map.html's static path
       loadCommunityAreas();
+      loadChicagoBorder();
 
       // Load dates
-      fetch("output_by_date/dates.json")
+      fetch("data/clarity/dates.json")
           .then(r => r.json())
           .then(loadedDates => {
               dates = loadedDates;
@@ -1468,152 +2283,307 @@
 
   }, 100);
 
-  // Load demo data on init
-  // loadDemoData();
-
-  // -- SELECT MAP TYPE ------
-  let currentMapType = TIME_SCALE;
-
-  function selectMapType(type) {
-    currentMapType = type;
-
-    // Update active state on buttons
-    document.querySelectorAll('.map-type-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.type === type);
-    });
-
-    // Update active state on parent link elements
-    document.querySelectorAll('.map-type-link').forEach(link => {
-      link.classList.toggle('active', link.dataset.type === type);
-    });
-
-    // Show/hide date controls based on map type
-    const singleDateGroup = document.getElementById('single-date-group');
-    const dateRangeGroup = document.getElementById('date-range-group');
-    const monthRangeGroup = document.getElementById('month-range-group');
-    const dateSectionLabel = document.getElementById('date-section-label');
-
-    if (type === 'hourly') {
-      if (singleDateGroup) singleDateGroup.style.display = 'block';
-      if (dateRangeGroup) dateRangeGroup.style.display = 'none';
-      if (monthRangeGroup) monthRangeGroup.style.display = 'none';
-      if (dateSectionLabel) dateSectionLabel.textContent = 'Date';
-    } else if (type === 'daily') {
-      if (singleDateGroup) singleDateGroup.style.display = 'none';
-      if (dateRangeGroup) dateRangeGroup.style.display = 'block';
-      if (monthRangeGroup) monthRangeGroup.style.display = 'none';
-      if (dateSectionLabel) dateSectionLabel.textContent = 'Date Range';
-    } else if (type === 'monthly') {
-      if (singleDateGroup) singleDateGroup.style.display = 'none';
-      if (dateRangeGroup) dateRangeGroup.style.display = 'none';
-      if (monthRangeGroup) monthRangeGroup.style.display = 'block';
-      if (dateSectionLabel) dateSectionLabel.textContent = 'Month Range';
-    }
-  }
-
-  // Initialize the correct date control visibility on page load
-  selectMapType(TIME_SCALE);
-  // Also initialize hour-controls / range-controls visibility to match the current view
-  changeAggregation(TIME_SCALE);
-
-   // Handle click on map type buttons: update UI, then navigate to the matching view
-   function handleMapTypeClick(event, type) {
-     // Update the local UI (active button highlight, date-control visibility, etc.)
-     selectMapType(type);
-
-     // Also update the V4 slider control radio buttons and trigger aggregation change
-     changeAggregation(type);
-
-     // Navigate to the corresponding map view (/hourly/, /daily/, /monthly/)
-     const btn = event && event.currentTarget;
-     if (btn && btn.dataset.url) {
-       window.location.href = btn.dataset.url;
-     }
-   }
-  window.handleMapTypeClick = handleMapTypeClick;
-
-  // ── CHANGE AGGREGATION (unified function for sidebar + in-map controls) ──
-  function changeAggregation(type) {
-    TIME_SCALE = type;
-
-    // Update the V4 slider radio buttons to match
-    document.querySelectorAll('input[name="TIME_SCALE"]').forEach(radio => {
-      radio.checked = radio.value === type;
-    });
-
-    // Reset date slider
-    var dateSlider = document.getElementById("dateSlider");
-    if (dateSlider) {
-      if (TIME_SCALE === "range") {
-          rangeDates = dates.filter(d =>
-              d >= rangeStartDate && d <= rangeEndDate
-          );
-          dateSlider.min = 0;
-          dateSlider.max = Math.max(0, rangeDates.length - 1);
-          dateSlider.value = 0;
-      } else {
-          dateSlider.min = 0;
-          dateSlider.max = dates.length - 1;
-          dateSlider.value = 0;
-      }
-    }
-
-    console.log("Aggregation:", TIME_SCALE);
-
-    let hourControls = document.getElementById("hourControls");
-    let rangeControls = document.getElementById("rangeControls");
-
-    if (hourControls) {
-      hourControls.style.display = TIME_SCALE === "hourly" ? "block" : "none";
-    }
-    if (rangeControls) {
-      rangeControls.style.display = TIME_SCALE === "range" ? "block" : "none";
-    }
-
-    let currentDate = dates.length > 0 ? dates[0] : null;
-    var dateLabel = document.getElementById("dateLabel");
-
-    if (currentDate) {
-      if (TIME_SCALE === "monthly") {
-          if (dateLabel) dateLabel.innerHTML = formatMonthForDisplay(currentDate);
-      } else {
-          if (dateLabel) dateLabel.innerHTML = utcDateToCentralPretty(currentDate);
-      }
-    }
-
-    // Clear layers
-    if (currentLayer) {
-        map.removeLayer(currentLayer);
-        currentLayer = null;
-    }
-    if (communityLayer) {
-        map.removeLayer(communityLayer);
-        communityLayer = null;
-    }
-
-    refreshMap();
-  }
-
   // ── COORDS BAR ─────────────────────────────────────────────────────────────
-  map.on('mousemove', e => {
-    document.getElementById('coords-text').textContent =
-      `Lat: ${e.latlng.lat.toFixed(5)}  Lng: ${e.latlng.lng.toFixed(5)}`;
-  });
-  map.on('zoomend', () => {
-    document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
-  });
-  document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
-
-  // ── coords PANEL ───────────────────────────────────────────────────────────────
-  const coordsPanel = document.getElementById('coords-panel');
-  if (coordsPanel) {
     map.on('mousemove', e => {
-      coordsPanel.innerHTML =
-        `<strong>Lat:</strong> ${e.latlng.lat.toFixed(6)}<br>
-         <strong>Lng:</strong> ${e.latlng.lng.toFixed(6)}<br>
-         <strong>Zoom:</strong> ${map.getZoom()}`;
+    document.getElementById('coords-text').textContent =
+        `Lat: ${e.latlng.lat.toFixed(5)}  Lng: ${e.latlng.lng.toFixed(5)}`;
     });
-  }
+    map.on('zoomend', () => {
+    document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
+    });
+    document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
+
+    // ── coords PANEL ───────────────────────────────────────────────────────────────
+    const coordsPanel = document.getElementById('coords-panel');
+    if (coordsPanel) {
+    map.on('mousemove', e => {
+        coordsPanel.innerHTML =
+        `<strong>Lat:</strong> ${e.latlng.lat.toFixed(6)}<br>
+            <strong>Lng:</strong> ${e.latlng.lng.toFixed(6)}<br>
+            <strong>Zoom:</strong> ${map.getZoom()}`;
+    });
+    }
+
+    // ── EXPLORE PANEL TOGGLE ────────────────────────────────────────────────────
+    const explorePanel = document.getElementById('explore-panel');
+    const explorePanelToggle = document.getElementById('explore-panel-toggle');
+    const explorePanelBody = document.getElementById('explore-panel-body');
+    if (explorePanelToggle && explorePanel) {
+    explorePanel.classList.add('retracted'); // start retracted
+
+    // Also prevent the toggle button & body from propagating to map
+    if (explorePanelToggle) {
+        L.DomEvent.disableClickPropagation(explorePanelToggle);
+        L.DomEvent.disableScrollPropagation(explorePanelToggle);
+    }
+    if (explorePanelBody) {
+        L.DomEvent.disableClickPropagation(explorePanelBody);
+        L.DomEvent.disableScrollPropagation(explorePanelBody);
+    }
+
+    explorePanelToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        explorePanel.classList.toggle('retracted');
+        explorePanel.classList.toggle('expanded');
+    });
+    }
+
+    // ── DATA PRODUCT RADIO BUTTONS (sidebar: tempo / openaq / fusion) ──────────
+    document.querySelectorAll('input[name="dataProduct"]').forEach(radio => {
+    radio.addEventListener('change', e => {
+        const selected = e.target.value;
+        console.log("Data Product Changed to:", selected);
+
+        // Remove all data layers first
+        map.removeLayer(tempoLayerGroup);
+        map.removeLayer(openaqLayerGroup);
+        map.removeLayer(fusionLayerGroup);
+
+
+        // Switch currentDataProduct and reload data
+        if (selected === "tempo") {
+            currentDataProduct = "tempo";
+            displayMode = "grid";  // TEMPO uses grid cells, not point sensors
+
+            // Update legend for TEMPO scale
+            updateLegend();
+
+            // Load TEMPO dates
+            loadTempoDates();
+
+            showToast("TEMPO data product selected");
+
+        } else if (selected === "openaq" || selected === "clarity") {
+            currentDataProduct = "clarity";
+            displayMode = "sensor";
+
+            // Update legend for Clarity scale
+            updateLegend();
+
+            // Reload Clarity dates and data
+            loadClarityDates();
+
+            showToast("Open Air Chicago (Clarity) data product selected");
+
+        } else if (selected === "fusion") {
+            // Fusion is a separate dataset with its own files and rendering
+            currentDataProduct = "fusion";
+            displayMode = "sensor";
+
+            // Update legend for Fusion scale
+            updateLegend();
+
+            // Load Fusion dates and data
+            loadFusionDates();
+
+            showToast("Fusion data product selected");
+        }
+
+        // Clear existing layers and reload current view
+        if (currentLayer) {
+            map.removeLayer(currentLayer);
+            currentLayer = null;
+        }
+        if (communityLayer) {
+            map.removeLayer(communityLayer);
+            communityLayer = null;
+        }
+
+        // Clear caches when switching data products
+        cachedDate = null;
+        cachedFeatures = null;
+        cachedHourBuckets = null;
+        nextCachedDate = null;
+        nextCachedHourBuckets = null;
+    });
+    });
+
+    // ── UPDATE LEGEND based on current data product ──────────────────────────────
+    function updateLegend() {
+        const legendOverlay = document.getElementById('map-legend-overlay');
+        if (!legendOverlay) return;
+
+        const legendTitle = legendOverlay.querySelector('.legend-title');
+        const legendNumbers = legendOverlay.querySelectorAll('.legend-numbers span');
+
+        if (currentDataProduct === "tempo") {
+            legendTitle.textContent = "NO₂ Column (molecules/cm²)";
+            legendNumbers[0].textContent = TEMPO_GLOBAL_MIN.toExponential(0);
+            legendNumbers[1].textContent = (((TEMPO_GLOBAL_MIN + TEMPO_GLOBAL_MAX) / 2)).toExponential(0);
+            legendNumbers[2].textContent = TEMPO_GLOBAL_MAX.toExponential(0);
+        } else {
+            legendTitle.textContent = "NO₂ (ppb)";
+            legendNumbers[0].textContent = CLARITY_GLOBAL_MIN;
+            legendNumbers[1].textContent = Math.round((CLARITY_GLOBAL_MIN + CLARITY_GLOBAL_MAX) / 2);
+            legendNumbers[2].textContent = CLARITY_GLOBAL_MAX;
+        }
+    }
+
+    // ── LOAD TEMPO DATES ──────────────────────────────────────────────────────
+    function loadTempoDates() {
+        // Try loading TEMPO hourly dates first, fall back to daily dates
+        fetch("data/tempo/TEMPOdates.json")
+            .then(r => {
+                if (!r.ok) return fetch("data/tempo/TEMPOdaily_dates.json");
+                return r.json();
+            })
+            .then(loadedDates => {
+                dates = loadedDates;
+                rangeStartDate = dates[0];
+                rangeEndDate = dates[dates.length - 1];
+                rangeCurrentEndDate = rangeEndDate;
+
+                var dateSlider = document.getElementById("dateSlider");
+                var dateLabel = document.getElementById("dateLabel");
+                var startDateInput = document.getElementById("startDate");
+                var endDateInput = document.getElementById("endDate");
+
+                if (startDateInput) startDateInput.value = rangeStartDate;
+                if (endDateInput) endDateInput.value = rangeEndDate;
+
+                if (dates.length === 0) {
+                    console.error("No TEMPO dates found.");
+                    return;
+                }
+
+                dateSlider.max = dates.length - 1;
+                dateSlider.value = 0;
+
+                if (TIME_SCALE === "monthly" && dateLabel) {
+                    dateLabel.innerHTML = formatMonthForDisplay(dates[0]);
+                } else if (dateLabel) {
+                    dateLabel.innerHTML = utcDateToCentralPretty(dates[0]);
+                }
+
+                if (TIME_SCALE === "hourly") {
+                    var timeLabel = document.getElementById("timeLabel");
+                    if (timeLabel) timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
+                }
+
+                loadDate(dates[0]);
+            })
+            .catch(err => {
+                console.error("Could not load TEMPO dates:", err);
+            });
+    }
+
+    // ── LOAD CLARITY DATES ────────────────────────────────────────────────────
+    function loadClarityDates() {
+        fetch("data/clarity/dates.json")
+            .then(r => r.json())
+            .then(loadedDates => {
+                dates = loadedDates;
+                rangeStartDate = dates[0];
+                rangeEndDate = dates[dates.length - 1];
+                rangeCurrentEndDate = rangeEndDate;
+
+                var dateSlider = document.getElementById("dateSlider");
+                var dateLabel = document.getElementById("dateLabel");
+                var startDateInput = document.getElementById("startDate");
+                var endDateInput = document.getElementById("endDate");
+
+                if (startDateInput) startDateInput.value = rangeStartDate;
+                if (endDateInput) endDateInput.value = rangeEndDate;
+
+                if (dates.length === 0) {
+                    console.error("No Clarity dates found.");
+                    return;
+                }
+
+                dateSlider.max = dates.length - 1;
+                dateSlider.value = 0;
+
+                if (TIME_SCALE === "monthly") {
+                    if (dateLabel) dateLabel.innerHTML = formatMonthForDisplay(dates[0]);
+                } else {
+                    if (dateLabel) dateLabel.innerHTML = utcDateToCentralPretty(dates[0]);
+                }
+
+                var timeLabel = document.getElementById("timeLabel");
+                if (timeLabel) timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
+
+                loadDate(dates[0]);
+            })
+            .catch(err => {
+                console.error("Could not load Clarity dates.json:", err);
+            });
+    }
+
+    // ── LAYER TOGGLES (legacy: for any remaining .layer-toggle checkboxes) ─────
+    document.querySelectorAll('.layer-toggle').forEach(checkbox => {
+    checkbox.addEventListener('change', e => {
+        const layer = e.target.dataset.layer;
+        const isChecked = e.target.checked;
+
+        const layerMap = {
+        tempo: tempoLayerGroup,
+        openaq: openaqLayerGroup,
+        fusion: fusionLayerGroup,
+        wind: windLayerGroup
+        };
+
+        if (layerMap[layer]) {
+            if (isChecked) {
+                layerMap[layer].addTo(map);
+            } else {
+                map.removeLayer(layerMap[layer]);
+            }
+            showToast(`${layer} layer ${isChecked ? 'enabled' : 'disabled'}`);
+        }
+    });
+    });
+
+    // ── TIME SLIDER (original sidebar slider) ────────────────────────────────────
+    const origTimeSlider = document.getElementById('time-slider');
+    const timeDisplay = document.getElementById('time-display');
+    let playInterval = null;
+
+    if (origTimeSlider) {
+        origTimeSlider.addEventListener('input', () => {
+            const hour = parseInt(origTimeSlider.value);
+            timeDisplay.textContent = `${String(hour).padStart(2, '0')}:00 UTC`;
+            // Reload data for the selected hour
+            const today = new Date().toISOString().split('T')[0];
+            loadTempoData(today, hour);
+        });
+
+        document.getElementById('time-prev')?.addEventListener('click', () => {
+            origTimeSlider.value = Math.max(0, parseInt(origTimeSlider.value) - 1);
+            origTimeSlider.dispatchEvent(new Event('input'));
+        });
+
+        document.getElementById('time-next')?.addEventListener('click', () => {
+            origTimeSlider.value = Math.min(23, parseInt(origTimeSlider.value) + 1);
+            origTimeSlider.dispatchEvent(new Event('input'));
+        });
+
+        document.getElementById('time-play')?.addEventListener('click', function() {
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+                this.textContent = '▶';
+            } else {
+                this.textContent = '⏸';
+                playInterval = setInterval(() => {
+                    let val = parseInt(origTimeSlider.value) + 1;
+                    if (val > 23) val = 0;
+                    origTimeSlider.value = val;
+                    origTimeSlider.dispatchEvent(new Event('input'));
+                }, 1500);
+            }
+        });
+    }
+
+    // ── REGION DROPDOWN: fly to selected region ─────────────────────────────
+    const regionDropdown = document.getElementById('region-dropdown');
+    if (regionDropdown) {
+    regionDropdown.addEventListener('change', function() {
+        if (this.value === 'cook_county') {
+        map.flyTo(homeCoords, homeZoom, { duration: 1.5 });
+        }
+    });
+    }
 
   // ── OVERLAYS: prevent map from stealing pointer events ──────────────────────
   // These overlays sit on top of the Leaflet map. Without disabling propagation,
@@ -1633,152 +2603,5 @@
     }
   }, 0);
 
-  // ── EXPLORE PANEL TOGGLE ────────────────────────────────────────────────────
-  const explorePanel = document.getElementById('explore-panel');
-  const explorePanelToggle = document.getElementById('explore-panel-toggle');
-  const explorePanelBody = document.getElementById('explore-panel-body');
-  if (explorePanelToggle && explorePanel) {
-    explorePanel.classList.add('retracted'); // start retracted
-
-    // Also prevent the toggle button & body from propagating to map
-    if (explorePanelToggle) {
-      L.DomEvent.disableClickPropagation(explorePanelToggle);
-      L.DomEvent.disableScrollPropagation(explorePanelToggle);
-    }
-    if (explorePanelBody) {
-      L.DomEvent.disableClickPropagation(explorePanelBody);
-      L.DomEvent.disableScrollPropagation(explorePanelBody);
-    }
-
-    explorePanelToggle.addEventListener('click', (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      explorePanel.classList.toggle('retracted');
-      explorePanel.classList.toggle('expanded');
-    });
-  }
-
-  // ── DATA PRODUCT RADIO BUTTONS (sidebar: tempo / openaq / fusion) ──────────
-  document.querySelectorAll('input[name="dataProduct"]').forEach(radio => {
-    radio.addEventListener('change', e => {
-      const selected = e.target.value;
-
-      // Remove all data layers first
-      map.removeLayer(tempoLayerGroup);
-      map.removeLayer(openaqLayerGroup);
-      map.removeLayer(fusionLayerGroup);
-
-      // Add only the selected layer
-      const layerMap = {
-        tempo: tempoLayerGroup,
-        openaq: openaqLayerGroup,
-        fusion: fusionLayerGroup
-      };
-
-      if (layerMap[selected]) {
-          layerMap[selected].addTo(map);
-          showToast(`${selected} data product selected`);
-      }
-    });
-  });
-
-  // ── LAYER TOGGLES (legacy: for any remaining .layer-toggle checkboxes) ─────
-  document.querySelectorAll('.layer-toggle').forEach(checkbox => {
-    checkbox.addEventListener('change', e => {
-      const layer = e.target.dataset.layer;
-      const isChecked = e.target.checked;
-
-      const layerMap = {
-        tempo: tempoLayerGroup,
-        openaq: openaqLayerGroup,
-        fusion: fusionLayerGroup,
-        wind: windLayerGroup
-      };
-
-      if (layerMap[layer]) {
-          if (isChecked) {
-              layerMap[layer].addTo(map);
-          } else {
-              map.removeLayer(layerMap[layer]);
-          }
-          showToast(`${layer} layer ${isChecked ? 'enabled' : 'disabled'}`);
-      }
-    });
-  });
-
-  // ── TIME SLIDER (original sidebar slider) ────────────────────────────────────
-  const origTimeSlider = document.getElementById('time-slider');
-  const timeDisplay = document.getElementById('time-display');
-  let playInterval = null;
-
-  if (origTimeSlider) {
-      origTimeSlider.addEventListener('input', () => {
-          const hour = parseInt(origTimeSlider.value);
-          timeDisplay.textContent = `${String(hour).padStart(2, '0')}:00 UTC`;
-          // Reload data for the selected hour
-          const today = new Date().toISOString().split('T')[0];
-          loadTempoData(today, hour);
-      });
-
-      document.getElementById('time-prev')?.addEventListener('click', () => {
-          origTimeSlider.value = Math.max(0, parseInt(origTimeSlider.value) - 1);
-          origTimeSlider.dispatchEvent(new Event('input'));
-      });
-
-      document.getElementById('time-next')?.addEventListener('click', () => {
-          origTimeSlider.value = Math.min(23, parseInt(origTimeSlider.value) + 1);
-          origTimeSlider.dispatchEvent(new Event('input'));
-      });
-
-      document.getElementById('time-play')?.addEventListener('click', function() {
-          if (playInterval) {
-              clearInterval(playInterval);
-              playInterval = null;
-              this.textContent = '▶';
-          } else {
-              this.textContent = '⏸';
-              playInterval = setInterval(() => {
-                  let val = parseInt(origTimeSlider.value) + 1;
-                  if (val > 23) val = 0;
-                  origTimeSlider.value = val;
-                  origTimeSlider.dispatchEvent(new Event('input'));
-              }, 1500);
-          }
-      });
-  }
-
-  // ── GEOCODE SEARCH (Nominatim) ─────────────────────────────────────────────
-  document.getElementById('search-btn').addEventListener('click', doSearch);
-  document.getElementById('search-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') doSearch();
-  });
-
-  function doSearch() {
-    const q = document.getElementById('search-input').value.trim();
-    if (!q) return;
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5`)
-      .then(r => r.json())
-      .then(results => {
-        const div = document.getElementById('search-results');
-        if (!results.length) { div.innerHTML = '<p style="color:#fc8181;font-size:.8rem;">No results.</p>'; return; }
-        div.innerHTML = results.map((r, i) =>
-          `<div class="search-result-item"
-                style="padding:.3rem .4rem;border-radius:5px;cursor:pointer;font-size:.8rem;color:#a0aec0;margin-top:.25rem;"
-                onmouseover="this.style.background='#1e2a3a'" onmouseout="this.style.background=''"
-                onclick="goToResult(${r.lat},${r.lon},'${r.display_name.replace(/'/g,"\\'")}')">
-            📍 ${r.display_name.length > 50 ? r.display_name.slice(0,50)+'…' : r.display_name}
-          </div>`
-        ).join('');
-      })
-      .catch(() => showToast('Search failed'));
-  }
-
-  function goToResult(lat, lng, name) {
-    map.flyTo([lat, lng], 13);
-    document.getElementById('search-results').innerHTML = '';
-    document.getElementById('search-input').value = '';
-    showToast(`Flying to ${name.slice(0,40)}…`);
-  }
-  window.goToResult = goToResult;
   </script>
 {% endblock %}

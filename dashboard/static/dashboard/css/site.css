@@ -1,12 +1,11 @@
 
 :root {
-  /* NASA-inspired color palette */
+  /* ESD Color Palette*/
   --primary: #005a9e;
-  --primary-dark: #003d6b;
+  --primary-dark: #10214B;
   --primary-light: #63b3ed;
   --accent: #3182ce;
 
-  /* Neutral colors */
   --bg: #f7fafc;
   --bg-card: #ffffff;
   --bg-sidebar: #ffffff;
@@ -17,7 +16,7 @@
   --border: #e2e8f0;
   --border-dark: #cbd5e0;
 
-  /* Status colors */
+  /* Status Colors Palette*/
   --success: #48bb78;
   --warning: #ecc94b;
   --danger: #fc8181;
@@ -103,7 +102,17 @@ nav {
   height: 36px;
   width: auto;
   margin-left: 0.75rem;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+/* Atmosphere logo — slightly larger */
+.logo-atmosphere {
+  height: 48px;
+}
+
+/* NASA logo — no drop shadow */
+.logo-nasa {
+  filter: none;
+  box-shadow: none;
 }
 
 /* ── HAMBURGER BUTTON (sidebar toggle in nav) ────────── */
@@ -247,7 +256,7 @@ nav {
   display: block;
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--text);
+  color: var(--text-light);
   margin-bottom: 0.3rem;
 }
 
@@ -261,7 +270,7 @@ nav {
   border-radius: 6px;
   border: 1px solid var(--border);
   background: var(--bg);
-  color: var(--text);
+  color: var(--text-light);
   font-size: 0.85rem;
   outline: none;
   transition: border-color 0.2s;
@@ -275,7 +284,7 @@ nav {
 
 .form-group .hint {
   font-size: 0.72rem;
-  color: var(--text-muted);
+  color: var(--text-light);
   margin-top: 0.2rem;
 }
 
@@ -487,7 +496,7 @@ nav {
   min-width: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow: scroll;
 }
 
 #map {
@@ -873,9 +882,13 @@ footer {
   padding: 1rem 1.5rem;
   text-align: center;
   font-size: .8rem;
-  color: var(--text-muted);
+  color: var(--bg);
   border-top: 1px solid var(--border);
   background: var(--bg-card);
+  background-image: url('../images/footer.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center center;
 }
 
 /* ── MOBILE DISCLAIMER OVERLAY ────────────────────── */
