@@ -249,6 +249,56 @@
     .community-layout {
       flex-direction: column;
     }
+
+    /* Make left column full width and remove sticky positioning */
+    .community-left {
+      position: static;
+      width: 100%;
+      flex: none;
+      padding: 0.75rem;
+    }
+
+    /* Make right column full width */
+    .community-right {
+      width: 100%;
+      flex: none;
+    }
+
+    /* Map container — full width with comfortable height on mobile */
+    .community-map-container {
+      min-height: 350px;
+      max-height: 450px;
+    }
+
+    #community-map {
+      min-height: 350px;
+    }
+
+    /* Graph containers — full width with adequate height */
+    .graph-container {
+      width: 100%;
+      min-height: 280px;
+    }
+  }
+
+  /* Extra small screens — tighten up spacing */
+  @media (max-width: 600px) {
+    .community-left {
+      padding: 0.5rem;
+    }
+
+    .community-map-container {
+      min-height: 280px;
+      max-height: 350px;
+    }
+
+    #community-map {
+      min-height: 280px;
+    }
+
+    .graph-container {
+      min-height: 250px;
+    }
   }
 
 </style>
@@ -635,7 +685,7 @@ function renderPercentileGraph(communityName) {
       line: { width: 3, color: '#e74c3c' },
     },
     name: communityName,
-    text: `${communityName}<br>Percentile: ${communityPercentile.toFixed(1)}<br>Rank: ${Math.round(communityRank)}`,
+    text: `${communityName}<br>Percentile: ${communityPercentile.toFixed(1)}`,
     hoverinfo: 'text',
   };
 

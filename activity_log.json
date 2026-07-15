@@ -1,21 +1,123 @@
 [
   {
-    "type": "server_start",
-    "title": "Dashboard server started",
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
     "details": "",
-    "timestamp": "2026-07-15 16:25:50"
+    "timestamp": "2026-07-15 16:40:53"
   },
   {
     "type": "community_analysis",
     "title": "User opened community analysis tool",
     "details": "",
-    "timestamp": "2026-07-15 16:23:46"
+    "timestamp": "2026-07-15 16:38:27"
   },
   {
     "type": "server_start",
     "title": "Dashboard server started",
     "details": "",
-    "timestamp": "2026-07-15 16:23:40"
+    "timestamp": "2026-07-15 16:38:24"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-15 16:36:19"
+  },
+  {
+    "type": "server_start",
+    "title": "Dashboard server started",
+    "details": "",
+    "timestamp": "2026-07-15 16:36:18"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-15 16:35:58"
+  },
+  {
+    "type": "page_refresh",
+    "title": "Dashboard home page refreshed",
+    "details": "",
+    "timestamp": "2026-07-15 16:35:32"
+  },
+  {
+    "type": "map_view",
+    "title": "User viewed hourly map",
+    "details": "",
+    "timestamp": "2026-07-15 16:35:13"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-15 16:32:50"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-15 16:32:33"
+  },
+  {
+    "type": "map_export",
+    "title": "User opened export tool",
+    "details": "",
+    "timestamp": "2026-07-15 16:31:15"
+  },
+  {
+    "type": "map_view",
+    "title": "User viewed hourly map",
+    "details": "",
+    "timestamp": "2026-07-15 16:31:14"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-15 16:30:33"
+  },
+  {
+    "type": "map_view",
+    "title": "User viewed hourly map",
+    "details": "",
+    "timestamp": "2026-07-15 16:29:50"
+  },
+  {
+    "type": "map_view",
+    "title": "User viewed monthly map",
+    "details": "",
+    "timestamp": "2026-07-15 16:29:50"
+  },
+  {
+    "type": "map_view",
+    "title": "User viewed daily map",
+    "details": "",
+    "timestamp": "2026-07-15 16:29:50"
+  },
+  {
+    "type": "map_view",
+    "title": "User viewed hourly map",
+    "details": "",
+    "timestamp": "2026-07-15 16:29:45"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-15 16:29:45"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-15 16:29:19"
+  },
+  {
+    "type": "server_start",
+    "title": "Dashboard server started",
+    "details": "",
+    "timestamp": "2026-07-15 16:29:13"
   },
   {
     "type": "server_start",
@@ -196,107 +298,5 @@
     "title": "User opened community analysis tool",
     "details": "",
     "timestamp": "2026-07-15 15:53:23"
-  },
-  {
-    "type": "map_view",
-    "title": "User viewed hourly map",
-    "details": "",
-    "timestamp": "2026-07-15 15:53:09"
-  },
-  {
-    "type": "community_analysis",
-    "title": "User opened community analysis tool",
-    "details": "",
-    "timestamp": "2026-07-15 15:51:39"
-  },
-  {
-    "type": "community_analysis",
-    "title": "User opened community analysis tool",
-    "details": "",
-    "timestamp": "2026-07-15 15:49:04"
-  },
-  {
-    "type": "server_start",
-    "title": "Dashboard server started",
-    "details": "",
-    "timestamp": "2026-07-15 15:49:01"
-  },
-  {
-    "type": "community_analysis",
-    "title": "User opened community analysis tool",
-    "details": "",
-    "timestamp": "2026-07-15 15:43:38"
-  },
-  {
-    "type": "server_start",
-    "title": "Dashboard server started",
-    "details": "",
-    "timestamp": "2026-07-15 15:43:33"
-  },
-  {
-    "type": "server_start",
-    "title": "Dashboard server started",
-    "details": "",
-    "timestamp": "2026-07-15 15:42:50"
-  },
-  {
-    "type": "community_analysis",
-    "title": "User opened community analysis tool",
-    "details": "",
-    "timestamp": "2026-07-15 15:36:34"
-  },
-  {
-    "type": "server_start",
-    "title": "Dashboard server started",
-    "details": "",
-    "timestamp": "2026-07-15 15:36:33"
-  },
-  {
-    "type": "map_view",
-    "title": "User viewed daily map",
-    "details": "",
-    "timestamp": "2026-07-15 15:36:05"
-  },
-  {
-    "type": "map_view",
-    "title": "User viewed hourly map",
-    "details": "",
-    "timestamp": "2026-07-15 15:35:54"
-  },
-  {
-    "type": "map_export",
-    "title": "User opened export tool",
-    "details": "",
-    "timestamp": "2026-07-15 15:35:46"
-  },
-  {
-    "type": "map_export",
-    "title": "User opened export tool",
-    "details": "",
-    "timestamp": "2026-07-15 15:35:17"
-  },
-  {
-    "type": "community_analysis",
-    "title": "User opened community analysis tool",
-    "details": "",
-    "timestamp": "2026-07-15 15:35:16"
-  },
-  {
-    "type": "map_view",
-    "title": "User viewed monthly map",
-    "details": "",
-    "timestamp": "2026-07-15 15:35:14"
-  },
-  {
-    "type": "map_view",
-    "title": "User viewed daily map",
-    "details": "",
-    "timestamp": "2026-07-15 15:35:13"
-  },
-  {
-    "type": "map_view",
-    "title": "User viewed hourly map",
-    "details": "",
-    "timestamp": "2026-07-15 15:35:13"
   }
 ]
