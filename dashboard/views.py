@@ -534,6 +534,64 @@ def community_rankings_api(request):
     return JsonResponse({"rankings": rows})
 
 
+def _normalize_community_name(name):
+    """Normalize community name for case-insensitive, apostrophe-tolerant matching."""
+    s = name.strip().lower().replace("'", "")
+    s = s.replace("  ", " ")
+    return s
+
+def community_no2_data_api(request):
+    """
+    GET /api/community-no2-data/?community=Hyde+Park
+    Returns the community_no2_master.parquet data as a JSON array,
+    optionally filtered by community name (case-insensitive, apostrophe-tolerant).
+    
+    Each row: { "community": ..., "date": ..., "source": "Ground"|"TEMPO", "NO2": ... }
+    """
+    import pandas as pd
+    
+    parquet_path = os.path.join(settings.BASE_DIR, 'dashboard', 'data',
+                                'community_statistics', 'community_no2_master.parquet')
+    if not os.path.isfile(parquet_path):
+        return JsonResponse({"error": "Parquet file not found"}, status=404)
+
+    community_filter = request.GET.get('community', '').strip()
+
+    try:
+        df = pd.read_parquet(parquet_path)
+    except Exception as e:
+        return JsonResponse({"error": f"Failed to read parquet: {str(e)}"}, status=500)
+
+    if community_filter:
+        # Normalize both sides for matching (case-insensitive, strip apostrophes)
+        filter_norm = _normalize_community_name(community_filter)
+        df = df[df["community"].apply(_normalize_community_name) == filter_norm]
+
+    # Convert date to string for JSON serialization
+    if "date" in df.columns:
+        df["date"] = pd.to_datetime(df["date"]).dt.strftime("%Y-%m-%d")
+        df["weekday"] = pd.to_datetime(df["date"]).dt.day_name()
+
+    # Convert problematic columns to strings for JSON serialization
+    for col in ["month", "month_name", "unit"]:
+        if col in df.columns:
+            df[col] = df[col].astype(str)
+
+    rows = []
+    for _, row in df.iterrows():
+        converted = {}
+        for k, v in row.items():
+            if pd.isna(v):
+                converted[k] = None
+            elif isinstance(v, (pd.Timestamp, pd.Period)):
+                converted[k] = str(v)
+            else:
+                converted[k] = v
+        rows.append(converted)
+
+    return JsonResponse({"data": rows})
+
+
 def export_data_file(request):
     """
     GET /api/export-data-file/?source=clarity&file=2025-09-01.geojson&format=geojson
