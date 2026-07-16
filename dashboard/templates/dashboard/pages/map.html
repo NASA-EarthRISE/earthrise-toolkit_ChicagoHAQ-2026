@@ -17,7 +17,7 @@
         background: white;
         padding: 10px;
         border-radius: 6px;
-        font-family: sans-serif;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
     #dateLabel {
@@ -30,7 +30,7 @@
         background: white;
         padding: 10px;
         border-radius: 6px;
-        font-family: sans-serif;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         line-height: 1.4em;
     }
 
@@ -61,7 +61,7 @@
         background: white;
         padding: 10px 14px;
         border-radius: 6px;
-        font-family: sans-serif;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         box-shadow: 0 2px 8px rgba(0,0,0,0.25);
         z-index: 1000;
         display: flex;
@@ -83,14 +83,6 @@
 
     .bottom-slider-bar input[type="range"] {
         flex: 1;
-    }
-
-    .bottom-slider-bar .slider-labels {
-        display: flex;
-        justify-content: space-between;
-        font-size: 11px;
-        color: #666;
-        margin-top: -2px;
     }
 
     .bottom-slider-bar .time-label,
@@ -127,17 +119,17 @@
         gap: 2px;
     }
 
-    /* Legend overlay — top right of map container */
+    /* Legend overlay — bottom right of map container, above timeslider */
     .map-legend-overlay {
         position: absolute;
-        top: 10px;
+        bottom: 180px;
         right: 10px;
         background: white;
         padding: 10px 12px;
         border-radius: 6px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.25);
         z-index: 1000;
-        font-family: sans-serif;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         pointer-events: none;
     }
 
@@ -151,7 +143,7 @@
     .map-legend-overlay .legend-gradient-bar {
         width: 150px;
         height: 12px;
-        background: linear-gradient(to right, rgb(0,255,0), rgb(255,255,0), rgb(255,0,0));
+        background: linear-gradient(to right, #440154, #31688e, #35b779, #fde724);
         border-radius: 2px;
     }
 
@@ -222,9 +214,6 @@
           <label>Hour</label>
           <input type="range" min="0" max="23" step="1" value="0" id="timeSlider">
           <span class="time-label" id="timeLabel">Time: 12 AM</span>
-        </div>
-        <div class="slider-labels">
-          <span>12 AM</span><span>12 PM</span><span>11 PM</span>
         </div>
       </div>
 
@@ -345,16 +334,17 @@
   const FUSION_GLOBAL_MAX = 50;
   const FUSION_GLOBAL_MIN = 0;
 
-  let selectedHour = 0;
-  let communityData = null;
-  let ChicagoCommunityAreas = null;
-  let displayMode = "sensor";       // "sensor" (Clarity) or "grid" (TEMPO) or "community"
-  let currentDataProduct = "clarity"; // "clarity" or "tempo"
-  let rangeStartDate = null;
+   let selectedHour = 0;
+   let communityData = null;
+   let ChicagoCommunityAreas = null;
+   let displayMode = "sensor";       // "sensor" (Clarity) or "grid" (TEMPO) or "community"
+   let currentDataProduct = "tempo"; // default matches sidebar radio "checked" value; "clarity" or "tempo" or "fusion"
+   let rangeStartDate = null;
   let rangeEndDate = null;
   let rangeCurrentEndDate = null;
 
   let dates = [];
+  let allDates = [];       // unfiltered copy — kept in sync by each date loader
   let rangeDates = [];
 
   // TEMPO-specific date arrays (hourly and daily can differ)
@@ -1770,7 +1760,11 @@
 
           // Hourly mode – use cached or fetch
           if (TIME_SCALE === "hourly" && cachedDate === date && cachedHourBuckets) {
-              renderTempoFeatures(cachedHourBuckets[selectedHour], date);
+              if (displayMode === "community") {
+                  drawTempoCommunityAreas(cachedFeatures);
+              } else {
+                  renderTempoFeatures(cachedHourBuckets[selectedHour], date);
+              }
               return;
           }
 
@@ -2238,9 +2232,134 @@
           timeInterval = null;
       });
 
+      // ── PAGE LOAD: Sync displayMode with sidebar radio defaults ──
+      // The sidebar's "Spatial Scale" section has displayMode radios (sensor/community).
+      // The sidebar's "Data Products" section has dataProduct radios (tempo/openaq/fusion).
+      // On page load we must read the checked radio for dataProduct and set displayMode accordingly
+      // so that the JS state matches what the user sees in the sidebar.
+      const checkedDataProduct = document.querySelector('input[name="dataProduct"]:checked');
+      if (checkedDataProduct) {
+          const product = checkedDataProduct.value;
+          if (product === "tempo") {
+              currentDataProduct = "tempo";
+              displayMode = "grid";  // TEMPO uses grid cells
+          } else if (product === "openaq" || product === "clarity") {
+              currentDataProduct = "clarity";
+              displayMode = "sensor";
+          } else if (product === "fusion") {
+              currentDataProduct = "fusion";
+              displayMode = "sensor";
+          }
+      }
+
+      // Sync the displayMode radio buttons to match the current displayMode
+      document.querySelectorAll('input[name="displayMode"]').forEach(radio => {
+          radio.checked = (radio.value === displayMode);
+      });
+
+      // Update the legend to match the default data product
+      updateLegend();
+
       // Load community areas using map.html's static path
       loadCommunityAreas();
       loadChicagoBorder();
+
+      // ── SIDEBAR LOAD BUTTONS: filter date slider based on user date input ─────
+
+      // allDates is a global, already kept in sync by loadTempoDates / loadClarityDates / loadFusionDates
+
+      // Single-date Load (hourly view)
+      const loadSingleDateBtn = document.getElementById('load-single-date');
+      if (loadSingleDateBtn) {
+          loadSingleDateBtn.addEventListener('click', function() {
+              const selectedDate = document.getElementById('map-date').value;
+              if (!selectedDate) {
+                  showToast('Please select a date first.', 'warning');
+                  return;
+              }
+              // Check if the selected date exists in the available dates
+              const index = dates.indexOf(selectedDate);
+              if (index === -1) {
+                  showToast(`No data available for ${selectedDate}.`, 'warning');
+                  return;
+              }
+              // Move the date slider to that date and load it
+              dateSlider.value = index;
+              dateLabel.innerHTML = utcDateToCentralPretty(selectedDate);
+              loadDate(selectedDate);
+              showToast(`Loaded ${selectedDate}`);
+          });
+      }
+
+      // Date-range Load (daily view)
+      const loadDateRangeBtn = document.getElementById('load-date-range');
+      if (loadDateRangeBtn) {
+          loadDateRangeBtn.addEventListener('click', function() {
+              const startDate = document.getElementById('date-range-start').value;
+              const endDate = document.getElementById('date-range-end').value;
+              if (!startDate || !endDate) {
+                  showToast('Please select both a start and end date.', 'warning');
+                  return;
+              }
+              if (startDate > endDate) {
+                  showToast('Start date must be before end date.', 'warning');
+                  return;
+              }
+              // Filter the full dates array to the selected range
+              const filteredDates = allDates.filter(d => d >= startDate && d <= endDate);
+              if (filteredDates.length === 0) {
+                  showToast(`No data available between ${startDate} and ${endDate}.`, 'warning');
+                  return;
+              }
+              // Replace dates with filtered subset so slider & play button use it
+              dates = filteredDates;
+              rangeDates = filteredDates;
+              rangeStartDate = startDate;
+              rangeEndDate = endDate;
+              rangeCurrentEndDate = rangeEndDate;
+              dateSlider.min = 0;
+              dateSlider.max = filteredDates.length - 1;
+              dateSlider.value = 0;
+              dateLabel.innerHTML = utcDateToCentralPretty(filteredDates[0]);
+              loadDate(filteredDates[0]);
+              showToast(`Loaded ${filteredDates.length} days from ${startDate} to ${endDate}`);
+          });
+      }
+
+      // Month-range Load (monthly view)
+      const loadMonthRangeBtn = document.getElementById('load-month-range');
+      if (loadMonthRangeBtn) {
+          loadMonthRangeBtn.addEventListener('click', function() {
+              const startMonth = document.getElementById('month-range-start').value;
+              const endMonth = document.getElementById('month-range-end').value;
+              if (!startMonth || !endMonth) {
+                  showToast('Please select both a start and end month.', 'warning');
+                  return;
+              }
+              if (startMonth > endMonth) {
+                  showToast('Start month must be before end month.', 'warning');
+                  return;
+              }
+              // Filter the full dates array to the selected month range
+              const endMonthInclusive = endMonth + '-31'; // include all days in end month
+              const filteredDates = allDates.filter(d => d >= startMonth && d <= endMonthInclusive);
+              if (filteredDates.length === 0) {
+                  showToast(`No data available between ${startMonth} and ${endMonth}.`, 'warning');
+                  return;
+              }
+              // Replace dates with filtered subset so slider & play button use it
+              dates = filteredDates;
+              rangeDates = filteredDates;
+              rangeStartDate = startMonth;
+              rangeEndDate = endMonth;
+              dateSlider.min = 0;
+              dateSlider.max = filteredDates.length - 1;
+              dateSlider.value = 0;
+              dateLabel.innerHTML = formatMonthForDisplay(filteredDates[0]);
+              loadDate(filteredDates[0]);
+              showToast(`Loaded ${filteredDates.length} days from ${startMonth} to ${endMonth}`);
+          });
+      }
 
       // Load dates — use proper date loader based on current product
       if (currentDataProduct === "tempo") {
@@ -2254,10 +2373,58 @@
   }, 100);
 
    // ── TOAST NOTIFICATION (used by data-product switch) ────────────────────────
-   function showToast(message) {
-       // Simple console-based toast; integrate with your UI toast system if desired
+    function showToast(message, level) {
+       level = level || "info"; // "info", "warning", "error"
        console.log("[Toast]", message);
+
+       // Create a visible toast notification on the map
+       const mapContainer = document.querySelector('.map-container');
+       if (!mapContainer) return;
+
+       // Remove existing toasts
+       document.querySelectorAll('.map-toast').forEach(t => t.remove());
+
+       const toast = document.createElement('div');
+       toast.className = 'map-toast';
+       toast.style.position = 'absolute';
+       toast.style.top = '10px';
+       toast.style.left = '50%';
+       toast.style.transform = 'translateX(-50%)';
+       toast.style.padding = '10px 20px';
+       toast.style.borderRadius = '6px';
+       toast.style.fontWeight = 'bold';
+       toast.style.fontSize = '13px';
+       toast.style.zIndex = '2000';
+       toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.25)';
+       toast.style.maxWidth = '90%';
+       toast.style.textAlign = 'center';
+       toast.style.pointerEvents = 'none';
+
+       if (level === "warning") {
+           toast.style.background = '#fff3cd';
+           toast.style.color = '#856404';
+           toast.style.border = '1px solid #ffc107';
+       } else if (level === "error") {
+           toast.style.background = '#f8d7da';
+           toast.style.color = '#721c24';
+           toast.style.border = '1px solid #f5c6cb';
+       } else {
+           toast.style.background = '#d1ecf1';
+           toast.style.color = '#0c5460';
+           toast.style.border = '1px solid #bee5eb';
+       }
+
+       toast.textContent = message;
+       mapContainer.appendChild(toast);
+
+       // Auto-dismiss after 5 seconds
+       setTimeout(() => {
+           if (toast.parentNode) {
+               toast.remove();
+           }
+       }, 5000);
    }
+   window.showToast = showToast;
 
    // ── COORDS BAR ─────────────────────────────────────────────────────────────
      map.on('mousemove', e => {
@@ -2322,6 +2489,12 @@
              currentDataProduct = "tempo";
              displayMode = "grid";  // TEMPO uses grid cells, not point sensors
 
+             // Sync Spatial Scale radio buttons: uncheck both since TEMPO uses "grid" internally
+             // The "Individual Sensors" option is closest to grid view, so check it visually
+             document.querySelectorAll('input[name="displayMode"]').forEach(r => {
+                 r.checked = (r.value === "sensor");
+             });
+
              // Update legend for TEMPO scale
              updateLegend();
 
@@ -2333,6 +2506,11 @@
          } else if (selected === "openaq" || selected === "clarity") {
              currentDataProduct = "clarity";
              displayMode = "sensor";
+
+             // Sync Spatial Scale radio buttons
+             document.querySelectorAll('input[name="displayMode"]').forEach(r => {
+                 r.checked = (r.value === "sensor");
+             });
 
              // Update legend for Clarity scale
              updateLegend();
@@ -2347,6 +2525,11 @@
              currentDataProduct = "fusion";
              displayMode = "sensor";
 
+             // Sync Spatial Scale radio buttons
+             document.querySelectorAll('input[name="displayMode"]').forEach(r => {
+                 r.checked = (r.value === "sensor");
+             });
+
              // Update legend for Fusion scale
              updateLegend();
 
@@ -2356,7 +2539,7 @@
              showToast("Fusion data product selected");
          }
 
-         // Clear existing layers and reload current view
+         // Clear ALL existing layers and reload current view
          if (currentLayer) {
              map.removeLayer(currentLayer);
              currentLayer = null;
@@ -2417,6 +2600,7 @@
                      return;
                  }
                  dates = loadedDates;
+                 allDates = loadedDates;
                  rangeStartDate = dates[0];
                  rangeEndDate = dates[dates.length - 1];
                  rangeCurrentEndDate = rangeEndDate;
@@ -2464,6 +2648,7 @@
                      loadedDates = generateClarityDatesFromFiles();
                  }
                  dates = loadedDates;
+                 allDates = loadedDates;
                  rangeStartDate = dates[0];
                  rangeEndDate = dates[dates.length - 1];
                  rangeCurrentEndDate = rangeEndDate;
@@ -2494,6 +2679,7 @@
                  console.error("Could not load Clarity dates.json:", err);
                  // Fallback: generate dates from available clarity files
                  dates = generateClarityDatesFromFiles();
+                 allDates = dates;
                  if (dates.length > 0) {
                      rangeStartDate = dates[0];
                      rangeEndDate = dates[dates.length - 1];
@@ -2528,18 +2714,68 @@
          fetch("/data/fused/dates.json")
              .then(r => {
                  if (!r.ok) {
-                     console.warn("Fusion dates.json not found, falling back to Clarity dates.");
-                     return loadClarityDatesAndReturn();
+                     console.warn("Fusion dates.json not found.");
+                     // Show notification that Fusion has no data
+                     showToast(
+                         "Fusion data product is not yet available. No dates or data points exist for this product.",
+                         "warning"
+                     );
+                     // Clear the map – do NOT silently fall back to Clarity
+                     dates = [];
+                     rangeStartDate = null;
+                     rangeEndDate = null;
+                     rangeCurrentEndDate = null;
+
+                     var dateSlider = document.getElementById("dateSlider");
+                     var dateLabel = document.getElementById("dateLabel");
+                     if (dateSlider) {
+                         dateSlider.max = 0;
+                         dateSlider.value = 0;
+                     }
+                     if (dateLabel) dateLabel.innerHTML = "No Fusion Data Available";
+
+                     // Clear any existing layers
+                     if (currentLayer) {
+                         map.removeLayer(currentLayer);
+                         currentLayer = null;
+                     }
+                     if (communityLayer) {
+                         map.removeLayer(communityLayer);
+                         communityLayer = null;
+                     }
+                     hideLoading();
+                     return null;
                  }
                  return r.json();
              })
              .then(loadedDates => {
-                 if (!loadedDates) return;
+                 if (!loadedDates) return; // Already handled the "no file" case above
                  // Handle both array and {dates: [...]} formats
-                 dates = Array.isArray(loadedDates) ? loadedDates : (loadedDates.dates || loadedDates);
+                 allDates = Array.isArray(loadedDates) ? loadedDates : (loadedDates.dates || loadedDates);
+                 dates = allDates;
                  if (!dates || dates.length === 0) {
-                     console.warn("No Fusion dates found, falling back to Clarity dates.");
-                     loadClarityDates();
+                     console.warn("No Fusion dates found in dates.json.");
+                     showToast(
+                         "Fusion data product has no dates or data points available yet.",
+                         "warning"
+                     );
+                     // Clear slider and layers
+                     var dateSlider = document.getElementById("dateSlider");
+                     var dateLabel = document.getElementById("dateLabel");
+                     if (dateSlider) {
+                         dateSlider.max = 0;
+                         dateSlider.value = 0;
+                     }
+                     if (dateLabel) dateLabel.innerHTML = "No Fusion Data Available";
+                     if (currentLayer) {
+                         map.removeLayer(currentLayer);
+                         currentLayer = null;
+                     }
+                     if (communityLayer) {
+                         map.removeLayer(communityLayer);
+                         communityLayer = null;
+                     }
+                     hideLoading();
                      return;
                  }
                  rangeStartDate = dates[0];
@@ -2570,8 +2806,23 @@
              })
              .catch(err => {
                  console.error("Could not load Fusion dates:", err);
-                 // Fall back to Clarity dates
-                 loadClarityDates();
+                 showToast(
+                     "Fusion data product is not yet available. No dates or data points exist for this product.",
+                     "warning"
+                 );
+                 dates = [];
+                 var dateSlider = document.getElementById("dateSlider");
+                 var dateLabel = document.getElementById("dateLabel");
+                 if (dateSlider) {
+                     dateSlider.max = 0;
+                     dateSlider.value = 0;
+                 }
+                 if (dateLabel) dateLabel.innerHTML = "No Fusion Data Available";
+                 if (currentLayer) {
+                     map.removeLayer(currentLayer);
+                     currentLayer = null;
+                 }
+                 hideLoading();
              });
      }
 

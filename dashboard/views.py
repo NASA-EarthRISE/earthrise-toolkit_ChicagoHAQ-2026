@@ -255,14 +255,14 @@ def data_status_api(request):
 print("View site in browser at: http://127.0.0.1:8000/\n")
 
 
-# ── CLARITY DATA SERVING ─────────────────────────────────────────────
-# Serves GeoJSON and JSON data files from dashboard/data/clarity/
-# and the dates.json index from dashboard/data/
+# ── DATA SERVING ─────────────────────────────────────────────
+# Serves GeoJSON, JSON, and CSV data files from dashboard/data/{data_type}/
 
 import mimetypes
 
 mimetypes.add_type('application/json', '.json')
 mimetypes.add_type('application/geo+json', '.geojson')
+mimetypes.add_type('application/csv', '.csv')
 
 
 def clarity_data_file(request, filename):
@@ -272,7 +272,7 @@ def clarity_data_file(request, filename):
     Examples:
       /data/clarity/2025-09-01.geojson
       /data/clarity/daily_community_2025-09-13.geojson
-      /data/clarity/monthly_sensor_2025-09.geojson
+      /data/clarity/monthly_pixel_2025-09.geojson
     """
     clarity_dir = os.path.join(settings.BASE_DIR, 'dashboard', 'data', 'clarity')
     file_path = os.path.join(clarity_dir, filename)
@@ -383,9 +383,9 @@ def _scan_data_files(source):
     Each dict: { "filename": ..., "size": ..., "type": ..., "ext": ... }
     File type is inferred from filename prefix:
       - daily_community_  -> "daily_community"
-      - daily_sensor_     -> "daily_sensor"
+      - daily_pixel     -> "daily"pixel
       - monthly_community -> "monthly_community"
-      - monthly_sensor    -> "monthly_sensor"
+      - monthly_pixel    -> "monthly_pixel"
       - YYYY-MM-DD.json/geojson -> "daily"
       - else              -> "other"
     """
@@ -403,14 +403,22 @@ def _scan_data_files(source):
         ext = 'geojson' if f.endswith('.geojson') else ('json' if f.endswith('.json') else 'unknown')
 
         # Classify file type by prefix
+        # OpenAir prefixes
         if f.startswith('daily_community_'):
             ftype = 'daily_community'
-        elif f.startswith('daily_sensor_'):
-            ftype = 'daily_sensor'
+        elif f.startswith('daily_sensor'):
+            ftype = 'daily_pixel'
         elif f.startswith('monthly_community_'):
             ftype = 'monthly_community'
         elif f.startswith('monthly_sensor_'):
-            ftype = 'monthly_sensor'
+            ftype = 'monthly_pixel'
+        # TEMPO prefixes (different naming convention)
+        elif f.startswith('day_community_'):
+            ftype = 'daily_community'
+        elif re.match(r'^day_\d{4}-\d{2}-\d{2}', f):
+            ftype = 'daily_pixel'
+        elif re.match(r'^month_\d{4}-\d{2}', f):
+            ftype = 'monthly_pixel'
         elif re.match(r'^\d{4}-\d{2}-\d{2}', f):
             ftype = 'daily'
         else:

@@ -420,6 +420,25 @@ nav {
   color: #ffffff;
 }
 
+.load-date-btn {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.25rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.load-date-btn:hover {
+  border-color: var(--primary-light);
+  background: var(--bg-card);
+}
 
 
 /* Search */

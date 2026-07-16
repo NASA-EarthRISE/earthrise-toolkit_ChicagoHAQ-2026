@@ -617,6 +617,7 @@ function drawGraphs(communityName) {
   renderTempoBarGraph(communityName);
 }
 
+// Percentile with Tempo and Clarity selection
 function renderPercentileGraph(communityName) {
   const container = document.getElementById('graph-percentile');
   // Remove old chart div if exists
@@ -726,6 +727,7 @@ function renderPercentileGraph(communityName) {
   setupZoomNotification(chartDiv, 'zoom-notify-percentile');
 }
 
+// Ground bar graph
 function renderGroundBarGraph(communityName) {
   const container = document.getElementById('graph-ground');
   const oldChart = container.querySelector('.plotly-chart');
@@ -789,7 +791,7 @@ function renderGroundBarGraph(communityName) {
   Plotly.newPlot(chartDiv, [trace], layout, config);
   setupZoomNotification(chartDiv, 'zoom-notify-ground');
 }
-
+// Tempo bar graph
 function renderTempoBarGraph(communityName) {
   const container = document.getElementById('graph-tempo');
   const oldChart = container.querySelector('.plotly-chart');

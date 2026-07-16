@@ -5,7 +5,7 @@
     <div class="form-group" style="margin-bottom:0;">
       <select id="region-dropdown">
         <option value="">Select a region...</option>
-        <option value="cook_county">Cook County, Chicago</option>
+        <option value="cook_county" selected>Cook County, Chicago</option>
       </select>
     </div>
 </div>
@@ -19,39 +19,42 @@
     </div>
 </div>
 
-<div class = "sidebar-section" style="background-color:var(--primary-dark);">
+<div class = "sidebar-section" style="background-color:var(--primary-dark); font-family:'Segoe UI', system-ui, -apple-system, sans-serif;">
     <!-- Date Selection (only for hourly) -->
     <div class="form-group" id="single-date-group">
-      <label for="map-date">Select Date</label>
+      <label for="map-date" style="color: var(--bg);">Select Date</label>
       <input type="date" id="map-date" value="{{ today|date:'Y-m-d' }}" />
+      <button class="load-date-btn" id="load-single-date" style="margin-top:0.5rem; width:100%;">Load</button>
     </div>
 
     <!-- Date Range Selection (only for daily) -->
     <div id="date-range-group" style="display: none;">
       <div class="form-row">
         <div class="form-group">
-          <label for="date-range-start">Start Date</label>
+          <label for="date-range-start" style="color: var(--bg);">Start Date</label>
           <input type="date" id="date-range-start" value="{{ today|date:'Y-m-d' }}" />
         </div>
         <div class="form-group">
-          <label for="date-range-end">End Date</label>
+          <label for="date-range-end" style="color: var(--bg);">End Date</label>
           <input type="date" id="date-range-end" value="{{ today|date:'Y-m-d' }}" />
         </div>
-    </div>
+      </div>
+      <button class="load-date-btn" id="load-date-range" style="margin-top:0.25rem; width:100%;">Load</button>
     </div>
 
     <!-- Month Range Selection (only for monthly) -->
     <div id="month-range-group" style="display: none;">
       <div class="form-row">
         <div class="form-group">
-          <label for="month-range-start">Start Month</label>
+          <label for="month-range-start" style="color: var(--bg);">Start Month</label>
           <input type="month" id="month-range-start" value="{{ today|date:'Y-m' }}" />
         </div>
         <div class="form-group">
-          <label for="month-range-end">End Month</label>
+          <label for="month-range-end" style="color: var(--bg);">End Month</label>
           <input type="month" id="month-range-end" value="{{ today|date:'Y-m' }}" />
         </div>
       </div>
+      <button class="load-date-btn" id="load-month-range" style="margin-top:0.25rem; width:100%;">Load</button>
     </div>
 
   </div>
@@ -76,7 +79,7 @@
     <h3>Spatial Scale</h3>
     <div style="margin-bottom:.75rem;">
       <label class="layer-item" style="display:block; margin-bottom:.4rem;">
-        <input type="radio" name="displayMode" value="sensor" checked /> Individual Sensors
+        <input type="radio" name="displayMode" value="sensor" checked /> Individual Pixel
       </label>
       <label class="layer-item" style="display:block; margin-bottom:.4rem;">
         <input type="radio" name="displayMode" value ="community" /> Community Areas

@@ -20,11 +20,11 @@
     background-attachment: fixed;
   }
 
-  /* ── GLOBAL FONT ── */
-  .export-layout,
-  .export-layout * {
-    font-family: Arial, Helvetica, sans-serif !important;
-  }
+   /* ── GLOBAL FONT ── */
+   .export-layout,
+   .export-layout * {
+     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+   }
 
   /*  EXPORT PAGE LAYOUT  */
   .export-layout {
@@ -152,7 +152,8 @@
     box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
   }
 
-  .form-group .hint {
+  .hint,
+  .form-group .hint{
     font-size: 0.72rem;
     color: var(--text-muted);
     margin-top: 0.2rem;
@@ -573,7 +574,7 @@
           <div class="form-group">
             <label for="month-range-start">Start Month</label>
             <input type="month" id="month-range-start" value="{{ today|date:'Y-m' }}" />
-            <span class="hint">Select a range of months for aggregated monthly view</span>
+            <span class="hint">Select a range of months for aggregated monthly view.</span>
           </div>
           <div class="form-group">
             <label for="month-range-end">End Month</label>
@@ -586,7 +587,7 @@
             <option value="single">Single page (last month)</option>
             <option value="multi">One page per month</option>
           </select>
-          <span class="hint">"One page per month" generates a separate PDF page for each month in the range</span>
+          <span class="hint">Note: "One page per month" generates a separate PDF page for each month in the range.</span>
         </div>
       </div>
 
@@ -694,9 +695,9 @@
           <option value="">All types</option>
           <option value="daily">Daily (Raw)</option>
           <option value="daily_community">Daily — Community Avg</option>
-          <option value="daily_sensor">Daily — Sensor Avg</option>
+          <option value="daily_pixel">Daily — Pixel Avg</option>
           <option value="monthly_community">Monthly — Community Avg</option>
-          <option value="monthly_sensor">Monthly — Sensor Avg</option>
+          <option value="monthly_pixel">Monthly — Pixel Avg</option>
         </select>
       </div>
 
@@ -711,9 +712,10 @@
       <!-- Export Format -->
       <h3>Export Format</h3>
       <div class="map-type-grid">
-        <button class="map-type-btn active" data-format="geojson" onclick="selectExportFormat('geojson')">GeoJSON</button>
+        <button class="map-type-btn active" data-format="geojson" onclick="selectExportFormat('geojson')">Original</button>
         <button class="map-type-btn" data-format="csv" onclick="selectExportFormat('csv')">CSV</button>
       </div>
+      <span class="hint">Note: To export .geojson or .json datafiles, select the "Original" option. To convert <strong>all selected files</strong> to .csv, select the "CSV" option.</span>
 
       <!-- Action Buttons -->
       <div class="export-actions">
