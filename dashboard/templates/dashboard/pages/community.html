@@ -338,7 +338,7 @@
     <div class="percentile-toggle">
       <span style="font-weight:600; font-size:0.9rem;">Percentile Metric:</span>
       <label>
-        <input type="radio" name="percentile-metric" value="ground" checked /> Ground (OpenAir)
+        <input type="radio" name="percentile-metric" value="ground" checked /> Open Air Chicago
       </label>
       <label>
         <input type="radio" name="percentile-metric" value="tempo" /> TEMPO
@@ -636,7 +636,7 @@ function renderPercentileGraph(communityName) {
   const percentileCol = metric === 'ground' ? 'ground_percentile' : 'tempo_percentile';
   const rankCol = metric === 'ground' ? 'ground_rank' : 'tempo_rank';
   const no2Col = metric === 'ground' ? 'ground_no2_ppb' : 'tempo_no2_molecules_cm2';
-  const label = metric === 'ground' ? 'Ground (Clarity)' : 'TEMPO';
+  const label = metric === 'ground' ? 'Open Air Chicago' : 'TEMPO';
 
   const communityPercentile = comm[percentileCol];
   const communityRank = comm[rankCol];
