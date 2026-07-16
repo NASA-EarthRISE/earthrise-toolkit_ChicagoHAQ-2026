@@ -20,11 +20,7 @@
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
-    #dateLabel {
-        margin-top: 5px;
-        font-weight: bold;
-        text-align: center;
-    }
+    
 
     .legend {
         background: white;
@@ -87,12 +83,14 @@
 
     .bottom-slider-bar .time-label,
     .bottom-slider-bar .date-label-display {
-        font-weight: bold;
-        font-size: 13px;
-        min-width: 140px;
+        width: 180px;
+        flex-shrink: 0;
         text-align: right;
+        font-weight: 600;
+        font-size: 13px;
+        line-height: 1.2;
+        white-space: nowrap;
     }
-
     .bottom-slider-bar .playback-controls {
         display: flex;
         justify-content: center;
@@ -122,7 +120,7 @@
     /* Legend overlay — bottom right of map container, above timeslider */
     .map-legend-overlay {
         position: absolute;
-        bottom: 180px;
+        bottom: 150px;
         right: 10px;
         background: white;
         padding: 10px 12px;
@@ -143,7 +141,7 @@
     .map-legend-overlay .legend-gradient-bar {
         width: 150px;
         height: 12px;
-        background: linear-gradient(to right, #440154, #31688e, #35b779, #fde724);
+        background: linear-gradient(to right, blue, green, yellow, red);
         border-radius: 2px;
     }
 
@@ -213,7 +211,7 @@
         <div class="slider-row">
           <label>Hour</label>
           <input type="range" min="0" max="23" step="1" value="0" id="timeSlider">
-          <span class="time-label" id="timeLabel">Time: 12 AM</span>
+          <div class="time-label" id="timeLabel"></div>
         </div>
       </div>
 
@@ -221,7 +219,7 @@
       <div class="slider-row">
         <label>Date</label>
         <input type="range" min="0" max="0" value="0" id="dateSlider">
-        <span class="date-label-display" id="dateLabel">Loading dates...</span>
+        <div class="date-label-display" id="dateLabel"></div>
       </div>
 
       <!-- Date range controls -->
@@ -363,6 +361,9 @@
   let nextCachedHourBuckets = null;
 
   let timeInterval = null;
+  const tempoDailyCache = {};
+  const tempoMonthlyCache = {};
+  let communityIndexCache = {};
 
   const chicagoDateFormatter =
       new Intl.DateTimeFormat(
@@ -527,9 +528,26 @@
 
       let requests = [];
 
-       if (prevDate)
+        if (prevDate) {
+            requests.push(
+                fetch(`/data/clarity/${prevDate}.geojson`)
+                    .then(r => r.ok ? r.json() : null)
+            );
+        }
 
-      Promise.all(requests)
+        requests.push(
+            fetch(`/data/clarity/${nextDate}.geojson`)
+                .then(r => r.ok ? r.json() : null)
+        );
+
+        if (afterNextDate) {
+            requests.push(
+                fetch(`/data/clarity/${afterNextDate}.geojson`)
+                    .then(r => r.ok ? r.json() : null)
+            );
+        }
+
+        Promise.all(requests)
       .then(files => {
           let combinedFeatures = [];
           files.forEach(data => {
@@ -608,19 +626,21 @@
       );
   }
 
-  function utcDateToCentralPretty(dateStr) {
-      const [year, month, day] = dateStr.split("-").map(Number);
-      const d = new Date(year, month - 1, day);
-      return d.toLocaleDateString(
-          "en-US",
-          {
-              year: "numeric",
-              month: "long",
-              day: "numeric"
-          }
-      );
-  }
+function utcDateToCentralPretty(dateStr) {
 
+    if (/^\d{4}-\d{2}$/.test(dateStr)) {
+        return formatMonthForDisplay(dateStr);
+    }
+
+    const [year, month, day] = dateStr.split("-").map(Number);
+
+    return new Date(year, month - 1, day)
+        .toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        });
+}
   function getPreviousDate(dateStr) {
       let d = new Date(dateStr + "T00:00:00Z");
       d.setUTCDate(d.getUTCDate() - 1);
@@ -894,99 +914,123 @@
       });
   }
 
+function renderDailyTempoData(data) {
+
+    const newLayer = L.layerGroup();
+
+    data.features.forEach(f => {
+
+        let value =
+            parseFloat(
+                f.properties.vertical_column_troposphere
+            );
+
+        if (isNaN(value)) return;
+
+        let geoJsonLayer = L.geoJSON(f, {
+            style: {
+                color: getColorTempo(value),
+                fillColor: getColorTempo(value),
+                weight: 0,
+                fillOpacity: 0.77,
+                opacity: 0.78
+            }
+        });
+
+        newLayer.addLayer(geoJsonLayer);
+    });
+
+    if (currentLayer) {
+        map.removeLayer(currentLayer);
+    }
+
+    currentLayer = newLayer;
+    currentLayer.addTo(map);
+
+    hideLoading();
+}
   // TEMPO Daily – renders grid cells as colored GeoJSON polygons
-  function loadDailyTempo(date) {
-      if (currentLayer) {
-          map.removeLayer(currentLayer);
-          currentLayer = null;
-      }
+ function loadDailyTempo(date) {
 
-      fetch(`/data/tempo/day_${date}.geojson`)
-      .then(r => {
-          if (!r.ok) return null;
-          return r.json();
-      })
-      .then(data => {
-          if (!data || !data.features || data.features.length === 0) {
-              hideLoading();
-              showLoading(`No Data Available<br>${utcDateToCentralPretty(date)}`);
-              return;
-          }
+    if (tempoDailyCache[date]) {
+        renderDailyTempoData(tempoDailyCache[date]);
+        return;
+    }
 
-          currentLayer = L.layerGroup();
-          data.features.forEach(f => {
-              let p = f.properties;
-              let value = parseFloat(p.vertical_column_troposphere);
-              if (isNaN(value)) return;
+    fetch(`/data/tempo/day_${date}.geojson`)
+        .then(r => {
+            if (!r.ok) return null;
+            return r.json();
+        })
+        .then(data => {
 
-              let geoJsonLayer = L.geoJSON(f, {
-                  style: {
-                      color: getColorTempo(value),
-                      fillColor: getColorTempo(value),
-                      weight: 0,
-                      fillOpacity: 0.77,
-                      opacity: 0.78
-                  },
-                  onEachFeature: function(feature, layer) {
-                      layer.bindTooltip(`
-                          <b>${p.sensor_name || "TEMPO Cell"}</b><br>
-                          Daily Avg NO₂: ${value.toExponential(2)} (molecules/cm<sup>2</sup>)
-                      `);
-                  }
-              });
-              currentLayer.addLayer(geoJsonLayer);
-          });
+            if (!data || !data.features) {
+                return;
+            }
 
-          currentLayer.addTo(map);
-          hideLoading();
-      })
-      .catch(err => {
-          console.error("Could not load TEMPO daily file:", err);
-      });
-  }
+            tempoDailyCache[date] = data;
 
+            renderDailyTempoData(data);
+
+        });
+}
+
+function renderMonthlyTempoData(data) {
+
+    if (!currentLayer) {
+        currentLayer = L.layerGroup().addTo(map);
+    } else {
+        currentLayer.clearLayers();
+    }
+
+    data.features.forEach(f => {
+
+        let value = parseFloat(
+            f.properties.vertical_column_troposphere
+        );
+
+        if (isNaN(value)) return;
+
+        let geoJsonLayer = L.geoJSON(f, {
+            style: {
+                color: getColorTempo(value),
+                fillColor: getColorTempo(value),
+                weight: 0,
+                fillOpacity: 0.77,
+                opacity: 0.78
+            }
+        });
+
+        currentLayer.addLayer(geoJsonLayer);
+    });
+
+    hideLoading();
+}
   // TEMPO Monthly – renders grid cells as colored GeoJSON polygons
   function loadMonthlyTempo(month) {
-      if (currentLayer) {
-          map.removeLayer(currentLayer);
-          currentLayer = null;
-      }
 
-      fetch(`/data/tempo/month_${month}.geojson`)
-      .then(r => r.json())
-      .then(data => {
-          currentLayer = L.layerGroup();
-          data.features.forEach(f => {
-              let p = f.properties;
-              let value = parseFloat(p.vertical_column_troposphere);
-              if (isNaN(value)) return;
+    if (tempoMonthlyCache[month]) {
+        renderMonthlyTempoData(tempoMonthlyCache[month]);
+        return;
+    }
 
-              let geoJsonLayer = L.geoJSON(f, {
-                  style: {
-                      color: getColorTempo(value),
-                      fillColor: getColorTempo(value),
-                      weight: 0,
-                      fillOpacity: 0.77,
-                      opacity: 0.78
-                  },
-                  onEachFeature: function(feature, layer) {
-                      layer.bindTooltip(`
-                          <b>${p.sensor_name || "TEMPO Cell"}</b><br>
-                          Monthly Avg NO₂: ${value.toExponential(2)} (molecules/cm<sup>2</sup>)
-                      `);
-                  }
-              });
-              currentLayer.addLayer(geoJsonLayer);
-          });
+    fetch(`/data/tempo/month_${month}.geojson`)
+        .then(r => r.json())
+        .then(data => {
 
-          currentLayer.addTo(map);
-          hideLoading();
-      })
-      .catch(err => {
-          console.error("Could not load TEMPO monthly file:", err);
-      });
-  }
+            if (!data || !data.features) {
+                return;
+            }
 
+            tempoMonthlyCache[month] = data;
+
+            renderMonthlyTempoData(data);
+
+        })
+        .catch(err => {
+            console.error("Could not load TEMPO monthly file:", err);
+        });
+}
   // TEMPO Daily Communities
   function loadTempoDailyCommunities(date) {
       if (currentLayer) {
@@ -1604,7 +1648,10 @@
         map.removeLayer(communityLayer);
         communityLayer = null;
     }
-
+    if (currentDataProduct === "tempo") {
+        loadTempoDates();
+        return;
+    }
     refreshMap();
     }
     
@@ -1724,7 +1771,10 @@
       let currentIndex = dates.indexOf(date);
       let prevDate = currentIndex > 0 ? dates[currentIndex - 1] : null;
       let nextDate = currentIndex < dates.length - 1 ? dates[currentIndex + 1] : null;
-      let selectedMonth = date.substring(0, 7);
+      let selectedMonth =
+        TIME_SCALE === "monthly"
+            ? date
+            : date.substring(0, 7);
 
       // ── TEMPO ROUTING ──
       if (currentDataProduct === "tempo") {
@@ -1870,24 +1920,25 @@
       }
 
       let requests = [];
-      if (prevDate) {
-          requests.push(
-              fetch(`/data/clarity/${prevDate}.geojson`)
-                  .then(r => r.ok ? r.json() : null)
-          );
-      }
 
-      requests.push(
-          fetch(`/data/clarity/${date}.geojson`)
-              .then(r => r.ok ? r.json() : null)
-      );
+        if (prevDate) {
+            requests.push(
+                fetch(`/data/clarity/${prevDate}.geojson`)
+                    .then(r => r.ok ? r.json() : null)
+            );
+        }
 
-      if (nextDate) {
-          requests.push(
-              fetch(`/data/clarity/${nextDate}.geojson`)
-                  .then(r => r.ok ? r.json() : null)
-          );
-      }
+        requests.push(
+            fetch(`/data/clarity/${date}.geojson`)
+                .then(r => r.ok ? r.json() : null)
+        );
+
+        if (nextDate) {
+            requests.push(
+                fetch(`/data/clarity/${nextDate}.geojson`)
+                    .then(r => r.ok ? r.json() : null)
+            );
+        }
 
       let loadPromise = Promise.all(requests);
 
@@ -1962,20 +2013,13 @@
           if (TIME_SCALE === "hourly" && hour !== selectedHour) return;
 
           // TEMPO grid cells use geometry coordinates
-          let coords = f.geometry.coordinates;
-          let lon, lat;
-          if (f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon") {
-              // Use centroid – take first ring first coordinate as approximation
-              let rings = f.geometry.type === "MultiPolygon" ? f.geometry.coordinates[0] : f.geometry.coordinates;
-              let ring = rings[0];
-              lon = ring[0][0];
-              lat = ring[0][1];
-          } else {
-              lon = coords[0];
-              lat = coords[1];
-          }
-
-          let point = turf.point([lon, lat]);
+          
+          let point;
+            try {
+                point = turf.centroid(f);
+            } catch (err) {
+                return;
+            }
 
           communityData.features.forEach(poly => {
               if (turf.booleanPointInPolygon(point, poly)) {
@@ -2044,6 +2088,11 @@
       document.querySelectorAll('input[name="displayMode"]').forEach(el => {
           el.addEventListener("change", function() {
               displayMode = this.value;
+              cachedDate = null;
+                cachedFeatures = null;
+                cachedHourBuckets = null;
+                nextCachedDate = null;
+                nextCachedHourBuckets = null;
               console.log("Display Mode:", displayMode);
 
               if (currentLayer) {
@@ -2099,7 +2148,7 @@
           selectedHour = Number(this.value);
           let baseDate = dates[Number(dateSlider.value)];
           let formattedTime = formatHourForDisplay(baseDate, selectedHour);
-          timeLabel.innerHTML = `Time: ${formattedTime}`;
+          timeLabel.textContent = `Time: ${formattedTime}`;
           loadDate(baseDate);
       });
 
@@ -2156,15 +2205,24 @@
                       let date = dates[currentIndex];
 
                       if (nextCachedDate === date) {
-                          cachedDate = nextCachedDate;
-                          cachedHourBuckets = nextCachedHourBuckets;
-                          console.log("Using precache:", date);
-                          dateLabel.innerHTML = utcDateToCentralPretty(date);
-                          timeSlider.value = 0;
-                          timeLabel.innerHTML = `Time: ${formatHourForDisplay(date, 0)}`;
-                          renderFeatures(cachedHourBuckets[0], date);
-                          return;
-                      }
+                        cachedDate = nextCachedDate;
+                        cachedHourBuckets = nextCachedHourBuckets;
+
+                        console.log("Using precache:", date);
+
+                        dateLabel.innerHTML = utcDateToCentralPretty(date);
+                        timeSlider.value = 0;
+                        timeLabel.innerHTML =
+                            `Time: ${formatHourForDisplay(date, 0)}`;
+
+                        if (currentDataProduct === "tempo") {
+                            renderTempoFeatures(cachedHourBuckets[0], date);
+                        } else {
+                            renderFeatures(cachedHourBuckets[0], date);
+                        }
+
+                        return;
+                    }
 
                       dateLabel.innerHTML = utcDateToCentralPretty(date);
                   }
@@ -2208,16 +2266,14 @@
                   loadDate(date);
               }
               else if (TIME_SCALE === "monthly") {
-                  let currentMonth = dates[Number(dateSlider.value)].substring(0, 7);
-                  let nextIndex = Number(dateSlider.value);
-                  do {
-                      nextIndex++;
-                      if (nextIndex >= dates.length) {
-                          clearInterval(timeInterval);
-                          timeInterval = null;
-                          return;
-                      }
-                  } while (dates[nextIndex].substring(0, 7) === currentMonth && nextIndex !== Number(dateSlider.value));
+                  let nextIndex =
+                        Number(dateSlider.value) + 1;
+
+                    if (nextIndex >= dates.length) {
+                        clearInterval(timeInterval);
+                        timeInterval = null;
+                        return;
+                    }
                   dateSlider.value = nextIndex;
                   let date = dates[nextIndex];
                   dateLabel.innerHTML = formatMonthForDisplay(date);
@@ -2237,20 +2293,34 @@
       // The sidebar's "Data Products" section has dataProduct radios (tempo/openaq/fusion).
       // On page load we must read the checked radio for dataProduct and set displayMode accordingly
       // so that the JS state matches what the user sees in the sidebar.
-      const checkedDataProduct = document.querySelector('input[name="dataProduct"]:checked');
-      if (checkedDataProduct) {
-          const product = checkedDataProduct.value;
-          if (product === "tempo") {
-              currentDataProduct = "tempo";
-              displayMode = "grid";  // TEMPO uses grid cells
-          } else if (product === "openaq" || product === "clarity") {
-              currentDataProduct = "clarity";
-              displayMode = "sensor";
-          } else if (product === "fusion") {
-              currentDataProduct = "fusion";
-              displayMode = "sensor";
-          }
-      }
+     // Restore previously selected data product
+const savedDataProduct =
+    localStorage.getItem("selectedDataProduct");
+
+if (savedDataProduct) {
+
+    const savedRadio = document.querySelector(
+        `input[name="dataProduct"][value="${savedDataProduct}"]`
+    );
+
+    if (savedRadio) {
+        savedRadio.checked = true;
+    }
+
+    if (
+        savedDataProduct === "clarity" ||
+        savedDataProduct === "openaq"
+    ) {
+        currentDataProduct = "clarity";
+    }
+    else if (savedDataProduct === "tempo") {
+        currentDataProduct = "tempo";
+    }
+    else if (savedDataProduct === "fusion") {
+        currentDataProduct = "fusion";
+    }
+}
+
 
       // Sync the displayMode radio buttons to match the current displayMode
       document.querySelectorAll('input[name="displayMode"]').forEach(radio => {
@@ -2341,8 +2411,21 @@
                   return;
               }
               // Filter the full dates array to the selected month range
-              const endMonthInclusive = endMonth + '-31'; // include all days in end month
-              const filteredDates = allDates.filter(d => d >= startMonth && d <= endMonthInclusive);
+              const [endYear, endMon] =
+                    endMonth.split('-').map(Number);
+
+                const monthEndDate = new Date(
+                    endYear,
+                    endMon,
+                    0
+                );
+
+                const endMonthInclusive =
+                    monthEndDate.toISOString().split('T')[0]; // include all days in end month
+              const filteredDates = allDates.filter(month =>
+                month >= startMonth &&
+                month <= endMonth
+            );
               if (filteredDates.length === 0) {
                   showToast(`No data available between ${startMonth} and ${endMonth}.`, 'warning');
                   return;
@@ -2476,6 +2559,11 @@
      document.querySelectorAll('input[name="dataProduct"]').forEach(radio => {
      radio.addEventListener('change', e => {
          const selected = e.target.value;
+         localStorage.setItem("selectedDataProduct", selected);
+         if (timeInterval) {
+            clearInterval(timeInterval);
+            timeInterval = null;
+        }
          console.log("Data Product Changed to:", selected);
 
          // Remove all data layers first
@@ -2487,7 +2575,7 @@
          // Switch currentDataProduct and reload data
          if (selected === "tempo") {
              currentDataProduct = "tempo";
-             displayMode = "grid";  // TEMPO uses grid cells, not point sensors
+             displayMode = "sensor";  // TEMPO uses grid cells, not point sensors
 
              // Sync Spatial Scale radio buttons: uncheck both since TEMPO uses "grid" internally
              // The "Individual Sensors" option is closest to grid view, so check it visually
@@ -2586,69 +2674,43 @@
 
      // ── LOAD TEMPO DATES ──────────────────────────────────────────────────────
      function loadTempoDates() {
-         // Try loading TEMPO hourly dates first, fall back to daily dates
-         // Use absolute URLs (leading /) so they work from any map view (hourly/daily/monthly)
-         fetch("/data/tempo/TEMPOdates.json")
-             .then(r => {
-                 if (!r.ok) return fetch("/data/tempo/TEMPOdaily_dates.json");
-                 return r.json();
-             })
-             .then(loadedDates => {
-                 if (!loadedDates || !Array.isArray(loadedDates) || loadedDates.length === 0) {
-                     console.warn("TEMPO dates file empty or invalid, generating from clarity dates.");
-                     loadClarityDates();
-                     return;
-                 }
-                 dates = loadedDates;
-                 allDates = loadedDates;
-                 rangeStartDate = dates[0];
-                 rangeEndDate = dates[dates.length - 1];
-                 rangeCurrentEndDate = rangeEndDate;
 
-                 var dateSlider = document.getElementById("dateSlider");
-                 var dateLabel = document.getElementById("dateLabel");
-                 var startDateInput = document.getElementById("startDate");
-                 var endDateInput = document.getElementById("endDate");
+            let datesFile;
 
-                 if (startDateInput) startDateInput.value = rangeStartDate;
-                 if (endDateInput) endDateInput.value = rangeEndDate;
+            if (TIME_SCALE === "daily") {
+                datesFile = "/data/tempo/TEMPOdaily_dates.json";
+            }
+            else if (TIME_SCALE === "monthly") {
+                datesFile = "/data/tempo/TEMPOdaily_dates.json";
+                // or TEMPOmonthly_dates.json if you have one
+            }
+            else {
+                datesFile = "/data/tempo/TEMPOdates.json";
+            }
 
-                 dateSlider.max = dates.length - 1;
-                 dateSlider.value = 0;
-
-                 if (TIME_SCALE === "monthly" && dateLabel) {
-                     dateLabel.innerHTML = formatMonthForDisplay(dates[0]);
-                 } else if (dateLabel) {
-                     dateLabel.innerHTML = utcDateToCentralPretty(dates[0]);
-                 }
-
-                 if (TIME_SCALE === "hourly") {
-                     var timeLabel = document.getElementById("timeLabel");
-                     if (timeLabel) timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
-                 }
-
-                 loadDate(dates[0]);
-             })
-             .catch(err => {
-                 console.error("Could not load TEMPO dates:", err);
-             });
-     }
-
-     // ── LOAD CLARITY DATES ────────────────────────────────────────────────────
-     function loadClarityDates() {
-         // Use absolute URL so it works from /map/hourly/, /map/daily/, /map/monthly/
-         fetch("/api/clarity-dates/")
+            fetch(datesFile)
              .then(r => r.json())
              .then(response => {
                  // Handle both array and {dates: [...]} formats
                  let loadedDates = Array.isArray(response) ? response : (response.dates || []);
+                 
+                 if (TIME_SCALE === "monthly") {
+                    loadedDates = [
+                        ...new Set(
+                            loadedDates.map(
+                                d => d.substring(0, 7)
+                            )
+                        )
+                    ];
+
+                }
                  if (!loadedDates || loadedDates.length === 0) {
                      console.warn("No Clarity dates found in API response, generating from clarity files.");
                      // Fallback: scan clarity directory for available dates
                      loadedDates = generateClarityDatesFromFiles();
                  }
-                 dates = loadedDates;
-                 allDates = loadedDates;
+                 dates = [...loadedDates];
+                allDates = [...loadedDates];
                  rangeStartDate = dates[0];
                  rangeEndDate = dates[dates.length - 1];
                  rangeCurrentEndDate = rangeEndDate;
@@ -2673,7 +2735,13 @@
                  var timeLabel = document.getElementById("timeLabel");
                  if (timeLabel) timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
 
-                 loadDate(dates[0]);
+                 cachedDate = null;
+                cachedFeatures = null;
+                cachedHourBuckets = null;
+
+                nextCachedDate = null;
+                nextCachedHourBuckets = null;
+                loadDate(dates[0]);
              })
              .catch(err => {
                  console.error("Could not load Clarity dates.json:", err);
@@ -2691,6 +2759,109 @@
                  }
              });
      }
+
+     // ── LOAD CLARITY DATES ────────────────────────────────────────────────────
+     function loadClarityDates() {
+    // Use absolute URL so it works from /map/hourly/, /map/daily/, /map/monthly/
+    fetch("/data/clarity/dates.json")
+        .then(r => r.json())
+        .then(response => {
+
+            // Handle both array and {dates:[...]} formats
+            let loadedDates = Array.isArray(response)
+                ? response
+                : (response.dates || []);
+
+            if (TIME_SCALE === "monthly") {
+
+                loadedDates = [
+                    ...new Set(
+                        loadedDates.map(
+                            d => d.substring(0, 7)
+                        )
+                    )
+                ];
+
+                console.log("Monthly dates:", loadedDates);
+            }
+            if (!loadedDates || loadedDates.length === 0) {
+                console.warn("No Clarity dates found in API response, generating from clarity files.");
+
+                // Fallback: scan clarity directory for available dates
+                loadedDates = generateClarityDatesFromFiles();
+            }
+
+            dates = loadedDates;
+            allDates = loadedDates;
+
+            rangeStartDate = dates[0];
+            rangeEndDate = dates[dates.length - 1];
+            rangeCurrentEndDate = rangeEndDate;
+
+            var dateSlider = document.getElementById("dateSlider");
+            var dateLabel = document.getElementById("dateLabel");
+            var startDateInput = document.getElementById("startDate");
+            var endDateInput = document.getElementById("endDate");
+
+            if (TIME_SCALE === "monthly") {
+
+                if (startDateInput) startDateInput.value = "";
+                if (endDateInput) endDateInput.value = "";
+
+            } else {
+
+                if (startDateInput) startDateInput.value = rangeStartDate;
+                if (endDateInput) endDateInput.value = rangeEndDate;
+            }
+
+            dateSlider.max = dates.length - 1;
+            dateSlider.value = 0;
+
+            if (TIME_SCALE === "monthly") {
+                if (dateLabel) {
+                    dateLabel.innerHTML = formatMonthForDisplay(dates[0]);
+                }
+            } else {
+                if (dateLabel) {
+                    dateLabel.innerHTML = utcDateToCentralPretty(dates[0]);
+                }
+            }
+
+            var timeLabel = document.getElementById("timeLabel");
+            if (timeLabel) {
+                timeLabel.innerHTML =
+                    `Time: ${formatHourForDisplay(dates[0], 0)}`;
+            }
+
+            cachedDate = null;
+            cachedFeatures = null;
+            cachedHourBuckets = null;
+
+            nextCachedDate = null;
+            nextCachedHourBuckets = null;
+
+            loadDate(dates[0]);
+        })
+        .catch(err => {
+            console.error("Could not load Clarity dates.json:", err);
+
+            // Fallback: generate dates from available clarity files
+            dates = generateClarityDatesFromFiles();
+            allDates = dates;
+
+            if (dates.length > 0) {
+                rangeStartDate = dates[0];
+                rangeEndDate = dates[dates.length - 1];
+                rangeCurrentEndDate = rangeEndDate;
+
+                var dateSlider = document.getElementById("dateSlider");
+                dateSlider.max = dates.length - 1;
+                dateSlider.value = 0;
+
+                loadDate(dates[0]);
+            }
+        });
+}
 
      // ── GENERATE CLARITY DATES FROM AVAILABLE FILES (fallback) ─────────────
      function generateClarityDatesFromFiles() {
@@ -2802,7 +2973,12 @@
                  var timeLabel = document.getElementById("timeLabel");
                  if (timeLabel) timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
 
-                 loadDate(dates[0]);
+                 cachedDate = null;
+                cachedFeatures = null;
+                cachedHourBuckets = null;
+
+                nextCachedDate = null;
+                nextCachedHourBuckets = null;
              })
              .catch(err => {
                  console.error("Could not load Fusion dates:", err);
@@ -2828,7 +3004,7 @@
 
      // Helper: load Clarity dates and return a promise with the dates array
      function loadClarityDatesAndReturn() {
-         return fetch("/api/clarity-dates/")
+         return fetch("/data/clarity/dates.json")
              .then(r => r.json())
              .then(response => {
                  let loadedDates = Array.isArray(response) ? response : (response.dates || []);
