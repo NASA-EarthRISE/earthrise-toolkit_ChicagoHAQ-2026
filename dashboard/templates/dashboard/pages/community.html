@@ -18,8 +18,8 @@
     /* Hero (Heading) banner */
     .hero {
     text-align: center;
-    padding: 1rem 1rem;
-    margin-bottom: 1rem;
+    padding: 2rem 1rem;
+    margin-bottom: 1.5rem;
     }
 
     .hero h1 {
@@ -156,19 +156,63 @@
     opacity: 0.9;
   }
 
-  /* Graph placeholder container */
-  .graph-container {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    flex: 1;
-    min-height: 310px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    display: flex;
-    flex-direction: column;
-    padding: 1rem;
-    position: relative;
-  }
+   /* Graph placeholder container */
+   .graph-container {
+     background: var(--bg-card);
+     border: 1px solid var(--border);
+     border-radius: 5px;
+     flex: 1;
+     min-height: 310px;
+     box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+     display: flex;
+     flex-direction: column;
+     padding: 1rem;
+     position: relative;
+   }
+
+   /* Loading spinner overlay */
+   .graph-loading {
+     position: absolute;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     justify-content: center;
+     background: rgba(255, 255, 255, 0.85);
+     z-index: 10;
+     border-radius: 5px;
+     pointer-events: none;
+     opacity: 0;
+     transition: opacity 0.2s ease;
+   }
+
+   .graph-loading.visible {
+     opacity: 1;
+     pointer-events: auto;
+   }
+
+   .graph-loading .spinner {
+     width: 40px;
+     height: 40px;
+     border: 4px solid var(--border);
+     border-top-color: var(--primary);
+     border-radius: 50%;
+     animation: graph-spin 0.7s linear infinite;
+   }
+
+   .graph-loading .loading-text {
+     margin-top: 0.75rem;
+     font-size: 0.85rem;
+     color: var(--text-muted);
+     font-style: italic;
+   }
+
+   @keyframes graph-spin {
+     to { transform: rotate(360deg); }
+   }
 
   .graph-container img {
     max-width: 50%;
@@ -366,7 +410,11 @@
     <div class="graph-container" id="graph-ground">
       <div class="graph-title" id="graph-ground-title">Ground NO₂ by Day of Week (ppb)</div>
       <div class="plotly-zoom-notification" id="zoom-notify-ground">
-        <strong>Zoomed in.</strong> Double-click to reset view.
+        <strong>Double-click to reset view.</strong>
+      </div>
+      <div class="graph-loading" id="graph-ground-loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading box plot...</div>
       </div>
       <div class="graph-placeholder">Select a community and press "Go" to view graphs.</div>
     </div>
@@ -375,7 +423,11 @@
     <div class="graph-container" id="graph-tempo">
       <div class="graph-title" id="graph-tempo-title">Ground NO₂ Distribution (ppb)</div>
       <div class="plotly-zoom-notification" id="zoom-notify-tempo">
-        <strong>Zoomed in.</strong> Double-click to reset view.
+        <strong>Double-click to reset view.</strong>
+      </div>
+      <div class="graph-loading" id="graph-tempo-loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading distribution plot...</div>
       </div>
       <div class="graph-placeholder">Select a community and press "Go" to view graphs.</div>
     </div>
@@ -666,11 +718,24 @@ function renderPercentileGraph(communityName) {
   const no2Col = metric === 'ground' ? 'ground_no2_ppb' : 'tempo_no2_molecules_cm2';
   const label = metric === 'ground' ? 'Ground (OpenAir)' : 'TEMPO';
 
-  const communityPercentile = comm[percentileCol];
-  const communityRank = comm[rankCol];
+   const communityPercentile = comm[percentileCol];
+   const communityRank = comm[rankCol];
 
-  // Build normal distribution (bell curve) for percentiles 0-100
-  const allPercentiles = rankingsData
+   // Check if percentile data is available for this community
+   if (communityPercentile === null || communityPercentile === undefined) {
+     const noDataMsg = metric === 'ground'
+       ? 'No Ground (OpenAir) sensors available for this community. Percentile ranking cannot be calculated.'
+       : 'No TEMPO data available for this community. Percentile ranking cannot be calculated.';
+     container.innerHTML = `
+       <div class="graph-placeholder">
+         <strong>Percentile data unavailable</strong><br>
+         ${noDataMsg}
+       </div>`;
+     return;
+   }
+
+   // Build normal distribution (bell curve) for percentiles 0-100
+   const allPercentiles = rankingsData
     .filter(r => r[percentileCol] !== null && r[percentileCol] !== undefined)
     .map(r => r[percentileCol]);
 
@@ -748,16 +813,20 @@ function renderPercentileGraph(communityName) {
 // Weekday box plot for selected source (Ground or TEMPO) based on radio toggle
 // Replicates the Python seaborn boxplot: boxes for each day-of-week showing NO2 distribution
 function renderWeekdayBoxPlot(communityName, source) {
-  const container = document.getElementById('graph-ground');
-  const oldChart = container.querySelector('.plotly-chart');
-  if (oldChart) oldChart.remove();
+   const container = document.getElementById('graph-ground');
+   const oldChart = container.querySelector('.plotly-chart');
+   if (oldChart) oldChart.remove();
 
-  const placeholder = container.querySelector('.graph-placeholder');
-  if (placeholder) placeholder.style.display = 'none';
+   const placeholder = container.querySelector('.graph-placeholder');
+   if (placeholder) placeholder.style.display = 'none';
 
-  const chartDiv = document.createElement('div');
-  chartDiv.className = 'plotly-chart';
-  container.appendChild(chartDiv);
+   // Show loading spinner
+   const loadingEl = container.querySelector('.graph-loading');
+   if (loadingEl) loadingEl.classList.add('visible');
+
+   const chartDiv = document.createElement('div');
+   chartDiv.className = 'plotly-chart';
+   container.appendChild(chartDiv);
 
   const availableHeight = Math.max(200, container.clientHeight - 50);
 
@@ -769,6 +838,7 @@ function renderWeekdayBoxPlot(communityName, source) {
     .then(response => response.json())
     .then(result => {
       if (!result.data || result.data.length === 0) {
+        if (loadingEl) loadingEl.classList.remove('visible');
         container.innerHTML = '<div class="graph-placeholder">No data available for this community.</div>';
         return;
       }
@@ -776,6 +846,7 @@ function renderWeekdayBoxPlot(communityName, source) {
       const filteredData = result.data.filter(d => d.source === sourceKey && d.NO2 !== null && d.weekday !== null);
 
       if (filteredData.length === 0) {
+        if (loadingEl) loadingEl.classList.remove('visible');
         container.innerHTML = `<div class="graph-placeholder">${sourceLabel} NO₂ data not available.</div>`;
         return;
       }
@@ -807,14 +878,14 @@ function renderWeekdayBoxPlot(communityName, source) {
       }));
 
       const layout = {
-        margin: { t: 10, r: 20, b: 60, l: 55 },
+        margin: { t: 10, r: 20, b: 70, l: 85 },
         xaxis: {
           title: 'Day of Week',
           tickangle: -45,
           gridcolor: 'rgba(0,0,0,0.05)',
         },
         yaxis: {
-          title: { text: yLabel, standoff: 10 },
+          title: { text: yLabel, standoff: 15 },
           gridcolor: 'rgba(0,0,0,0.05)',
         },
         height: availableHeight,
@@ -831,9 +902,12 @@ function renderWeekdayBoxPlot(communityName, source) {
       const config = { displayModeBar: false, responsive: true };
       Plotly.newPlot(chartDiv, traces, layout, config);
       setupZoomNotification(chartDiv, 'zoom-notify-ground');
+      // Hide loading spinner after plot renders
+      if (loadingEl) loadingEl.classList.remove('visible');
     })
     .catch(err => {
       console.error('Failed to load NO2 data for box plot:', err);
+      if (loadingEl) loadingEl.classList.remove('visible');
       container.innerHTML = '<div class="graph-placeholder">Failed to load data.</div>';
     });
 }
@@ -841,16 +915,20 @@ function renderWeekdayBoxPlot(communityName, source) {
 // Distribution (KDE) plot for selected source (Ground or TEMPO) based on radio toggle
 // Replicates the Python seaborn kdeplot: density curve with IQR shading, median and mean lines
 function renderDistributionPlot(communityName, source) {
-  const container = document.getElementById('graph-tempo');
-  const oldChart = container.querySelector('.plotly-chart');
-  if (oldChart) oldChart.remove();
+   const container = document.getElementById('graph-tempo');
+   const oldChart = container.querySelector('.plotly-chart');
+   if (oldChart) oldChart.remove();
 
-  const placeholder = container.querySelector('.graph-placeholder');
-  if (placeholder) placeholder.style.display = 'none';
+   const placeholder = container.querySelector('.graph-placeholder');
+   if (placeholder) placeholder.style.display = 'none';
 
-  const chartDiv = document.createElement('div');
-  chartDiv.className = 'plotly-chart';
-  container.appendChild(chartDiv);
+   // Show loading spinner
+   const loadingEl = container.querySelector('.graph-loading');
+   if (loadingEl) loadingEl.classList.add('visible');
+
+   const chartDiv = document.createElement('div');
+   chartDiv.className = 'plotly-chart';
+   container.appendChild(chartDiv);
 
   const availableHeight = Math.max(200, container.clientHeight - 50);
 
@@ -863,6 +941,7 @@ function renderDistributionPlot(communityName, source) {
     .then(response => response.json())
     .then(result => {
       if (!result.data || result.data.length === 0) {
+        if (loadingEl) loadingEl.classList.remove('visible');
         container.innerHTML = '<div class="graph-placeholder">No data available for this community.</div>';
         return;
       }
@@ -870,6 +949,7 @@ function renderDistributionPlot(communityName, source) {
       const filteredData = result.data.filter(d => d.source === sourceKey && d.NO2 !== null);
 
       if (filteredData.length === 0) {
+        if (loadingEl) loadingEl.classList.remove('visible');
         container.innerHTML = `<div class="graph-placeholder">${sourceLabel} NO₂ data not available.</div>`;
         return;
       }
@@ -940,14 +1020,14 @@ function renderDistributionPlot(communityName, source) {
       };
 
       const layout = {
-        margin: { t: 25, r: 20, b: 50, l: 65 },
+        margin: { t: 25, r: 20, b: 80, l: 85 },
         xaxis: {
-          title: { text: yLabel, standoff: 10 },
+          title: { text: yLabel, standoff: 15 },
           tickformat: useScientific ? '.1e' : undefined,
           gridcolor: 'rgba(0,0,0,0.05)',
         },
         yaxis: {
-          title: { text: 'Density', standoff: 10 },
+          title: { text: 'Density', standoff: 15 },
           gridcolor: 'rgba(0,0,0,0.05)',
         },
         height: availableHeight,
@@ -962,14 +1042,17 @@ function renderDistributionPlot(communityName, source) {
         }],
       };
 
-      const config = { displayModeBar: false, responsive: true };
-      Plotly.newPlot(chartDiv, [traceKDE, traceIQR, traceMedian, traceMean], layout, config);
-      setupZoomNotification(chartDiv, 'zoom-notify-tempo');
-    })
-    .catch(err => {
-      console.error('Failed to load NO2 data for distribution plot:', err);
-      container.innerHTML = '<div class="graph-placeholder">Failed to load data.</div>';
-    });
+       const config = { displayModeBar: false, responsive: true };
+       Plotly.newPlot(chartDiv, [traceKDE, traceIQR, traceMedian, traceMean], layout, config);
+       setupZoomNotification(chartDiv, 'zoom-notify-tempo');
+       // Hide loading spinner after plot renders
+       if (loadingEl) loadingEl.classList.remove('visible');
+     })
+     .catch(err => {
+       console.error('Failed to load NO2 data for distribution plot:', err);
+       if (loadingEl) loadingEl.classList.remove('visible');
+       container.innerHTML = '<div class="graph-placeholder">Failed to load data.</div>';
+     });
 }
 
 // ── ZOOM NOTIFICATION ──────────────────────────────────────────────────────────────────────

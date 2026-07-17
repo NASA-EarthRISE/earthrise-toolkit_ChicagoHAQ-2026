@@ -288,9 +288,9 @@
     right: 0.5rem;
     background: rgba(0, 90, 158, 0.85);
     color: #fff;
-    padding: 0.3rem 0.7rem;
-    border-radius: 6px;
-    font-size: 0.72rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    font-size: 1rem;
     font-weight: 600;
     z-index: 1000;
     pointer-events: none;
@@ -520,7 +520,23 @@
     <div class="export-tab-content active" id="tab-pdf">
       <h2>Export Map as PDF</h2>
 
-      <!-- Map Type Selection -->
+      <!-- Data Product Selection -->
+      <h3>Data Product</h3>
+      <div class="map-type-grid">
+        <button class="map-type-btn" data-product="tempo" onclick="selectDataProduct('tempo')">TEMPO</button>
+        <button class="map-type-btn active" data-product="clarity" onclick="selectDataProduct('clarity')">OpenAir</button>
+        <button class="map-type-btn" data-product="fusion" onclick="selectDataProduct('fusion')">Fusion</button>
+      </div>
+
+      <!-- Aggregation Selection -->
+      <h3>Aggregation</h3>
+      <div class="map-type-grid">
+        <button class="map-type-btn" data-agg="pixel" onclick="selectAggregation('pixel')">Pixel/Sensor</button>
+        <button class="map-type-btn active" data-agg="community" onclick="selectAggregation('community')">Community</button>
+        <button class="map-type-btn" data-agg="raw" onclick="selectAggregation('raw')">Raw/Gridded</button>
+      </div>
+
+      <!-- Time Scale Selection -->
       <h3>Time Scale</h3>
       <div class="map-type-grid">
         <button class="map-type-btn active" data-type="hourly" onclick="selectMapType('hourly')">Hourly</button>

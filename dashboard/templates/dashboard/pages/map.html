@@ -111,6 +111,18 @@
         background: #e8e8e8;
     }
 
+    .bottom-slider-bar .playback-controls button.playing {
+        background: #263766;
+        color: #fff;
+        border-color: #263766;
+        cursor: default;
+    }
+
+    .bottom-slider-bar .playback-controls button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
     .bottom-slider-bar .hour-controls {
         display: flex;
         flex-direction: column;
@@ -153,6 +165,51 @@
         width: 150px;
         margin-top: 2px;
     }
+
+    /* Centered loading spinner overlay for map */
+    .map-loading-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1500;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .map-loading-overlay.visible {
+        opacity: 1;
+    }
+
+    .map-loading-overlay .map-spinner {
+        width: 48px;
+        height: 48px;
+        border: 5px solid #e0e0e0;
+        border-top-color: #263766;
+        border-radius: 50%;
+        animation: map-spin 0.7s linear infinite;
+    }
+
+    .map-loading-overlay .map-loading-text {
+        margin-top: 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #263766;
+        text-align: center;
+    }
+
+    @keyframes map-spin {
+        to { transform: rotate(360deg); }
+    }
   </style>
 
 {% endblock %}
@@ -179,7 +236,7 @@
     <div id="map"></div>
 
     <!-- Explore "!" button -->
-    <div id="explore-panel">
+    <div id="explore-panel" class="retracted">
       <button id="explore-panel-toggle" class="explore-panel-toggle" title="Toggle explore panel" aria-label="Toggle explore panel">?</button>
       <div id="explore-panel-body">
         <strong>Explore The Map </strong><br/>
@@ -203,7 +260,7 @@
 
         <div class="playback-controls">
           <button id="playBtn">⯈ Play</button>
-          <button id="pauseBtn">⏸ Pause</button>
+          <button id="pauseBtn" disabled>⏸ Pause</button>
         </div>
 
       <!-- Hourly time slider -->
@@ -232,6 +289,12 @@
         </div>
       </div>
 
+    </div>
+
+    <!-- Centered loading spinner overlay -->
+    <div class="map-loading-overlay" id="map-loading-overlay">
+      <div class="map-spinner"></div>
+      <div class="map-loading-text" id="map-loading-text">Loading...</div>
     </div>
 
     <!-- Coords bar -->
@@ -336,7 +399,7 @@
    let communityData = null;
    let ChicagoCommunityAreas = null;
    let displayMode = "sensor";       // "sensor" (Clarity) or "grid" (TEMPO) or "community"
-   let currentDataProduct = "tempo"; // default matches sidebar radio "checked" value; "clarity" or "tempo" or "fusion"
+   let currentDataProduct = "clarity"; // default matches sidebar radio "checked" value; "clarity" or "tempo" or "fusion"
    let rangeStartDate = null;
   let rangeEndDate = null;
   let rangeCurrentEndDate = null;
@@ -351,7 +414,6 @@
   let communityHourLookup = null;   // TEMPO community hourly lookup
 
   let communityLayer = null;      // colored data layer
-  let loadingControl = null;
 
   let cachedDate = null;
   let cachedFeatures = null;
@@ -399,7 +461,7 @@
                 fillColor: "#00000000" //make fill transparent
                 }
             }).addTo(map);
-            map.fitBounds(ChicagoBounds.getBounds())
+            map.fitBounds(ChicagoBounds.getBounds(), { animate: false })
         })
     }
 
@@ -439,7 +501,7 @@
             
             // Prevents map from involuntarily panning away from the Chicago area
             if (window.ChicagoBounds) {
-                map.fitBounds(ChicagoBounds.getBounds())
+                map.fitBounds(ChicagoBounds.getBounds(), { animate: false })
             }
 
             // Keep boundaries behind sensor markers
@@ -648,29 +710,18 @@ function utcDateToCentralPretty(dateStr) {
   }
 
   function showLoading(message = "Loading...") {
-      if (!loadingControl) {
-          loadingControl = L.control({ position: "topright" });
-          loadingControl.onAdd = function() {
-              let div = L.DomUtil.create("div");
-              div.id = "loadingIndicator";
-              div.style.background = "white";
-              div.style.padding = "8px";
-              div.style.borderRadius = "6px";
-              div.style.fontWeight = "bold";
-              div.style.boxShadow = "0 0 4px rgba(0,0,0,0.3)";
-              div.innerHTML = message;
-              return div;
-          };
-          loadingControl.addTo(map);
-      } else {
-          document.getElementById("loadingIndicator").innerHTML = message;
+      const overlay = document.getElementById('map-loading-overlay');
+      const textEl = document.getElementById('map-loading-text');
+      if (overlay && textEl) {
+          textEl.innerHTML = message;
+          overlay.classList.add('visible');
       }
   }
 
   function hideLoading() {
-      if (loadingControl) {
-          map.removeControl(loadingControl);
-          loadingControl = null;
+      const overlay = document.getElementById('map-loading-overlay');
+      if (overlay) {
+          overlay.classList.remove('visible');
       }
   }
 
@@ -2095,6 +2146,15 @@ function renderMonthlyTempoData(data) {
                 nextCachedHourBuckets = null;
               console.log("Display Mode:", displayMode);
 
+              // Stop playback and reset slider to beginning when display mode changes
+              if (timeInterval) {
+                  clearInterval(timeInterval);
+                  timeInterval = null;
+                  resetPlaybackUI();
+                  dateSlider.value = 0;
+                  timeSlider.value = 0;
+              }
+
               if (currentLayer) {
                   map.removeLayer(currentLayer);
                   currentLayer = null;
@@ -2182,6 +2242,13 @@ function renderMonthlyTempoData(data) {
       playBtn.addEventListener("click", () => {
           if (timeInterval) return;
 
+          // Disable play button and lock sliders during playback
+          playBtn.classList.add('playing');
+          playBtn.disabled = true;
+          pauseBtn.disabled = false;
+          dateSlider.disabled = true;
+          timeSlider.disabled = true;
+
           if (TIME_SCALE === "range") {
               rangeCurrentEndDate = rangeStartDate;
               dateSlider.value = 0;
@@ -2197,6 +2264,7 @@ function renderMonthlyTempoData(data) {
                       if (currentIndex === dates.length - 1) {
                           clearInterval(timeInterval);
                           timeInterval = null;
+                          resetPlaybackUI();
                           return;
                       }
                       selectedHour = 0;
@@ -2243,6 +2311,7 @@ function renderMonthlyTempoData(data) {
                   if (endIndex > finalIndex) {
                       clearInterval(timeInterval);
                       timeInterval = null;
+                      resetPlaybackUI();
                       return;
                   }
                   rangeCurrentEndDate = dates[endIndex];
@@ -2258,6 +2327,7 @@ function renderMonthlyTempoData(data) {
                   if (currentIndex >= dates.length) {
                       clearInterval(timeInterval);
                       timeInterval = null;
+                      resetPlaybackUI();
                       return;
                   }
                   dateSlider.value = currentIndex;
@@ -2272,6 +2342,7 @@ function renderMonthlyTempoData(data) {
                     if (nextIndex >= dates.length) {
                         clearInterval(timeInterval);
                         timeInterval = null;
+                        resetPlaybackUI();
                         return;
                     }
                   dateSlider.value = nextIndex;
@@ -2286,43 +2357,37 @@ function renderMonthlyTempoData(data) {
       pauseBtn.addEventListener("click", () => {
           clearInterval(timeInterval);
           timeInterval = null;
+          resetPlaybackUI();
       });
 
-      // ── PAGE LOAD: Sync displayMode with sidebar radio defaults ──
-      // The sidebar's "Spatial Scale" section has displayMode radios (sensor/community).
-      // The sidebar's "Data Products" section has dataProduct radios (tempo/openaq/fusion).
-      // On page load we must read the checked radio for dataProduct and set displayMode accordingly
-      // so that the JS state matches what the user sees in the sidebar.
-     // Restore previously selected data product
-const savedDataProduct =
-    localStorage.getItem("selectedDataProduct");
+      // Reset playback UI: re-enable play button, unlock sliders
+      function resetPlaybackUI() {
+          playBtn.classList.remove('playing');
+          playBtn.disabled = false;
+          pauseBtn.disabled = true;
+          dateSlider.disabled = false;
+          timeSlider.disabled = false;
+      }
 
-if (savedDataProduct) {
-
-    const savedRadio = document.querySelector(
-        `input[name="dataProduct"][value="${savedDataProduct}"]`
-    );
-
-    if (savedRadio) {
-        savedRadio.checked = true;
-    }
-
-    if (
-        savedDataProduct === "clarity" ||
-        savedDataProduct === "openaq"
-    ) {
+     // ── PAGE LOAD: Sync displayMode with sidebar radio defaults ──
+     // The sidebar's "Spatial Scale" section has displayMode radios (sensor/community).
+     // The sidebar's "Data Products" section has dataProduct radios (tempo/openaq/fusion).
+     // On page load we must read the checked radio for dataProduct and set displayMode accordingly
+     // so that the JS state matches what the user sees in the sidebar.
+    // Read the data product from the sidebar's checked radio button (HTML default)
+const checkedRadio = document.querySelector('input[name="dataProduct"]:checked');
+if (checkedRadio) {
+    if (checkedRadio.value === "openaq" || checkedRadio.value === "clarity") {
         currentDataProduct = "clarity";
-    }
-    else if (savedDataProduct === "tempo") {
+    } else if (checkedRadio.value === "tempo") {
         currentDataProduct = "tempo";
-    }
-    else if (savedDataProduct === "fusion") {
+    } else if (checkedRadio.value === "fusion") {
         currentDataProduct = "fusion";
     }
 }
 
 
-      // Sync the displayMode radio buttons to match the current displayMode
+     // Sync the displayMode radio buttons to match the current displayMode
       document.querySelectorAll('input[name="displayMode"]').forEach(radio => {
           radio.checked = (radio.value === displayMode);
       });
@@ -2534,10 +2599,8 @@ if (savedDataProduct) {
      const explorePanel = document.getElementById('explore-panel');
      const explorePanelToggle = document.getElementById('explore-panel-toggle');
      const explorePanelBody = document.getElementById('explore-panel-body');
-     if (explorePanelToggle && explorePanel) {
-     explorePanel.classList.add('retracted'); // start retracted
-
-     // Also prevent the toggle button & body from propagating to map
+    if (explorePanelToggle && explorePanel) {
+    // Also prevent the toggle button & body from propagating to map
      if (explorePanelToggle) {
          L.DomEvent.disableClickPropagation(explorePanelToggle);
          L.DomEvent.disableScrollPropagation(explorePanelToggle);
@@ -2560,10 +2623,23 @@ if (savedDataProduct) {
      radio.addEventListener('change', e => {
          const selected = e.target.value;
          localStorage.setItem("selectedDataProduct", selected);
+
+         // Stop playback if active — use DOM access since this handler is outside setTimeout scope
          if (timeInterval) {
             clearInterval(timeInterval);
             timeInterval = null;
-        }
+         }
+
+         // Reset playback UI via DOM (resetPlaybackUI is scoped inside setTimeout)
+         const playBtn = document.getElementById('playBtn');
+         const pauseBtn = document.getElementById('pauseBtn');
+         const dateSlider = document.getElementById('dateSlider');
+         const timeSlider = document.getElementById('timeSlider');
+         if (playBtn) { playBtn.classList.remove('playing'); playBtn.disabled = false; }
+         if (pauseBtn) { pauseBtn.disabled = true; }
+         if (dateSlider) { dateSlider.disabled = false; dateSlider.value = 0; }
+         if (timeSlider) { timeSlider.disabled = false; timeSlider.value = 0; }
+
          console.log("Data Product Changed to:", selected);
 
          // Remove all data layers first
