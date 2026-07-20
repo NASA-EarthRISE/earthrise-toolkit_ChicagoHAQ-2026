@@ -2097,7 +2097,7 @@ setTimeout(() => {
           dateSlider.value = 0;
           dateLabel.innerHTML = formatMonthForDisplay(filteredDates[0]);
           loadDate(filteredDates[0]);
-          showToast(`Loaded ${filteredDates.length} days from ${startMonth} to ${endMonth}`);
+          showToast(`Loaded ${filteredDates.length} months from ${startMonth} to ${endMonth}`);
       });
   }
 

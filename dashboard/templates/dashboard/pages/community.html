@@ -66,7 +66,6 @@
     top: 80px;
     align-self: flex-start;
     z-index: 1000; /*change to 900 once figure out how to make it actually sticky and scroll down with page*/
-    background-color: blue; /*remove after figuring out the stickiness*/
   }
 
   /* Right column: graphs */
@@ -353,7 +352,48 @@
     }
   }
 
-</style>
+    /* ── Share / Export PDF header ── */
+    .community-export-header {
+        display: flex;
+        justify-content: flex-end;
+        align-items: right;
+        gap: 10px;
+        padding: 8px 0;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    .community-export-header .share-label {
+        font-size: 0.78rem;
+        font-weight: 400;
+        color: #888;
+        white-space: nowrap;
+        user-select: none;
+    }
+
+    .community-export-header .btn-export-pdf {
+        padding: 4px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: transparent;
+        color: #666;
+        font-size: 0.78rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .community-export-header .btn-export-pdf:hover {
+        background: #f0f0f0;
+        border-color: #999;
+        color: #333;
+    }
+
+    .community-export-header .btn-export-pdf:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+  </style>
 {% endblock %}
 {% block content %}
 <div class="hero">
@@ -361,6 +401,12 @@
 <p class="subtitle">
   Use the tool below to see detailed information on the spatiotemporal trends of NO<sub>2</sub> pollution for any Chicago Community.
 </p>
+</div>
+
+<!-- Share / Export PDF header -->
+<div class="community-export-header">
+  <span class="share-label">Want to share this page?</span>
+  <button class="btn-export-pdf" id="export-pdf-btn" onclick="exportCommunityAsPDF()">Save as PDF</button>
 </div>
 
 <div class="community-layout">
@@ -379,7 +425,7 @@
 
     <!-- Help container -->
     <div class="help-container">
-      <p>Need help finding a community?</p>
+      <p>Need help finding your community?</p>
       <a href="https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-Community-Areas-Map/cauq-8yn6" target="_blank" rel="noopener noreferrer">Get Help</a>
     </div>
   </div>
@@ -433,7 +479,7 @@
     </div>
   </div>
 
-</div>
+</div> <!-- end .community-layout -->
 
 {% endblock %}
 
@@ -442,6 +488,10 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <!-- Plotly JS -->
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<!-- html2canvas for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- jsPDF for PDF generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
 // ── MAP INIT ───────────────────────────────────────────────────────────────
@@ -1091,6 +1141,91 @@ fetch("{% static 'dashboard/layers/oacd.geojson' %}") //load sensors
       },
     }).addTo(map);
   })
+
+// ── PDF EXPORT ─────────────────────────────────────────────────────────────────────────────
+// Captures the entire community page content (hero + layout) as a PDF using html2canvas + jsPDF
+function exportCommunityAsPDF() {
+  const btn = document.getElementById('export-pdf-btn');
+  btn.disabled = true;
+  btn.textContent = 'Generating PDF...';
+
+  // The element to capture: everything under the navbar
+  const element = document.querySelector('.hero');
+  // We need to capture hero + community-layout together
+  const tempWrapper = document.createElement('div');
+  // Insert temp wrapper before hero
+  element.parentNode.insertBefore(tempWrapper, element);
+  // Move hero and community-layout into the wrapper
+  tempWrapper.appendChild(element);
+  tempWrapper.appendChild(document.querySelector('.community-layout'));
+
+  const captureEl = tempWrapper;
+
+  // Temporarily hide the export header from the screenshot
+  const exportHeaders = document.querySelectorAll('.community-export-header');
+  exportHeaders.forEach(h => h.style.visibility = 'hidden');
+
+  // Wait for Plotly charts to be ready
+  setTimeout(() => {
+    html2canvas(captureEl, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      scrollY: -window.scrollY,
+      windowHeight: captureEl.scrollHeight,
+    }).then(canvas => {
+      // Restore visibility
+      exportHeaders.forEach(h => h.style.visibility = '');
+
+      // Restore DOM structure
+      tempWrapper.parentNode.insertBefore(element, tempWrapper);
+      tempWrapper.parentNode.insertBefore(document.querySelector('.community-layout'), tempWrapper);
+      tempWrapper.remove();
+
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageHeight = 297; // A4 height in mm
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const community = dropdownCommunity.value || 'Community';
+      pdf.save(`${community}_Statistical_Analysis.pdf`);
+
+      btn.disabled = false;
+      btn.textContent = 'Export as PDF';
+    }).catch(err => {
+      console.error('PDF export failed:', err);
+      exportHeaders.forEach(h => h.style.visibility = '');
+      // Restore DOM even on error
+      if (tempWrapper.parentNode) {
+        tempWrapper.parentNode.insertBefore(element, tempWrapper);
+        const layout = document.querySelector('.community-layout');
+        if (layout && layout.parentNode !== tempWrapper) {
+          tempWrapper.parentNode.insertBefore(layout, tempWrapper);
+        }
+        tempWrapper.remove();
+      }
+      btn.disabled = false;
+      btn.textContent = 'Export as PDF';
+      alert('Failed to generate PDF. Please try again.');
+    });
+  }, 300);
+}
 
 </script>
 
