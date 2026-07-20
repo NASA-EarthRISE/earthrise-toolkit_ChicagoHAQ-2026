@@ -7,100 +7,60 @@
     <title>{% block title %}Regional Ozone Precursor Dashboard{% endblock %}</title>
     <link rel="stylesheet" type="text/css" href="{% static 'dashboard/css/site.css' %}"/>
 
-    <!-- Leaflet CSS (only loaded when needed via map templates) -->
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- ── NAVIGATION BAR ─────────────────────────────── -->
+    <!--  Navigation Bar -->
     <nav>
-        <!-- Sidebar toggle hamburger button -->
-        <button class="hamburger" id="sidebar-hamburger" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
-            <span class="hamburger-bar"></span>
-            <span class="hamburger-bar"></span>
-            <span class="hamburger-bar"></span>
-        </button>
-
+        <!--ESD Atmospheric Logo-->
+        <a target="_blank">
+                <img class="logo logo-atmosphere" src="{% static 'dashboard/images/atmosphere.png' %}" alt="Regional Ozone Precursor Map"/>
+        </a>
+        
         <span class="nav-brand">
             <a href="/">Regional Ozone Precursor Map</a>
         </span>
 
-        <!-- Mobile menu toggle (shown only on small screens) -->
+        <!-- Mobile menu button -->
         <div class="mobile-menu-container" id="mobile-menu-container" onclick="MenuToggle(this)" style="display:none;">
-            <span class="hamburger-bar"></span>
-            <span class="hamburger-bar"></span>
-            <span class="hamburger-bar"></span>
+            <span class="mobile-menu-arrow">&#11167;</span>
         </div>
 
         <div class="nav-links" id="nav-links">
-            <a href="{% url 'map_hourly' %}">Map</a>
+            <a href="{% url 'map_hourly' %}">Pollution Map</a>
+            <a href="/community/">Community Tools</a>
             <a href="{% url 'info' %}">Info</a>
             <a href="{% url 'tutorial' %}">User Guide</a>
             <a href="{% url 'export' %}">Export Data</a>
             <a href="{% url 'about' %}">About</a>
-            <a href="/admin">Sign In</a>
             <a href="https://www.nasa.gov/tempo" target="_blank">
-                <img class="logo" src="{% static 'dashboard/images/nasalogo.png' %}" alt="NASA Logo"/>
+                <img class="logo logo-nasa" src="{% static 'dashboard/images/nasalogo.png' %}" alt="NASA Logo"/>
             </a>
         </div>
     </nav>
 
-    <!-- ── APP BODY ──────────────────────────────────── -->
+    <!-- App Body  -->
     <div class="app-body">
 
-        <!-- Sidebar (main navigation) -->
-        <aside class="sidebar collapsed" id="sidebar">
-            {% include 'dashboard/includes/sidebar.html' %}
-        </aside>
-
-        <!-- Main content area -->
+        <!-- Main Content Area -->
         <main class="content" id="main-content">
             {% block content %}{% endblock %}
         </main>
     </div>
 
-    <!-- ── FOOTER ────────────────────────────────────── -->
+    <!-- Footer -->
     <hr/>
     <footer>
         <p>&copy; 2026 Regional Ozone Precursor Map — NASA LaRC / EarthRISE Developers Academy</p>
     </footer>
 
-    <!-- ── TOAST NOTIFICATION ────────────────────────── -->
+    <!-- Toast Notification  -->
     <div id="toast"></div>
 
-    <!-- Base JS -->
+    <!-- Base Layout JS (INCLUDED NAV BAR BELOW)-->
+    <!--Line 62 works for drawing javascript!!-->
+    <script src = "{% static 'dashboard/js/navbar.js' %}"></script>
     <script>
-        // Mobile hamburger menu toggle (only visible on small screens)
-        function MenuToggle(el) {
-            el.classList.toggle('change');
-            document.getElementById('nav-links').classList.toggle('open');
-        }
-
-        // Sidebar toggle with animated hamburger
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const hamburger = document.getElementById('sidebar-hamburger');
-            sidebar.classList.toggle('collapsed');
-            hamburger.classList.toggle('active');
-            // Trigger map resize if on map page
-            if (typeof map !== 'undefined' && map.invalidateSize) {
-                setTimeout(() => map.invalidateSize(), 350);
-            }
-        }
-
-        // Show mobile menu container only on small screens
-        function checkMobileMenu() {
-            const mobileMenu = document.getElementById('mobile-menu-container');
-            if (window.innerWidth <= 768) {
-                mobileMenu.style.display = 'block';
-            } else {
-                mobileMenu.style.display = 'none';
-            }
-        }
-
-        // Run on load and resize
-        window.addEventListener('load', checkMobileMenu);
-        window.addEventListener('resize', checkMobileMenu);
-
         // Toast notification
         let toastTimer;
         function showToast(msg) {

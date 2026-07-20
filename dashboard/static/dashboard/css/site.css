@@ -1,26 +1,25 @@
 
 :root {
-  /* NASA-inspired color palette */
+  /* ESD Color Palette*/
   --primary: #005a9e;
-  --primary-dark: #003d6b;
-  --primary-light: #63b3ed;
-  --accent: #3182ce;
+  --primary-dark: #263766;
+  --primary-light: #1096fd;
+  --accent: #96a2bf;
 
-  /* Neutral colors */
   --bg: #f7fafc;
   --bg-card: #ffffff;
   --bg-sidebar: #ffffff;
   --bg-nav: #005a9e;
-  --text: #1a202c;
-  --text-muted: #718096;
-  --text-light: #a0aec0;
-  --border: #e2e8f0;
-  --border-dark: #cbd5e0;
+  --text: #17171b;
+  --text-muted: #444447;
+  --text-light: #77777a;
+  --border: #d1d1d1;
+  --border-dark: #959599;
 
   /* Status colors */
-  --success: #48bb78;
-  --warning: #ecc94b;
-  --danger: #fc8181;
+  --success: #5b7b2e;
+  --warning: #f3b44e;
+  --danger: #c33c27;
 
   /* Spacing */
   --nav-height: 56px;
@@ -103,7 +102,17 @@ nav {
   height: 36px;
   width: auto;
   margin-left: 0.75rem;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+/* Atmosphere logo — slightly larger */
+.logo-atmosphere {
+  height: 48px;
+}
+
+/* NASA logo — no drop shadow */
+.logo-nasa {
+  filter: none;
+  box-shadow: none;
 }
 
 /* ── HAMBURGER BUTTON (sidebar toggle in nav) ────────── */
@@ -147,7 +156,7 @@ nav {
   transform: translate(5px, -8px) rotate(-45deg);
 }
 
-/* ── MOBILE MENU HAMBURGER ─────────────────────────── */
+/* ── MOBILE MENU ARROW ─────────────────────────── */
 
 .mobile-menu-container {
   display: none;
@@ -161,27 +170,19 @@ nav {
   padding: 4px;
   margin-left: auto;
   margin-right: 0.5rem;
+  color: #e2e8f0;
+  font-size: 1.2rem;
+  line-height: 1;
 }
 
-.mobile-menu-container .hamburger-bar {
-  display: block;
-  width: 24px;
-  height: 3px;
-  background-color: #e2e8f0;
-  border-radius: 2px;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+.mobile-menu-arrow {
+  display: inline-block;
+  transition: transform 0.3s ease;
 }
 
-.mobile-menu-container.change .hamburger-bar:nth-child(1) {
-  transform: translate(0, 8px) rotate(-45deg);
-}
-
-.mobile-menu-container.change .hamburger-bar:nth-child(2) {
-  opacity: 0;
-}
-
-.mobile-menu-container.change .hamburger-bar:nth-child(3) {
-  transform: translate(0, -8px) rotate(45deg);
+/* When menu is open, rotate arrow 90° counter-clockwise (▼ becomes ►) */
+.mobile-menu-container.change .mobile-menu-arrow {
+  transform: rotate(-180deg);
 }
 
 /* ── MAIN LAYOUT ─────────────────────────────────── */
@@ -203,15 +204,15 @@ nav {
 /* ── SIDEBAR ─────────────────────────────────────── */
 
 .sidebar {
-  width: var(--sidebar-width);
+  width: 320px;
   flex-shrink: 0;
-  background-color: var(--bg-sidebar);
-  border-right: 1px solid var(--border);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   overflow-y: auto;
-  overflow-x: hidden;
-  transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
-  display: flex;
-  flex-direction: column;
+  max-height: calc(100vh - var(--nav-height) - 100px);
 }
 
 .sidebar a {
@@ -255,7 +256,7 @@ nav {
   display: block;
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--text);
+  color: var(--text-light);
   margin-bottom: 0.3rem;
 }
 
@@ -269,7 +270,7 @@ nav {
   border-radius: 6px;
   border: 1px solid var(--border);
   background: var(--bg);
-  color: var(--text);
+  color: var(--text-light);
   font-size: 0.85rem;
   outline: none;
   transition: border-color 0.2s;
@@ -283,7 +284,7 @@ nav {
 
 .form-group .hint {
   font-size: 0.72rem;
-  color: var(--text-muted);
+  color: var(--text-light);
   margin-top: 0.2rem;
 }
 
@@ -367,45 +368,59 @@ nav {
   height: 16px;
 }
 
-/* Basemap / time-scale buttons */
-.basemap-grid {
+/* Map type selector buttons */
+.map-type-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: .4rem;
-  width: 100%;
+  gap: 0.4rem;
 }
 
-.basemap-btn {
-  padding: .5rem .3rem;
+/* Override .sidebar a styling for map type links so they act as invisible wrappers */
+.map-type-link {
+  text-decoration: none;
+  display: block;
+  padding: 0;
+  border-left: none;
+  background: transparent;
+  color: inherit;
+}
+
+.map-type-link:hover {
+  background: transparent;
+  color: inherit;
+  border-left-color: transparent;
+}
+
+.map-type-btn {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.25rem;
   border: 2px solid var(--border);
   border-radius: 8px;
-  background: var(--bg-card);
+  background: var(--bg);
   color: var(--text);
-  font-size: .78rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   text-align: center;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 36px;
-  word-wrap: break-word;
+  transition: all 0.2s;
+  white-space: nowrap;
   overflow: hidden;
-  transition: all .2s;
+  text-overflow: ellipsis;
 }
 
-.basemap-btn:hover {
+.map-type-btn:hover {
   border-color: var(--primary-light);
-  background: var(--bg);
-  color: var(--primary);
+  background: var(--bg-card);
 }
 
-.basemap-btn.active {
+.map-type-btn.active {
   border-color: var(--accent);
-  color: #ffffff;
   background: var(--accent);
+  color: #ffffff;
 }
+
+
 
 /* Search */
 .search-wrap {
@@ -456,9 +471,11 @@ nav {
   display: flex;
   flex: 1;
   overflow: hidden;
+  height: 100%;
+  min-height: calc(100vh - var(--nav-height));
 }
 
-.map-layout .sidebar {
+.map-controls {
   width: 320px;
   flex-shrink: 0;
   background: var(--bg-card);
@@ -467,6 +484,7 @@ nav {
   padding: 1.25rem;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   overflow-y: auto;
+  min-height: 500px;
   max-height: calc(100vh - var(--nav-height) - 100px);
 }
 
@@ -476,6 +494,9 @@ nav {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  width: 100%;
+  height: 100%;
+  overflow: scroll;
 }
 
 #map {
@@ -483,6 +504,7 @@ nav {
   z-index: 0;
   width: 100%;
   height: 100%;
+  min-height: 0;
 }
 
 /* Coords bar */
@@ -526,7 +548,7 @@ nav {
   transition: all 0.3s ease;
 }
 
-/* Toggle button — circular "!" button */
+/* Toggle button — circular "?" button */
 .explore-panel-toggle {
   display: flex;
   align-items: center;
@@ -614,11 +636,8 @@ nav {
   line-height: 1.6;
 }
 
- @media (max-width: 600px) {
-  .hero h1 {
-    font-size: 1.4rem;
-  }
-}
+
+
 
 /* ── Homepage Widgets ──────────────── */
 
@@ -863,17 +882,66 @@ footer {
   padding: 1rem 1.5rem;
   text-align: center;
   font-size: .8rem;
-  color: var(--text-muted);
+  color: var(--bg);
   border-top: 1px solid var(--border);
   background: var(--bg-card);
+  background-image: url('../images/footer.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center center;
+}
+
+/* ── MOBILE DISCLAIMER OVERLAY ────────────────────── */
+
+.mobile-disclaimer {
+  display: none;
+}
+
+.mobile-disclaimer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  max-width: 480px;
+}
+
+.mobile-disclaimer-content p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 1.25rem;
+}
+
+.mobile-disclaimer-btn {
+  display: inline-block;
+  padding: 0.6rem 1.5rem;
+  background: var(--accent);
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.mobile-disclaimer-btn:hover {
+  background: var(--primary-dark);
 }
 
 /* ── RESPONSIVE ──────────────────────────────────── */
 
-@media (max-width: 768px) {
-  /* Show mobile menu hamburger on small screens */
+@media (max-width: 992px) {
+  /* Show mobile menu arrow and switch nav to dropdown */
+  nav {
+    z-index: 10000;
+    justify-content: flex-start;
+  }
+
   .mobile-menu-container {
     display: flex;
+    margin-left: auto;
   }
 
   .nav-links {
@@ -884,8 +952,10 @@ footer {
     right: 0;
     background: var(--bg-nav);
     flex-direction: column;
+    align-items: center;
     padding: 0.5rem 0;
     border-bottom: 2px solid var(--primary-dark);
+    z-index: 10001;
   }
 
   .nav-links.open {
@@ -894,6 +964,29 @@ footer {
 
   .nav-links a {
     padding: 0.75rem 1.5rem;
+    text-align: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Show mobile disclaimer overlay on small screens */
+  .mobile-disclaimer {
+    display: flex;
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    background: var(--bg-card);
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Keep nav and its dropdown above the disclaimer */
+  nav {
+    z-index: 10000;
   }
 
   .sidebar {
@@ -921,7 +1014,27 @@ footer {
   .basemap-grid {
     grid-template-columns: 1fr;
   }
+
+  .hero h1 {
+  font-size: 1.4rem;
+  }
+
+  /* Export page: disclaimer overlay inside the map container */
+  .export-map-container .mobile-disclaimer {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    background: var(--bg-card);
+    align-items: center;
+    justify-content: center;
+  }
 }
+
+
 
 @media (max-width: 480px) {
   .dashboard-grid {
