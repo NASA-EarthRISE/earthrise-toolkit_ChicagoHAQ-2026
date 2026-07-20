@@ -205,13 +205,18 @@
         </div>
 
       <!-- Hourly time slider -->
-      <div id="hourControls" class="hour-controls">
+        <div
+        id="hourControls"
+        class="hour-controls"
+        {% if time_scale != "hourly" %}style="display:none;"{% endif %}
+        >
         <div class="slider-row">
-          <label>Hour</label>
-          <input type="range" min="0" max="23" step="1" value="0" id="timeSlider">
-          <div class="time-label" id="timeLabel"></div>
+            <label>Hour</label>
+            <input type="range" min="0" max="23" step="1" value="0" id="timeSlider">
+            <div class="time-label" id="timeLabel"></div>
         </div>
-      </div>
+        </div>
+
 
       <!-- Daily & Monthly Date slider -->
       <div class="slider-row">
@@ -268,15 +273,15 @@
 
   // ── MAP INIT ───────────────────────────────────────────────────────────────
     var map = L.map('map', {
-    center: [41.52, -87.37],  // Chicago, IL default
-    zoom: 10,
+    center: [41.8, -87.629],  // Chicago, IL default
+    zoom: 11,
     layers: [tileLayers.osm],
     zoomControl: true,
     preferCanvas: true
     });
 
   // ── HOME BUTTON (reset view to Chicago) ──────────────────────────────────
-  const homeCoords = [41.83772083187901, -87.68664593458594];
+  const homeCoords = [41.8, -87.629];
   const homeZoom = 10;
 
   var HomeButton = L.Control.extend({
@@ -377,6 +382,10 @@ function startNewLoad(product) {
     };
 }
 
+function isMonthlyDate(value) {
+    return /^\d{4}-\d{2}$/.test(value);
+}
+
 function isActiveLoad(load) {
     return (
         load &&
@@ -416,6 +425,19 @@ function clearDataLayers() {
     }
 }
 
+function updateBottomControlVisibility() {
+    const hourControls = document.getElementById("hourControls");
+    const timeLabel = document.getElementById("timeLabel");
+
+    if (hourControls) {
+        hourControls.style.display = TIME_SCALE === "hourly" ? "block" : "none";
+    }
+
+    if (timeLabel && TIME_SCALE !== "hourly") {
+        timeLabel.innerHTML = "";
+    }
+}
+
    let rangeStartDate = null;
   let rangeEndDate = null;
   let rangeCurrentEndDate = null;
@@ -423,6 +445,7 @@ function clearDataLayers() {
   let dates = [];
   let allDates = [];       // unfiltered copy — kept in sync by each date loader
   let rangeDates = [];
+  let invalidClarityHourlyDates = new Set();
 
   // TEMPO-specific date arrays (hourly and daily can differ)
   let tempoHourlyDates = [];
@@ -465,7 +488,74 @@ function clearDataLayers() {
           }
       );
 
+function removeInvalidHourlyDate(date, reason) {
+    if (!date || TIME_SCALE !== "hourly" || currentDataProduct !== "clarity") {
+        return;
+    }
 
+    if (invalidClarityHourlyDates.has(date)) {
+        return;
+    }
+
+    invalidClarityHourlyDates.add(date);
+
+    console.warn("Removing invalid hourly Clarity date from slider:", {
+        date: date,
+        reason: reason
+    });
+
+    const oldIndex = dates.indexOf(date);
+
+    dates = dates.filter(d => d !== date);
+    allDates = allDates.filter(d => d !== date);
+
+    const dateSlider = document.getElementById("dateSlider");
+
+    if (!dateSlider) {
+        return;
+    }
+
+    if (!dates || dates.length === 0) {
+        dateSlider.min = 0;
+        dateSlider.max = 0;
+        dateSlider.value = 0;
+
+        const dateLabel = document.getElementById("dateLabel");
+        const timeLabel = document.getElementById("timeLabel");
+
+        if (dateLabel) {
+            dateLabel.innerHTML = "No valid dates available";
+        }
+
+        if (timeLabel) {
+            timeLabel.innerHTML = "";
+        }
+
+        hideLoading();
+        return;
+    }
+
+    const nextIndex = Math.min(
+        Math.max(oldIndex, 0),
+        dates.length - 1
+    );
+
+    dateSlider.min = 0;
+    dateSlider.max = dates.length - 1;
+    dateSlider.value = nextIndex;
+
+    const nextDate = dates[nextIndex];
+
+    updateDateAndTimeLabels(nextDate);
+
+    cachedDate = null;
+    cachedFeatures = null;
+    cachedHourBuckets = null;
+    nextCachedDate = null;
+    nextCachedHourBuckets = null;
+
+    loadDate(nextDate);
+}
   // ── CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
     function loadChicagoBorder(){
         fetch("{% static 'dashboard/layers/Chicago.geojson' %}")
@@ -478,7 +568,7 @@ function clearDataLayers() {
                 fillColor: "#00000000" //make fill transparent
                 }
             }).addTo(map);
-            map.fitBounds(ChicagoBounds.getBounds())
+   //         map.fitBounds(ChicagoBounds.getBounds())
         })
     }
 
@@ -515,11 +605,6 @@ function clearDataLayers() {
             });
 
             ChicagoCommunityAreas.addTo(map);
-            
-            // Prevents map from involuntarily panning away from the Chicago area
-            if (window.ChicagoBounds) {
-                map.fitBounds(ChicagoBounds.getBounds())
-            }
 
             // Keep boundaries behind sensor markers
             ChicagoCommunityAreas.bringToBack();
@@ -627,13 +712,18 @@ function clearDataLayers() {
         }
 
         Promise.all(requests)
-      .then(files => {
-          let combinedFeatures = [];
-          files.forEach(data => {
-              if (data) {
-                  combinedFeatures.push(...data.features);
-              }
-          });
+        .then(files => {
+            if (currentDataProduct !== "clarity" || TIME_SCALE !== "hourly") {
+                return;
+            }
+
+            let combinedFeatures = [];
+            
+            files.forEach(data => {
+                if (data) {
+                    combinedFeatures.push(...data.features);
+                }
+            });
 
           let filteredFeatures = combinedFeatures.filter(f => {
               let utcDate = new Date(f.properties.time + "Z");
@@ -668,23 +758,184 @@ function clearDataLayers() {
       });
   }
 
-  function formatHourForDisplay(dateStr, selectedHour) {
-      let baseUTC = new Date(`${dateStr}T12:00:00Z`);
-      let chicagoBase = new Date(
-          baseUTC.toLocaleString("en-US", { timeZone: "America/Chicago" })
-      );
-      let offset = chicagoBase.getHours() - 12;
-      let correctUTCHour = selectedHour - offset;
-      let adjusted = new Date(`${dateStr}T00:00:00Z`);
-      adjusted.setUTCHours(correctUTCHour);
+  function updateDateAndTimeLabels(date) {
+    const dateLabel = document.getElementById("dateLabel");
+    const timeLabel = document.getElementById("timeLabel");
 
-      return adjusted.toLocaleTimeString("en-US", {
-          timeZone: "America/Chicago",
-          hour: "numeric",
-          hour12: true,
-          timeZoneName: "short"
-      });
-  }
+    if (!date) {
+        return;
+    }
+
+    if (TIME_SCALE === "monthly") {
+        if (dateLabel) {
+            dateLabel.innerHTML = formatMonthForDisplay(date);
+        }
+    } else {
+        if (dateLabel) {
+            dateLabel.innerHTML = utcDateToCentralPretty(date);
+        }
+    }
+
+    if (timeLabel && TIME_SCALE === "hourly") {
+        timeLabel.innerHTML = `Time: ${formatHourForDisplay(date, selectedHour)}`;
+    }
+}
+
+function getChicagoDateStringFromUTC(utcString) {
+    if (!utcString) {
+        return null;
+    }
+
+    const normalizedUTC = utcString.endsWith("Z")
+        ? utcString
+        : utcString + "Z";
+
+    const utcDate = new Date(normalizedUTC);
+
+    const chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
+
+    const y = chicagoParts.find(p => p.type === "year").value;
+    const m = chicagoParts.find(p => p.type === "month").value.padStart(2, "0");
+    const d = chicagoParts.find(p => p.type === "day").value.padStart(2, "0");
+
+    return `${y}-${m}-${d}`;
+}
+function deriveClarityCentralDatesFromFiles(utcFileDates) {
+    return Promise.all(
+        utcFileDates.map(date => {
+            return fetch(`/data/clarity/${date}.geojson`)
+                .then(r => {
+                    if (!r.ok) {
+                        console.warn("Missing Clarity hourly file while deriving Central dates:", date);
+                        return null;
+                    }
+                    return r.json();
+                })
+                .catch(err => {
+                    console.warn("Could not inspect Clarity file:", date, err);
+                    return null;
+                });
+        })
+    ).then(files => {
+        const centralDates = new Set();
+
+        files.forEach(data => {
+            if (!data || !data.features) {
+                return;
+            }
+
+            data.features.forEach(feature => {
+                const p = feature.properties || {};
+
+                if (!p.time) {
+                    return;
+                }
+
+                const value = Number(p.no2concindividual_value);
+
+                if (isNaN(value)) {
+                    return;
+                }
+
+                const centralDate = getChicagoDateStringFromUTC(p.time);
+                    if (centralDate) {
+                        centralDates.add(centralDate);
+                    }
+            });
+        });
+
+        return Array.from(centralDates).sort();
+    });
+}
+
+ function getChicagoParts(date) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Chicago",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        hour12: false,
+        timeZoneName: "short"
+    }).formatToParts(date);
+
+    const lookup = {};
+
+    parts.forEach(part => {
+        lookup[part.type] = part.value;
+    });
+
+    return {
+        year: lookup.year,
+        month: lookup.month,
+        day: lookup.day,
+        hour: lookup.hour === "24" ? "00" : lookup.hour,
+        timeZoneName: lookup.timeZoneName
+    };
+}
+
+function formatHourForDisplay(dateStr, selectedHour) {
+    if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        return "";
+    }
+
+    // Simple DST fallback patch for Chicago on Nov 2, 2025.
+    // At 2 AM CDT, clocks fell back to 1 AM CST.
+    // Since our slider only has one "1 AM", show both labels.
+    if (dateStr === "2025-11-02") {
+        if (selectedHour === 0) {
+            return "12 AM CDT";
+        }
+
+        if (selectedHour === 1) {
+            return "1 AM CDT / 1 AM CST";
+        }
+
+        if (selectedHour === 2) {
+            return "2 AM CST";
+        }
+
+        const displayHour = selectedHour % 12 === 0
+            ? 12
+            : selectedHour % 12;
+
+        const suffix = selectedHour < 12 ? "AM" : "PM";
+
+        return `${displayHour} ${suffix} CST`;
+    }
+
+    const parts = dateStr.split("-");
+    const targetYear = parts[0];
+    const targetMonth = parts[1];
+    const targetDay = parts[2];
+    const targetHour = String(selectedHour).padStart(2, "0");
+
+    const searchStart = new Date(`${dateStr}T00:00:00Z`);
+    searchStart.setUTCHours(searchStart.getUTCHours() - 12);
+
+    for (let i = 0; i < 48; i++) {
+        const candidate = new Date(searchStart);
+        candidate.setUTCHours(searchStart.getUTCHours() + i);
+
+        const chicago = getChicagoParts(candidate);
+
+        if (
+            chicago.year === targetYear &&
+            chicago.month === targetMonth &&
+            chicago.day === targetDay &&
+            chicago.hour === targetHour
+        ) {
+            return candidate.toLocaleTimeString("en-US", {
+                timeZone: "America/Chicago",
+                hour: "numeric",
+                hour12: true,
+                timeZoneName: "short"
+            });
+        }
+    }
+
+    return `${selectedHour}:00 CT`;
+}
 
   function formatMonthForDisplay(dateStr) {
       if (!dateStr || typeof dateStr !== 'string') {
@@ -1040,8 +1291,12 @@ function loadMonthlySensors(month, existingLoad) {
     }
 
     fetch(`/data/clarity/monthly_sensor_${month}.geojson`)
-
-        .then(r => r.json())
+        .then(r => {
+            if (!r.ok) {
+                throw new Error(`Missing monthly sensor file: ${month}`);
+            }
+            return r.json();
+        })
         .then(data => {
             if (!isActiveLoad(load)) {
                 console.log("Ignoring stale Clarity monthly sensor load:", month);
@@ -1089,7 +1344,6 @@ function loadMonthlySensors(month, existingLoad) {
             console.error("Could not load monthly sensor file:", err);
         });
 }
-
   // ── TEMPO DATA LOADING FUNCTIONS ──────────────────────────────────────────────────
 
   function formatCentralTimePretty(utcString) {
@@ -1550,7 +1804,9 @@ function renderMonthlyTempoData(data, load) {
 
   // TEMPO renderFeatures – renders hourly grid cells as GeoJSON polygons
   function renderTempoFeatures(filteredFeatures, date) {
-    if (!canRenderTempo("renderDailyTempoData")) return;
+    filteredFeatures = filteredFeatures || [];
+    if (!canRenderTempo("renderTempoFeatures")) return;
+
       if (currentLayer) {
           map.removeLayer(currentLayer);
       }
@@ -1614,7 +1870,12 @@ function renderMonthlyTempoData(data, load) {
       }
 
       Promise.all(requests).then(files => {
-          let combinedFeatures = [];
+        if (currentDataProduct !== "tempo" || TIME_SCALE !== "hourly") {
+            return;
+        }
+
+        let combinedFeatures = [];
+    
           files.forEach(data => {
               if (data) combinedFeatures.push(...data.features);
           });
@@ -1885,12 +2146,10 @@ function renderMonthlyTempoData(data, load) {
 
     console.log("Aggregation:", TIME_SCALE);
 
-    let hourControls = document.getElementById("hourControls");
+    updateBottomControlVisibility();
+
     let rangeControls = document.getElementById("rangeControls");
 
-    if (hourControls) {
-        hourControls.style.display = TIME_SCALE === "hourly" ? "block" : "none";
-    }
     if (rangeControls) {
         rangeControls.style.display = TIME_SCALE === "range" ? "block" : "none";
     }
@@ -1943,7 +2202,8 @@ function renderMonthlyTempoData(data, load) {
   // ── V4 RENDER FEATURES ──────────────────────────────────────────────────────
 
   function renderFeatures(filteredFeatures, date){
-      let grouped = {};
+    filteredFeatures = filteredFeatures || [];  
+    let grouped = {};
 
       filteredFeatures.forEach(f => {
           let p = f.properties;
@@ -2038,6 +2298,12 @@ function renderMonthlyTempoData(data, load) {
   // ── UNIFIED LOAD DATE (routes to Clarity or TEMPO based on currentDataProduct) ──
 
   function loadDate(date, existingLoad) {
+    if (!date || typeof date !== "string") {
+        console.warn("Blocked loadDate because date is invalid:", date);
+        hideLoading();
+        return;
+    }
+
     const load = existingLoad || startNewLoad(currentDataProduct);
     const productAtStart = load.product;
 
@@ -2289,9 +2555,16 @@ if (TIME_SCALE === "monthly") {
           });
 
           if (!hasValidData) {
-              console.warn("No valid data for", date);
-              return;
-          }
+            console.warn("No valid data for", date);
+
+            if (TIME_SCALE === "hourly" && currentDataProduct === "clarity") {
+                removeInvalidHourlyDate(date, "No valid filtered features");
+                return;
+            }
+
+            hideLoading();
+            return;
+        }
 
           if (TIME_SCALE === "hourly") {
               renderFeatures(cachedHourBuckets[selectedHour], date);
@@ -2304,7 +2577,8 @@ if (TIME_SCALE === "monthly") {
   // ── TEMPO COMMUNITY AREAS (hourly) ──────────────────────────────────────────────
   // Aggregates TEMPO grid cell values into Chicago community areas
   function drawTempoCommunityAreas(filteredFeatures) {
-    if (!canRenderTempo("renderDailyTempoData")) return;
+    filteredFeatures = filteredFeatures || [];
+    if (!canRenderTempo("drawTempoCommunityAreas")) return;
       if (!communityData) {
           console.warn("Community data not loaded");
           return;
@@ -2394,6 +2668,8 @@ if (TIME_SCALE === "monthly") {
       var playBtn = document.getElementById("playBtn");
       var pauseBtn = document.getElementById("pauseBtn");
 
+      updateBottomControlVisibility();
+
       var startDateInput = document.getElementById("startDate");
       var endDateInput = document.getElementById("endDate");
 
@@ -2448,22 +2724,34 @@ if (TIME_SCALE === "monthly") {
               console.warn("Date slider: no date at index", index);
               return;
           }
-          if (TIME_SCALE === "monthly") {
-              dateLabel.innerHTML = formatMonthForDisplay(date);
-          } else {
-              dateLabel.innerHTML = utcDateToCentralPretty(date);
-          }
-          loadDate(date);
+          updateDateAndTimeLabels(date);
+            loadDate(date);
       });
 
       // Time slider
-      timeSlider.addEventListener("input", function () {
-          selectedHour = Number(this.value);
-          let baseDate = dates[Number(dateSlider.value)];
-          let formattedTime = formatHourForDisplay(baseDate, selectedHour);
-          timeLabel.textContent = `Time: ${formattedTime}`;
-          loadDate(baseDate);
-      });
+      if (timeSlider) {
+        timeSlider.addEventListener("input", function () {
+            if (TIME_SCALE !== "hourly") {
+                return;
+            }
+
+            selectedHour = Number(this.value);
+            let baseDate = dates[Number(dateSlider.value)];
+
+            if (!baseDate) {
+                console.warn("Time slider: no base date available");
+                return;
+            }
+
+            let formattedTime = formatHourForDisplay(baseDate, selectedHour);
+
+            if (timeLabel) {
+                timeLabel.textContent = `Time: ${formattedTime}`;
+            }
+
+            loadDate(baseDate);
+        });
+    }
 
       // Start date input
       startDateInput.addEventListener("change", function() {
@@ -2523,7 +2811,7 @@ if (TIME_SCALE === "monthly") {
 
                         console.log("Using precache:", date);
 
-                        dateLabel.innerHTML = utcDateToCentralPretty(date);
+                        updateDateAndTimeLabels(date);
                         timeSlider.value = 0;
                         timeLabel.innerHTML =
                             `Time: ${formatHourForDisplay(date, 0)}`;
@@ -2536,8 +2824,8 @@ if (TIME_SCALE === "monthly") {
 
                         return;
                     }
-
-                      dateLabel.innerHTML = utcDateToCentralPretty(date);
+                    updateDateAndTimeLabels(date);
+                      
                   }
                   timeSlider.value = selectedHour;
                   let baseDate = dates[Number(dateSlider.value)];
@@ -2669,7 +2957,7 @@ console.log("INITIAL PRODUCT STATE", {
               }
               // Move the date slider to that date and load it
               dateSlider.value = index;
-              dateLabel.innerHTML = utcDateToCentralPretty(selectedDate);
+              updateDateAndTimeLabels(selectedDate);
               loadDate(selectedDate);
               showToast(`Loaded ${selectedDate}`);
           });
@@ -3089,7 +3377,11 @@ console.log("INITIAL PRODUCT STATE", {
                  }
 
                  var timeLabel = document.getElementById("timeLabel");
-                 if (timeLabel) timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
+                    if (timeLabel && TIME_SCALE === "hourly") {
+                        timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
+                    } else if (timeLabel) {
+                        timeLabel.innerHTML = "";
+                    }
 
                  cachedDate = null;
                 cachedFeatures = null;
@@ -3120,119 +3412,134 @@ console.log("INITIAL PRODUCT STATE", {
      }
 
      // ── LOAD CLARITY DATES ────────────────────────────────────────────────────
-     function loadClarityDates() {
-        const load = startNewLoad("clarity");
+function loadClarityDates() {
+    invalidClarityHourlyDates = new Set();
+    const load = startNewLoad("clarity");
 
-        if (!isActiveLoad(load)) {
-            return;
-        }
-    // Use absolute URL so it works from /map/hourly/, /map/daily/, /map/monthly/
+    if (!isActiveLoad(load)) {
+        return;
+    }
+
     fetch("/data/clarity/dates.json")
-        .then(r => r.json())
+        .then(r => {
+            if (!r.ok) {
+                throw new Error("Could not load /data/clarity/dates.json");
+            }
+            return r.json();
+        })
         .then(response => {
             if (!isActiveLoad(load)) {
                 console.log("Ignoring stale Clarity dates load");
                 return;
             }
-            // Handle both array and {dates:[...]} formats
+
             let loadedDates = Array.isArray(response)
                 ? response
                 : (response.dates || []);
 
-            if (TIME_SCALE === "monthly") {
+            if (!loadedDates || loadedDates.length === 0) {
+                console.warn("No Clarity dates found in API response, generating fallback dates.");
+                loadedDates = generateClarityDatesFromFiles();
+            }
 
+            if (TIME_SCALE === "monthly") {
                 loadedDates = [
                     ...new Set(
-                        loadedDates.map(
-                            d => d.substring(0, 7)
-                        )
+                        loadedDates.map(d => d.substring(0, 7))
                     )
                 ];
 
                 console.log("Monthly dates:", loadedDates);
             }
-            if (!loadedDates || loadedDates.length === 0) {
-                console.warn("No Clarity dates found in API response, generating from clarity files.");
-
-                // Fallback: scan clarity directory for available dates
-                loadedDates = generateClarityDatesFromFiles();
-            }
 
             dates = loadedDates;
             allDates = loadedDates;
+
+            if (!dates || dates.length === 0) {
+                console.warn("No usable Clarity dates.");
+                hideLoading();
+                return;
+            }
 
             rangeStartDate = dates[0];
             rangeEndDate = dates[dates.length - 1];
             rangeCurrentEndDate = rangeEndDate;
 
-            var dateSlider = document.getElementById("dateSlider");
-            var dateLabel = document.getElementById("dateLabel");
-            var startDateInput = document.getElementById("startDate");
-            var endDateInput = document.getElementById("endDate");
+            const dateSlider = document.getElementById("dateSlider");
+            const startDateInput = document.getElementById("startDate");
+            const endDateInput = document.getElementById("endDate");
+
+            if (dateSlider) {
+                dateSlider.min = 0;
+                dateSlider.max = dates.length - 1;
+                dateSlider.value = 0;
+            }
 
             if (TIME_SCALE === "monthly") {
-
                 if (startDateInput) startDateInput.value = "";
                 if (endDateInput) endDateInput.value = "";
-
             } else {
-
                 if (startDateInput) startDateInput.value = rangeStartDate;
                 if (endDateInput) endDateInput.value = rangeEndDate;
             }
 
-            dateSlider.max = dates.length - 1;
-            dateSlider.value = 0;
+            selectedHour = Number(
+                document.getElementById("timeSlider")?.value || 0
+            );
 
-            if (TIME_SCALE === "monthly") {
-                if (dateLabel) {
-                    dateLabel.innerHTML = formatMonthForDisplay(dates[0]);
-                }
-            } else {
-                if (dateLabel) {
-                    dateLabel.innerHTML = utcDateToCentralPretty(dates[0]);
-                }
-            }
-
-            var timeLabel = document.getElementById("timeLabel");
-            if (timeLabel) {
-                timeLabel.innerHTML =
-                    `Time: ${formatHourForDisplay(dates[0], 0)}`;
-            }
+            updateDateAndTimeLabels(dates[0]);
+            updateBottomControlVisibility();
 
             cachedDate = null;
             cachedFeatures = null;
             cachedHourBuckets = null;
-
             nextCachedDate = null;
             nextCachedHourBuckets = null;
+
+            console.log("Loaded Clarity dates:", {
+                timeScale: TIME_SCALE,
+                count: dates.length,
+                first: dates[0],
+                last: dates[dates.length - 1]
+            });
 
             loadDate(dates[0], load);
         })
         .catch(err => {
             console.error("Could not load Clarity dates.json:", err);
 
-            // Fallback: generate dates from available clarity files
             if (!isActiveLoad(load)) {
                 return;
             }
+
             dates = generateClarityDatesFromFiles();
             allDates = dates;
 
-            if (dates.length > 0) {
-                rangeStartDate = dates[0];
-                rangeEndDate = dates[dates.length - 1];
-                rangeCurrentEndDate = rangeEndDate;
+            if (!dates || dates.length === 0) {
+                hideLoading();
+                return;
+            }
 
-                var dateSlider = document.getElementById("dateSlider");
+            rangeStartDate = dates[0];
+            rangeEndDate = dates[dates.length - 1];
+            rangeCurrentEndDate = rangeEndDate;
+
+            const dateSlider = document.getElementById("dateSlider");
+
+            if (dateSlider) {
+                dateSlider.min = 0;
                 dateSlider.max = dates.length - 1;
                 dateSlider.value = 0;
-
-                loadDate(dates[0]);
             }
+
+            selectedHour = Number(
+                document.getElementById("timeSlider")?.value || 0
+            );
+
+            updateDateAndTimeLabels(dates[0]);
+            loadDate(dates[0], load);
         });
 }
-
      // ── GENERATE CLARITY DATES FROM AVAILABLE FILES (fallback) ─────────────
      function generateClarityDatesFromFiles() {
          // Build dates from the clarity geojson files we know exist (2025-09 through 2026-03)
@@ -3417,39 +3724,16 @@ console.log("INITIAL PRODUCT STATE", {
     const timeDisplay = document.getElementById('time-display');
     let playInterval = null;
 
-    if (origTimeSlider) {
+    if (origTimeSlider && typeof loadTempoData === "function") {
         origTimeSlider.addEventListener('input', () => {
             const hour = parseInt(origTimeSlider.value);
-            timeDisplay.textContent = `${String(hour).padStart(2, '0')}:00 UTC`;
-            // Reload data for the selected hour
+
+            if (timeDisplay) {
+                timeDisplay.textContent = `${String(hour).padStart(2, '0')}:00 UTC`;
+            }
+
             const today = new Date().toISOString().split('T')[0];
             loadTempoData(today, hour);
-        });
-
-        document.getElementById('time-prev')?.addEventListener('click', () => {
-            origTimeSlider.value = Math.max(0, parseInt(origTimeSlider.value) - 1);
-            origTimeSlider.dispatchEvent(new Event('input'));
-        });
-
-        document.getElementById('time-next')?.addEventListener('click', () => {
-            origTimeSlider.value = Math.min(23, parseInt(origTimeSlider.value) + 1);
-            origTimeSlider.dispatchEvent(new Event('input'));
-        });
-
-        document.getElementById('time-play')?.addEventListener('click', function() {
-            if (playInterval) {
-                clearInterval(playInterval);
-                playInterval = null;
-                this.textContent = '▶';
-            } else {
-                this.textContent = '⏸';
-                playInterval = setInterval(() => {
-                    let val = parseInt(origTimeSlider.value) + 1;
-                    if (val > 23) val = 0;
-                    origTimeSlider.value = val;
-                    origTimeSlider.dispatchEvent(new Event('input'));
-                }, 1500);
-            }
         });
     }
 
