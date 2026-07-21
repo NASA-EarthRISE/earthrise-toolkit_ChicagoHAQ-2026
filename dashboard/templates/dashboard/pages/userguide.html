@@ -6,6 +6,14 @@
 
 {%block extra_css %}
 <style>
+  /* Background image for page */
+  main.content {
+    background-image: url({% static 'dashboard/images/userguide.png' %});
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: right center;
+    background-attachment: fixed;
+  }
 
 /* Hero (Heading) banner */
   .hero {
@@ -73,6 +81,7 @@
     </ul>
     Select TEMPO, Open Air Chicago, or the fused data product depending on what you want to visualize. Finally, select the spatial scale you would like to see the data displayed at. TEMPO and the fused dataset are available at a pixel-level and community area aggregate. Open Air Chicago data is available at the individual sensor level and the community area aggregate. 
   </p>
+  <p>Data not displaying? For some data products, there are missing dates and pixels, which is typical and often a sympton of the data cleaning process. [Insert more about missing data points.] [There may be a noitifcation at the top of the map that states there are no data points found within a data range for the selected data product.]</p>
 </div>
 
 <div class="tutorial-block">

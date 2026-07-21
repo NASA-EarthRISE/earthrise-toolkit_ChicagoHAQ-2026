@@ -8,7 +8,9 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <!-- Leaflet Draw CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
-  
+  <!-- Leaflet Heat CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet.heat.css" />
+
   <style>
     /* V4 Slider styling */
     .display-container {
@@ -17,8 +19,6 @@
         border-radius: 6px;
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
-
-    
 
     .legend {
         background: white;
@@ -31,10 +31,10 @@
     .legend-gradient {
         width: 150px;
         height: 15px;
-        background: linear-gradient(to right, blue, green, yellow, red);
+        background: linear-gradient(to right, blue, green, yellow,red);
         margin: 5px 0;
     }
-
+    
     .legend-labels {
         display: flex;
         justify-content: space-between;
@@ -109,6 +109,18 @@
         background: #e8e8e8;
     }
 
+    .bottom-slider-bar .playback-controls button.playing {
+        background: #263766;
+        color: #fff;
+        border-color: #263766;
+        cursor: default;
+    }
+
+    .bottom-slider-bar .playback-controls button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
     .bottom-slider-bar .hour-controls {
         display: flex;
         flex-direction: column;
@@ -151,6 +163,327 @@
         width: 150px;
         margin-top: 2px;
     }
+
+    /* Centered loading spinner overlay for map */
+    .map-loading-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1500;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .map-loading-overlay.visible {
+        opacity: 1;
+    }
+
+    .map-loading-overlay .map-spinner {
+        width: 48px;
+        height: 48px;
+        border: 5px solid #e0e0e0;
+        border-top-color: #263766;
+        border-radius: 50%;
+        animation: map-spin 0.7s linear infinite;
+    }
+
+    .map-loading-overlay .map-loading-text {
+        margin-top: 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #263766;
+        text-align: center;
+      }
+
+    @keyframes map-spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ── Share / Export PNG header ── */
+    .map-export-header {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 0;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    .map-export-header .share-label {
+        font-size: 0.78rem;
+        font-weight: 400;
+        color: #888;
+        white-space: nowrap;
+        user-select: none;
+    }
+
+    .map-export-header .btn-export-png {
+        padding: 4px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: transparent;
+        color: #666;
+        font-size: 0.78rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .map-export-header .btn-export-png:hover {
+        background: #f0f0f0;
+        border-color: #999;
+        color: #333;
+    }
+
+    .map-export-header .btn-export-png:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+    /* Compass overlay — above scalebar, left side of map container */
+    .compass-overlay {
+        position: absolute;
+        bottom: 200px;
+        left: 14px;
+        z-index: 1000;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        pointer-events: none;
+        overflow: visible;
+    }
+
+    .compass-overlay svg {
+        display: block;
+        width: 40px;
+        height: 40px;
+        overflow: visible;
+    }
+
+    .compass-overlay .compass-n {
+        font-size: 9px;
+        font-weight: 700;
+        fill: rgb(0, 0, 0);
+    }
+
+    .compass-overlay .compass-dir {
+        font-size: 8px;
+        font-weight: 600;
+        fill: #333;
+    }
+
+    .compass-overlay .compass-needle {
+        stroke: #333;
+        stroke-width: 0.5;
+    }
+
+    .compass-overlay .compass-ring {
+        fill: none;
+        stroke: #333;
+        stroke-width: 1;
+    }
+
+    /* Scalebar overlay — ruler style, above time slider bar, left of map */
+    .scalebar-overlay {
+        position: absolute;
+        bottom: 145px;
+        left: 14px;
+        z-index: 1000;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        pointer-events: none;
+    }
+
+    .scalebar-overlay .scalebar-ruler {
+        position: relative;
+        height: 20px;
+        width: 200px;
+    }
+
+    .scalebar-overlay .scalebar-main-line {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1.5px;
+        background: #333;
+    }
+
+    .scalebar-overlay .scalebar-ticks {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+
+    .scalebar-overlay .scalebar-tick {
+        position: absolute;
+        top: 0;
+        width: 1px;
+        background: #333;
+    }
+
+    .scalebar-overlay .scalebar-tick.major {
+        height: 14px;
+    }
+
+    .scalebar-overlay .scalebar-tick.minor {
+        height: 8px;
+    }
+
+    .scalebar-overlay .scalebar-labels {
+        position: relative;
+        width: 200px;
+        height: 14px;
+        margin-top: 2px;
+    }
+
+    .scalebar-overlay .scalebar-label {
+        position: absolute;
+        font-size: 9px;
+        font-weight: 600;
+        color: #333;
+        white-space: nowrap;
+        transform: translateX(-50%);
+        text-shadow:
+            1px 1px 0 #fff,
+           -1px -1px 0 #fff,
+            1px -1px 0 #fff,
+           -1px 1px 0 #fff,
+            0 1px 0 #fff,
+            0 -1px 0 #fff,
+            1px 0 0 #fff,
+           -1px 0 0 #fff;
+    }
+
+    /* ── RETRACTABLE MAP SIDEBAR ─────────────────────── */
+
+    /* Override ALL site.css .sidebar rules for the map page.
+       site.css sets overflow-y:auto and max-height on .sidebar which
+       clips our toggle button. We reset those here on the outer shell
+       and delegate scroll to the inner wrapper. */
+    .map-layout .sidebar {
+        position: relative !important;
+        width: 320px !important;
+        min-width: 320px !important;
+        max-height: none !important;
+        flex-shrink: 0 !important;
+        overflow: visible !important;
+        overflow-y: visible !important;
+        overflow-x: visible !important;
+        padding: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        transition: width 0.3s ease, min-width 0.3s ease !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* Inner wrapper — handles SCROLLING */
+    .sidebar-content-wrapper {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        max-height: calc(100vh - var(--nav-height, 56px) - 80px) !important;
+        transition: opacity 0.2s ease, max-height 0.3s ease !important;
+        padding: 1.25rem !important;
+        overscroll-behavior: contain;
+    }
+
+    /* Toggle button — a tall tab on the right edge of the sidebar,
+       positioned near the top (below nav bar), hugging the boundary
+       between sidebar and map container like a drawer pull handle */
+    .sidebar-toggle-btn {
+        position: absolute !important;
+        top: 147px !important;
+        right: -16px !important;
+        left: auto !important;
+        transform: none !important;
+        z-index: 1100 !important;
+        width: 16px !important;
+        height: 80px !important;
+        background: #ffffff !important;
+        border: 1px solid #d1d1d1 !important;
+        border-left: none !important;
+        border-radius: 0 6px 6px 0 !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+        transition: background 0.2s, color 0.2s, box-shadow 0.2s !important;
+        color: #77777a !important;
+        font-size: 10px !important;
+        line-height: 1 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .sidebar-toggle-btn:hover {
+        background: #f0f0f0 !important;
+        color: #005a9e !important;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .sidebar-toggle-btn svg {
+        width: 12px !important;
+        height: 12px !important;
+        transition: transform 0.3s ease !important;
+        fill: currentColor !important;
+    }
+
+    /* ── Retracted state ────────────────────────────── */
+    .map-layout .sidebar.retracted {
+        width: 0 !important;
+        min-width: 0 !important;
+    }
+
+    /* Hide inner content when retracted */
+    .map-layout .sidebar.retracted .sidebar-content-wrapper {
+        opacity: 0 !important;
+        max-height: 0 !important;
+        overflow: hidden !important;
+        padding: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* When retracted, button stays at the right edge of the 0-width sidebar,
+       which is the left boundary of the map area — the thin tab remains
+       visible as a pull handle */
+    .map-layout .sidebar.retracted .sidebar-toggle-btn {
+        right: -16px !important;
+    }
+
+    /* Flip chevron when retracted */
+    .map-layout .sidebar.retracted .sidebar-toggle-btn svg {
+        transform: rotate(180deg) !important;
+    }
+
+    /* Make sure .map-layout fills the content area properly */
+    .map-layout {
+        display: flex !important;
+        flex: 1 !important;
+        min-height: calc(100vh - var(--nav-height, 56px)) !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+
+    /* Ensure map container takes remaining space */
+    .map-layout .map-container {
+        flex: 1 !important;
+        min-width: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
   </style>
 
 {% endblock %}
@@ -163,21 +496,36 @@
     <a href="{% url 'home' %}" class="mobile-disclaimer-btn">Go to the Homepage</a>
   </div>
 </div>
+<!-- Share / Export PNG header (outside map container) -->
+  <div class="map-export-header">
+    <span class="share-label">Want to share this map?</span>
+    <button class="btn-export-png" id="export-png-btn" onclick="exportMapAsPNG()">Save as PNG</button>
+  </div>
 
 <!-- Map layout: sidebar and map container -->
 <div class="map-layout">
 
   <!-- Map sidebar (draws from map_sidebar.html)-->
-  <aside class= "sidebar" id="map-controls">
-    {% include 'dashboard/includes/map_sidebar.html' %}
+  <aside class="sidebar" id="map-controls">
+    <!-- Sidebar toggle button (chevron) -->
+    <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="Toggle sidebar" aria-label="Toggle sidebar">
+      <!-- Chevron-left icon (points left when expanded, rotates 180° when retracted) -->
+      <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="4,0 10,5 4,10" />
+      </svg>
+    </button>
+    <div class="sidebar-content-wrapper">
+      {% include 'dashboard/includes/map_sidebar.html' %}
+    </div>
   </aside>
+ 
 
   <!-- Map container -->
   <div class="map-container">
     <div id="map"></div>
 
     <!-- Explore "!" button -->
-    <div id="explore-panel">
+    <div id="explore-panel" class="retracted">
       <button id="explore-panel-toggle" class="explore-panel-toggle" title="Toggle explore panel" aria-label="Toggle explore panel">?</button>
       <div id="explore-panel-body">
         <strong>Explore The Map </strong><br/>
@@ -185,6 +533,28 @@
       </div>
     </div>
   
+    <!-- Compass -->
+    <div class="compass-overlay" id="compass-overlay">
+      <svg viewBox="-8 -8 66 66" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="25" cy="25" r="20" class="compass-ring"/>
+        <polygon points="25,6 21,25 25,21 29,25" fill="#c00" class="compass-needle"/>
+        <polygon points="25,44 21,25 25,29 29,25" fill="#333" class="compass-needle"/>
+        <text x="25" y="4" text-anchor="middle" class="compass-n">N</text>
+        <text x="25" y="52" text-anchor="middle" class="compass-dir">S</text>
+        <text x="50" y="28" text-anchor="middle" class="compass-dir">E</text>
+        <text x="0" y="28" text-anchor="middle" class="compass-dir">W</text>
+      </svg>
+    </div>
+
+    <!-- Scalebar -->
+    <div class="scalebar-overlay" id="scalebar-overlay">
+      <div class="scalebar-ruler" id="scalebar-ruler">
+        <div class="scalebar-main-line"></div>
+        <div class="scalebar-ticks" id="scalebar-ticks"></div>
+      </div>
+      <div class="scalebar-labels" id="scalebar-labels"></div>
+    </div>
+
     <!-- Legend -->
     <div class="map-legend-overlay" id="map-legend-overlay">
       <span class="legend-title">NO₂ (ppb)</span>
@@ -201,22 +571,20 @@
 
         <div class="playback-controls">
           <button id="playBtn">⯈ Play</button>
-          <button id="pauseBtn">⏸ Pause</button>
+          <button id="pauseBtn" disabled>⏸ Pause</button>
         </div>
 
       <!-- Hourly time slider -->
-        <div
+      <div
         id="hourControls"
         class="hour-controls"
-        {% if time_scale != "hourly" %}style="display:none;"{% endif %}
-        >
+        {% if time_scale != "hourly" %}style="display:none;"{% endif %}>
         <div class="slider-row">
-            <label>Hour</label>
-            <input type="range" min="0" max="23" step="1" value="0" id="timeSlider">
-            <div class="time-label" id="timeLabel"></div>
+          <label>Hour</label>
+          <input type="range" min="0" max="23" step="1" value="0" id="timeSlider">
+          <div class="time-label" id="timeLabel"></div>
         </div>
-        </div>
-
+      </div>
 
       <!-- Daily & Monthly Date slider -->
       <div class="slider-row">
@@ -235,6 +603,12 @@
         </div>
       </div>
 
+    </div>
+
+    <!-- Centered loading spinner overlay -->
+    <div class="map-loading-overlay" id="map-loading-overlay">
+      <div class="map-spinner"></div>
+      <div class="map-loading-text" id="map-loading-text">Loading...</div>
     </div>
 
     <!-- Coords bar -->
@@ -256,6 +630,8 @@
   <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet.heat.js"></script>
   <!-- Turf.js for point-in-polygon -->
   <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+  <!-- html2canvas for PNG export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
 
@@ -274,7 +650,7 @@
   // ── MAP INIT ───────────────────────────────────────────────────────────────
     var map = L.map('map', {
     center: [41.8, -87.629],  // Chicago, IL default
-    zoom: 11,
+    zoom: 10,
     layers: [tileLayers.osm],
     zoomControl: true,
     preferCanvas: true
@@ -453,8 +829,7 @@ function updateBottomControlVisibility() {
   let communityHourLookup = null;   // TEMPO community hourly lookup
 
   let communityLayer = null;      // colored data layer
-  let loadingControl = null;
-
+  
   let cachedDate = null;
   let cachedFeatures = null;
   let cachedHourBuckets = null;
@@ -463,6 +838,7 @@ function updateBottomControlVisibility() {
   let nextCachedHourBuckets = null;
 
   let timeInterval = null;
+let isPlaying = false;
   const tempoDailyCache = {};
   const tempoMonthlyCache = {};
   let communityIndexCache = {};
@@ -1002,32 +1378,189 @@ function toDailyKey(value) {
       return d.toISOString().split("T")[0];
   }
 
-  function showLoading(message = "Loading...") {
-      if (!loadingControl) {
-          loadingControl = L.control({ position: "topright" });
-          loadingControl.onAdd = function() {
-              let div = L.DomUtil.create("div");
-              div.id = "loadingIndicator";
-              div.style.background = "white";
-              div.style.padding = "8px";
-              div.style.borderRadius = "6px";
-              div.style.fontWeight = "bold";
-              div.style.boxShadow = "0 0 4px rgba(0,0,0,0.3)";
-              div.innerHTML = message;
-              return div;
-          };
-          loadingControl.addTo(map);
-      } else {
-          document.getElementById("loadingIndicator").innerHTML = message;
+  function showLoading(message) {
+    const overlay = document.getElementById("map-loading-overlay");
+    const textEl = document.getElementById("map-loading-text");
+    if (overlay) {
+        if (textEl && message) {
+            textEl.textContent = message;
+        }
+        overlay.classList.add("visible");
+    }
+}
+
+function hideLoading() {
+    const overlay = document.getElementById("map-loading-overlay");
+    if (overlay) {
+        overlay.classList.remove("visible");
+    }
+}
+
+async function exportMapAsPNG() {
+      const btn = document.getElementById('export-png-btn');
+      btn.disabled = true;
+      btn.textContent = 'Capturing...';
+
+      // Elements to hide during capture (legend and scalebar stay visible)
+      const coordsBar = document.getElementById('coords-bar');
+      const shareHeader = document.querySelector('.map-export-header');
+      const explorePanel = document.getElementById('explore-panel');
+      const bottomSlider = document.getElementById('bottom-slider-bar');
+      const loadingOverlay = document.getElementById('map-loading-overlay');
+      const leafletControls = document.querySelectorAll('.leaflet-control-zoom, .leaflet-control');
+      const homeControl = document.querySelector('.leaflet-control-home');
+
+      // Hide UI elements (keep legend and scalebar visible)
+      if (coordsBar) coordsBar.style.display = 'none';
+      if (shareHeader) shareHeader.style.display = 'none';
+      if (explorePanel) explorePanel.style.display = 'none';
+      if (bottomSlider) bottomSlider.style.display = 'none';
+      if (loadingOverlay) loadingOverlay.style.display = 'none';
+      leafletControls.forEach(el => { el.style.display = 'none'; });
+      if (homeControl) homeControl.style.display = 'none';
+
+      // Disable map interaction during capture
+      map.dragging.disable();
+      map.touchZoom.disable();
+      map.doubleClickZoom.disable();
+      map.scrollWheelZoom.disable();
+      map.boxZoom.disable();
+
+      // Wait for tiles to render
+      await new Promise(r => setTimeout(r, 300));
+
+      try {
+          const mapContainer = document.querySelector('.map-container');
+          const canvas = await html2canvas(mapContainer, {
+              useCORS: true,
+              allowTaint: false,
+              scale: 2,
+              backgroundColor: '#ffffff',
+              logging: false,
+              width: mapContainer.scrollWidth,
+              height: mapContainer.scrollHeight
+          });
+
+          // Trigger download
+          const link = document.createElement('a');
+          const now = new Date();
+          const timestamp = now.getFullYear() +
+              String(now.getMonth() + 1).padStart(2, '0') +
+              String(now.getDate()).padStart(2, '0') + '_' +
+              String(now.getHours()).padStart(2, '0') +
+              String(now.getMinutes()).padStart(2, '0');
+          link.download = `no2_map_${timestamp}.png`;
+          link.href = canvas.toDataURL('image/png', 1.0);
+          link.click();
+      } catch (err) {
+          console.error('PNG export failed:', err);
+          alert('Failed to export map as PNG. Please try again.');
+      } finally {
+          // Restore UI elements
+          if (coordsBar) coordsBar.style.display = '';
+          if (shareHeader) shareHeader.style.display = '';
+          if (explorePanel) explorePanel.style.display = '';
+          if (bottomSlider) bottomSlider.style.display = '';
+          if (loadingOverlay) loadingOverlay.style.display = '';
+          leafletControls.forEach(el => { el.style.display = ''; });
+          if (homeControl) homeControl.style.display = '';
+
+          // Re-enable map interaction
+          map.dragging.enable();
+          map.touchZoom.enable();
+          map.doubleClickZoom.enable();
+          map.scrollWheelZoom.enable();
+          map.boxZoom.enable();
+
+          btn.disabled = false;
+          btn.textContent = 'Export as PNG';
       }
   }
 
-  function hideLoading() {
-      if (loadingControl) {
-          map.removeControl(loadingControl);
-          loadingControl = null;
+function updateScaleBar() {
+      const ruler = document.getElementById('scalebar-ruler');
+      const ticksContainer = document.getElementById('scalebar-ticks');
+      const labelsContainer = document.getElementById('scalebar-labels');
+      if (!ruler || !ticksContainer || !labelsContainer) return;
+
+      const center = map.getCenter();
+      const zoom = map.getZoom();
+
+      // meters per pixel at this zoom / latitude (Web Mercator)
+      const metersPerPixel = (2 * Math.PI * 6378137) /
+          (Math.pow(2, zoom + 1) * Math.cos(center.lat * Math.PI / 180));
+
+      const totalPixels = 200;  // fixed ruler width
+      const distanceMeters = metersPerPixel * totalPixels;
+
+      // Pick a nice round total distance
+      let value, units;
+      if (distanceMeters >= 1000) {
+          const distKm = distanceMeters / 1000;
+          const mag = Math.pow(10, Math.floor(Math.log10(distKm)));
+          const norm = distKm / mag;
+          value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
+          units = 'km';
+      } else {
+          const mag = Math.pow(10, Math.floor(Math.log10(distanceMeters || 1)));
+          const norm = distanceMeters / mag;
+          value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
+          units = 'm';
+      }
+
+      const totalMeters = (units === 'km' ? value * 1000 : value);
+      const majorSegments = 4;   // 5 major ticks: 0, 1/4, 2/4, 3/4, 1
+      const minorPerMajor = 4;   // 4 minor ticks between each major → 5 sub-segments
+      const minorSegmentMeters = totalMeters / (majorSegments * minorPerMajor);
+      const minorSegmentPixels = totalPixels / (majorSegments * minorPerMajor);
+
+      // Build ticks
+      ticksContainer.innerHTML = '';
+      labelsContainer.innerHTML = '';
+      labelsContainer.style.width = totalPixels + 'px';
+
+      const totalMinorTicks = majorSegments * minorPerMajor + 1;
+      for (let i = 0; i < totalMinorTicks; i++) {
+          const isMajor = (i % minorPerMajor === 0);
+          const tick = document.createElement('div');
+          tick.className = 'scalebar-tick ' + (isMajor ? 'major' : 'minor');
+          tick.style.left = (i * minorSegmentPixels) + 'px';
+          ticksContainer.appendChild(tick);
+
+          if (isMajor) {
+              const label = document.createElement('span');
+              label.className = 'scalebar-label';
+              const valMeters = minorSegmentMeters * i;
+              if (units === 'km') {
+                  const valKm = valMeters / 1000;
+                  label.textContent = valKm.toFixed(valKm < 10 ? 1 : 0) + ' km';
+              } else {
+                  label.textContent = Math.round(valMeters) + ' m';
+              }
+              label.style.left = (i * minorSegmentPixels) + 'px';
+              labelsContainer.appendChild(label);
+          }
       }
   }
+
+function resetPlaybackUI() {
+          playBtn.classList.remove('playing');
+          playBtn.disabled = false;
+          pauseBtn.disabled = true;
+          dateSlider.disabled = false;
+          timeSlider.disabled = false;
+      }
+
+function updateIndividualModeLabel() {
+          const label = document.getElementById('individual-mode-label');
+          if (label) {
+              label.textContent = currentDataProduct === "tempo" ? " Individual Pixel" : " Individual Sensor";
+    }
+  }
+
+  // ── SCALEBAR: update on zoom/pan ──
+  map.on('zoomend moveend', updateScaleBar);
+  setTimeout(updateScaleBar, 500);
 
   function refreshMap() {
       if (dates.length === 0) {
@@ -3148,6 +3681,13 @@ if (TIME_SCALE === "monthly") {
       playBtn.addEventListener("click", () => {
           if (timeInterval) return;
 
+          // Disable play button & slider, enable pause button
+          playBtn.disabled = true;
+          playBtn.classList.add('playing');
+          pauseBtn.disabled = false;
+          dateSlider.disabled = true;
+          timeSlider.disabled = true;
+
           if (TIME_SCALE === "range") {
               rangeCurrentEndDate = rangeStartDate;
               dateSlider.value = 0;
@@ -3163,6 +3703,7 @@ if (TIME_SCALE === "monthly") {
                       if (currentIndex === dates.length - 1) {
                           clearInterval(timeInterval);
                           timeInterval = null;
+                          resetPlaybackUI();
                           return;
                       }
                       selectedHour = 0;
@@ -3214,6 +3755,7 @@ if (TIME_SCALE === "monthly") {
                   if (endIndex > finalIndex) {
                       clearInterval(timeInterval);
                       timeInterval = null;
+                      resetPlaybackUI();
                       return;
                   }
                   rangeCurrentEndDate = dates[endIndex];
@@ -3229,6 +3771,7 @@ if (TIME_SCALE === "monthly") {
                   if (currentIndex >= dates.length) {
                       clearInterval(timeInterval);
                       timeInterval = null;
+                      resetPlaybackUI();
                       return;
                   }
                   dateSlider.value = currentIndex;
@@ -3240,11 +3783,12 @@ if (TIME_SCALE === "monthly") {
                   let nextIndex =
                         Number(dateSlider.value) + 1;
 
-                    if (nextIndex >= dates.length) {
-                        clearInterval(timeInterval);
-                        timeInterval = null;
-                        return;
-                    }
+                  if (nextIndex >= dates.length) {
+                      clearInterval(timeInterval);
+                      timeInterval = null;
+                      resetPlaybackUI();
+                      return;
+                  }
                   dateSlider.value = nextIndex;
                   let date = dates[nextIndex];
                   dateLabel.innerHTML = formatMonthForDisplay(date);
@@ -3257,6 +3801,12 @@ if (TIME_SCALE === "monthly") {
       pauseBtn.addEventListener("click", () => {
           clearInterval(timeInterval);
           timeInterval = null;
+          // Re-enable play button & slider, disable pause button
+          playBtn.disabled = false;
+          playBtn.classList.remove('playing');
+          pauseBtn.disabled = true;
+          dateSlider.disabled = false;
+          timeSlider.disabled = false;
       });
 
       // ── PAGE LOAD: Sync displayMode with sidebar radio defaults ──
@@ -4156,6 +4706,22 @@ function loadFusionDates() {
         }
     });
     }
+
+  // ── SIDEBAR TOGGLE ──────────────────────────────────────────────────────────
+  const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+  const mapControls = document.getElementById('map-controls');
+  if (sidebarToggleBtn && mapControls) {
+    sidebarToggleBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      mapControls.classList.toggle('retracted');
+      // Invalidate map size after transition completes
+      setTimeout(() => { map.invalidateSize(); }, 350);
+    });
+    // Prevent map events from leaking through the toggle button
+    L.DomEvent.disableClickPropagation(sidebarToggleBtn);
+    L.DomEvent.disableScrollPropagation(sidebarToggleBtn);
+  }
 
   // ── OVERLAYS: prevent map from stealing pointer events ──────────────────────
   // These overlays sit on top of the Leaflet map. Without disabling propagation,

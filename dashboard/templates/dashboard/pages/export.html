@@ -10,11 +10,21 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet.heat.css" />
 
 <style>
-  /* ── GLOBAL FONT ── */
-  .export-layout,
-  .export-layout * {
-    font-family: Arial, Helvetica, sans-serif !important;
+
+  /* Background image for page */
+  main.content {
+    background-image: url({% static 'dashboard/images/export.png' %});
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: right center;
+    background-attachment: fixed;
   }
+
+   /* ── GLOBAL FONT ── */
+   .export-layout,
+   .export-layout * {
+     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+   }
 
   /*  EXPORT PAGE LAYOUT  */
   .export-layout {
@@ -142,7 +152,8 @@
     box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
   }
 
-  .form-group .hint {
+  .hint,
+  .form-group .hint{
     font-size: 0.72rem;
     color: var(--text-muted);
     margin-top: 0.2rem;
@@ -277,9 +288,9 @@
     right: 0.5rem;
     background: rgba(0, 90, 158, 0.85);
     color: #fff;
-    padding: 0.3rem 0.7rem;
-    border-radius: 6px;
-    font-size: 0.72rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    font-size: 1rem;
     font-weight: 600;
     z-index: 1000;
     pointer-events: none;
@@ -499,174 +510,8 @@
 
   <!-- ── LEFT: Export Controls ──────────────────── -->
   <aside class="export-controls">
-    <!-- Tab Navigation -->
-    <div class="export-tab-nav">
-      <button class="export-tab-btn active" onclick="switchExportTab('pdf')">Map PDF</button>
-      <button class="export-tab-btn" onclick="switchExportTab('data')">Data Files</button>
-    </div>
-
-    <!-- ── Tab 1: Map PDF Export ── -->
-    <div class="export-tab-content active" id="tab-pdf">
-      <h2>Export Map as PDF</h2>
-
-      <!-- Map Type Selection -->
-      <h3>Time Scale</h3>
-      <div class="map-type-grid">
-        <button class="map-type-btn active" data-type="hourly" onclick="selectMapType('hourly')">Hourly</button>
-        <button class="map-type-btn" data-type="daily" onclick="selectMapType('daily')">Daily</button>
-        <button class="map-type-btn" data-type="monthly" onclick="selectMapType('monthly')">Monthly</button>
-      </div>
-
-      <!-- Date Selection (single date — shown for hourly) -->
-      <h3 id="date-section-label">Date</h3>
-      <div class="form-group" id="single-date-group">
-        <label for="export-date">Select Date</label>
-        <input type="date" id="export-date" value="{{ today|date:'Y-m-d' }}" />
-      </div>
-
-      <!-- Hour Selection (only for hourly) -->
-      <div class="form-group" id="hour-group">
-        <label for="export-hour">Hour (UTC)</label>
-        <input type="number" id="export-hour" min="0" max="23" value="12" />
-        <span class="hint">Select 0–23 for hourly data</span>
-      </div>
-
-      <!-- Date Range Selection (only for daily) -->
-      <div id="date-range-group" style="display: none;">
-        <h3>Date Range</h3>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="date-range-start">Start Date</label>
-            <input type="date" id="date-range-start" value="{{ today|date:'Y-m-d' }}" />
-            <span class="hint">Select a range of dates for aggregated daily view</span>
-          </div>
-          <div class="form-group">
-            <label for="date-range-end">End Date</label>
-            <input type="date" id="date-range-end" value="{{ today|date:'Y-m-d' }}" />
-          </div>
-          
-        </div>
-        <div class="form-group" style="margin-top: 0.5rem;">
-          <label for="date-range-pages">PDF Mode</label>
-          <select id="date-range-pages">
-            <option value="single">Single page (last date)</option>
-            <option value="multi">One page per date</option>
-          </select>
-          <span class="hint">Note: "One page per date" generates a separate PDF page for each day in the range. For easier processing, please refrain from exceeding 30 days.</span>
-        </div>
-      </div>
-
-      <!-- Month Range Selection (only for monthly) -->
-      <div id="month-range-group" style="display: none;">
-        <h3>Month Range</h3>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="month-range-start">Start Month</label>
-            <input type="month" id="month-range-start" value="{{ today|date:'Y-m' }}" />
-            <span class="hint">Select a range of months for aggregated monthly view</span>
-          </div>
-          <div class="form-group">
-            <label for="month-range-end">End Month</label>
-            <input type="month" id="month-range-end" value="{{ today|date:'Y-m' }}" />
-          </div>
-        </div>
-        <div class="form-group" style="margin-top: 0.5rem;">
-          <label for="month-range-pages">PDF Mode</label>
-          <select id="month-range-pages">
-            <option value="single">Single page (last month)</option>
-            <option value="multi">One page per month</option>
-          </select>
-          <span class="hint">"One page per month" generates a separate PDF page for each month in the range</span>
-        </div>
-      </div>
-
-      <!-- Map View Settings -->
-      <h3>Map View Settings</h3>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="export-lat">Center Lat</label>
-          <input type="number" id="export-lat" step="0.01" value="41.90" />
-        </div>
-        <div class="form-group">
-          <label for="export-lng">Center Lng</label>
-          <input type="number" id="export-lng" step="0.01" value="-87.63" />
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="export-zoom">Zoom Level</label>
-        <input type="number" id="export-zoom" min="1" max="18" value="10" />
-        <span class="hint">1 = worldwide, 18 = building level</span>
-      </div>
-
-      <!-- Layer Options -->
-      <h3>Layers to Include</h3>
-      <div class="checkbox-group">
-        <input type="checkbox" id="include-border" checked />
-        <label for="include-border">Chicago Border</label>
-      </div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="include-communities" checked />
-        <label for="include-communities">Chicago Community Areas</label>
-      </div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="include-fusion" checked />
-        <label for="include-fusion">Fusion NO₂ Data</label>
-      </div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="include-tempo" checked />
-        <label for="include-tempo">TEMPO NO₂ Data</label>
-      </div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="include-clarity" checked />
-        <label for="include-clarity">Clarity NO₂ Data</label>
-      </div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="include-wind" checked />
-        <label for="include-wind">Wind Speed & Direction Data</label>
-      </div>
-
-      <!-- PDF Options -->
-      <h3>PDF Options</h3>
-      <div class="form-group">
-        <label for="pdf-orientation">Orientation</label>
-        <select id="pdf-orientation">
-          <option value="landscape" selected>Landscape</option>
-          <option value="portrait">Portrait</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="pdf-title">Map Title</label>
-        <input type="text" id="pdf-title" value="NO2_Map" />
-      </div>
-
-      <div class="form-group">
-        <label for="pdf-filename">Filename</label>
-        <input type="text" id="pdf-filename" value="no2_map_export" />
-        <span class="hint">The .pdf extension will be added automatically</span>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="export-actions">
-        <button class="btn-export btn-export-secondary" onclick="reloadMapData()">
-          &#8635; Reload Preview
-        </button>
-        <button class="btn-export btn-export-primary" onclick="exportToPDF()" id="export-btn">
-          &#10515; Export as PDF
-        </button>
-      </div>
-
-      <!-- Status -->
-      <div class="export-status" id="export-status"></div>
-      <div class="progress-bar-container" id="progress-container">
-        <div class="progress-bar" id="progress-bar"></div>
-      </div>
-    </div>
-
-    <!-- ── Tab 2: Data File Export ── -->
-    <div class="export-tab-content" id="tab-data">
+    <!-- ── Data File Export ── -->
+    <div class="export-tab-content active" id="tab-data" style="display:block;">
       <h2>Export Data Files</h2>
 
       <!-- Data Source Selection -->
@@ -684,9 +529,9 @@
           <option value="">All types</option>
           <option value="daily">Daily (Raw)</option>
           <option value="daily_community">Daily — Community Avg</option>
-          <option value="daily_sensor">Daily — Sensor Avg</option>
+          <option value="daily_pixel">Daily — Pixel Avg</option>
           <option value="monthly_community">Monthly — Community Avg</option>
-          <option value="monthly_sensor">Monthly — Sensor Avg</option>
+          <option value="monthly_pixel">Monthly — Pixel Avg</option>
         </select>
       </div>
 
@@ -701,9 +546,10 @@
       <!-- Export Format -->
       <h3>Export Format</h3>
       <div class="map-type-grid">
-        <button class="map-type-btn active" data-format="geojson" onclick="selectExportFormat('geojson')">GeoJSON</button>
+        <button class="map-type-btn active" data-format="geojson" onclick="selectExportFormat('geojson')">Original</button>
         <button class="map-type-btn" data-format="csv" onclick="selectExportFormat('csv')">CSV</button>
       </div>
+      <span class="hint">Note: To export .geojson or .json datafiles, select the "Original" option. To convert <strong>all selected files</strong> to .csv, select the "CSV" option.</span>
 
       <!-- Action Buttons -->
       <div class="export-actions">
@@ -720,28 +566,10 @@
     </div>
   </aside>
 
-  <!-- ── RIGHT: Preview Area ── -->
+    <!-- ── RIGHT: Data File List ── -->
   <div class="export-preview">
-    <!-- Map Preview (for PDF tab) -->
-    <div class="export-map-container" id="map-preview-container">
-      <!-- Mobile disclaimer overlay -->
-      <div class="mobile-disclaimer" id="mobile-disclaimer">
-        <div class="mobile-disclaimer-content">
-          <p>Export map preview is only available on desktop or laptop.</p>
-        </div>
-      </div>
-      <span class="preview-label">MAP PREVIEW</span>
-      <div id="export-map">
-        <!-- Coords bar at bottom -->
-      <div id="coords-bar">
-      <span id="coords-text">Lat: —  Lng: —</span>
-      <span id="zoom-text">Zoom: —</span>
-    </div>
-      </div>
-    </div>
-
-    <!-- Data File List (for Data tab) -->
-    <div class="data-export-preview" id="data-preview-container" style="display: none;">
+    <!-- Data File List -->
+    <div class="data-export-preview" id="data-preview-container">
       <h3>Available Data Files</h3>
       
       <div class="select-all-row">
@@ -776,14 +604,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- Leaflet Heat -->
-<script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet.heat.js"></script>
-<!-- html2canvas for screenshot capture -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- jsPDF for PDF generation -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<!--export map and datafile js-->
- <script src = "{% static 'dashboard/js/export_controls.js' %}"></script>
+<!--export datafile js-->
+<script src = "{% static 'dashboard/js/export_controls.js' %}"></script>
 {% endblock %}

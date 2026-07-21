@@ -29,6 +29,15 @@ urlpatterns = [
     # ── Clarity Data Files (served from dashboard/data/clarity/) ──
     path("data/clarity/<path:filename>", views.clarity_data_file, name="clarity_data_file"),
 
+    # ── TEMPO Data Files (served from dashboard/data/tempo/) ──
+    path("data/tempo/<path:filename>", views.tempo_data_file, name="tempo_data_file"),
+
+    # ── Fused Data Files (served from dashboard/data/fused/) ──
+    path("data/fused/<path:filename>", views.fused_data_file, name="fused_data_file"),
+
+    # ── Clarity Dates Index ──────────────────────────────────────
+    path("api/clarity-dates/", views.clarity_dates_index, name="clarity_dates_index"),
+
     # ── Data File Export API ──────────────────────────────────────
     path("api/list-data-files/", views.list_data_files_api, name="list_data_files_api"),
     path("api/export-data-file/", views.export_data_file, name="export_data_file"),

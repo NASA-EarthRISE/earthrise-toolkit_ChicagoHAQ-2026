@@ -25,6 +25,7 @@
       <label for="map-date" style="color: var(--bg);">Select Date</label>
       <input type="date" id="map-date" value="{{ today|date:'Y-m-d' }}" />
       <button class="load-date-btn" id="load-single-date" style="margin-top:0.5rem; width:100%;">Load</button>
+      <p class="hint">Note: When selecting a new data product, press load to reload the date selection.</p>
     </div>
 
     <!-- Date Range Selection (only for daily) -->
@@ -40,6 +41,7 @@
         </div>
       </div>
       <button class="load-date-btn" id="load-date-range" style="margin-top:0.25rem; width:100%;">Load</button>
+      <p class="hint">Note: When selecting a new data product, press load to reload the date selection.</p>
     </div>
 
     <!-- Month Range Selection (only for monthly) -->
@@ -55,7 +57,7 @@
         </div>
       </div>
       <button class="load-date-btn" id="load-month-range" style="margin-top:0.25rem; width:100%;">Load</button>
-      <span class = "hint">[Test]</p>
+      <p class ="hint">Note: When selecting a new data product, press load to reload the date selection.</p>
     </div>
 
   </div>
