@@ -575,7 +575,10 @@
         </div>
 
       <!-- Hourly time slider -->
-      <div id="hourControls" class="hour-controls">
+      <div
+        id="hourControls"
+        class="hour-controls"
+        {% if time_scale != "hourly" %}style="display:none;"{% endif %}>
         <div class="slider-row">
           <label>Hour</label>
           <input type="range" min="0" max="23" step="1" value="0" id="timeSlider">
@@ -646,7 +649,7 @@
 
   // ── MAP INIT ───────────────────────────────────────────────────────────────
     var map = L.map('map', {
-    center: [41.52, -87.37],  // Chicago, IL default
+    center: [41.8, -87.629],  // Chicago, IL default
     zoom: 10,
     layers: [tileLayers.osm],
     zoomControl: true,
@@ -654,7 +657,7 @@
     });
 
   // ── HOME BUTTON (reset view to Chicago) ──────────────────────────────────
-  const homeCoords = [41.83772083187901, -87.68664593458594];
+  const homeCoords = [41.8, -87.629];
   const homeZoom = 10;
 
   var HomeButton = L.Control.extend({
@@ -711,8 +714,106 @@
    let selectedHour = 0;
    let communityData = null;
    let ChicagoCommunityAreas = null;
-   let displayMode = "sensor";       // "sensor" (Clarity) or "grid" (TEMPO) or "community"
-   let currentDataProduct = "clarity"; // default matches sidebar radio "checked" value; "clarity" or "tempo" or "fusion"
+   
+   let displayMode = "sensor";
+
+function normalizeDataProduct(value) {
+    if (
+        value === "openaq" ||
+        value === "clarity" ||
+        value === "openair" ||
+        value === "open_air"
+    ) {
+        return "clarity";
+    }
+
+    if (value === "tempo") {
+        return "tempo";
+    }
+
+    if (value === "fusion") {
+        return "fusion";
+    }
+
+    return "clarity";
+}
+
+const urlProduct =
+    new URLSearchParams(window.location.search).get("product");
+
+let currentDataProduct = normalizeDataProduct(
+    urlProduct || localStorage.getItem("selectedDataProduct") || "openaq"
+);
+
+let appInitialized = false;
+
+// Prevent stale async fetches from rendering old products
+let activeLoadToken = 0;
+
+function startNewLoad(product) {
+    activeLoadToken += 1;
+    return {
+        id: activeLoadToken,
+        product: product
+    };
+}
+
+function isMonthlyDate(value) {
+    return /^\d{4}-\d{2}$/.test(value);
+}
+
+function isActiveLoad(load) {
+    return (
+        load &&
+        load.id === activeLoadToken &&
+        load.product === currentDataProduct
+    );
+}
+
+function canRenderTempo(label) {
+    if (currentDataProduct !== "tempo") {
+        console.log(`Blocked TEMPO render from ${label}; current product is ${currentDataProduct}`);
+        return false;
+    }
+
+    return true;
+}
+
+function clearDataLayers() {
+    if (currentLayer) {
+        map.removeLayer(currentLayer);
+        currentLayer = null;
+    }
+
+    if (communityLayer) {
+        map.removeLayer(communityLayer);
+        communityLayer = null;
+    }
+
+    markerGroup.clearLayers();
+    tempoLayerGroup.clearLayers();
+    openaqLayerGroup.clearLayers();
+    fusionLayerGroup.clearLayers();
+
+    if (heatLayer) {
+        map.removeLayer(heatLayer);
+        heatLayer = null;
+    }
+}
+
+function updateBottomControlVisibility() {
+    const hourControls = document.getElementById("hourControls");
+    const timeLabel = document.getElementById("timeLabel");
+
+    if (hourControls) {
+        hourControls.style.display = TIME_SCALE === "hourly" ? "block" : "none";
+    }
+
+    if (timeLabel && TIME_SCALE !== "hourly") {
+        timeLabel.innerHTML = "";
+    }
+}
+
    let rangeStartDate = null;
   let rangeEndDate = null;
   let rangeCurrentEndDate = null;
@@ -720,6 +821,7 @@
   let dates = [];
   let allDates = [];       // unfiltered copy — kept in sync by each date loader
   let rangeDates = [];
+  let invalidClarityHourlyDates = new Set();
 
   // TEMPO-specific date arrays (hourly and daily can differ)
   let tempoHourlyDates = [];
@@ -727,7 +829,7 @@
   let communityHourLookup = null;   // TEMPO community hourly lookup
 
   let communityLayer = null;      // colored data layer
-
+  
   let cachedDate = null;
   let cachedFeatures = null;
   let cachedHourBuckets = null;
@@ -736,6 +838,7 @@
   let nextCachedHourBuckets = null;
 
   let timeInterval = null;
+let isPlaying = false;
   const tempoDailyCache = {};
   const tempoMonthlyCache = {};
   let communityIndexCache = {};
@@ -761,7 +864,74 @@
           }
       );
 
+function removeInvalidHourlyDate(date, reason) {
+    if (!date || TIME_SCALE !== "hourly" || currentDataProduct !== "clarity") {
+        return;
+    }
 
+    if (invalidClarityHourlyDates.has(date)) {
+        return;
+    }
+
+    invalidClarityHourlyDates.add(date);
+
+    console.warn("Removing invalid hourly Clarity date from slider:", {
+        date: date,
+        reason: reason
+    });
+
+    const oldIndex = dates.indexOf(date);
+
+    dates = dates.filter(d => d !== date);
+    allDates = allDates.filter(d => d !== date);
+
+    const dateSlider = document.getElementById("dateSlider");
+
+    if (!dateSlider) {
+        return;
+    }
+
+    if (!dates || dates.length === 0) {
+        dateSlider.min = 0;
+        dateSlider.max = 0;
+        dateSlider.value = 0;
+
+        const dateLabel = document.getElementById("dateLabel");
+        const timeLabel = document.getElementById("timeLabel");
+
+        if (dateLabel) {
+            dateLabel.innerHTML = "No valid dates available";
+        }
+
+        if (timeLabel) {
+            timeLabel.innerHTML = "";
+        }
+
+        hideLoading();
+        return;
+    }
+
+    const nextIndex = Math.min(
+        Math.max(oldIndex, 0),
+        dates.length - 1
+    );
+
+    dateSlider.min = 0;
+    dateSlider.max = dates.length - 1;
+    dateSlider.value = nextIndex;
+
+    const nextDate = dates[nextIndex];
+
+    updateDateAndTimeLabels(nextDate);
+
+    cachedDate = null;
+    cachedFeatures = null;
+    cachedHourBuckets = null;
+    nextCachedDate = null;
+    nextCachedHourBuckets = null;
+
+    loadDate(nextDate);
+}
   // ── CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
     function loadChicagoBorder(){
         fetch("{% static 'dashboard/layers/Chicago.geojson' %}")
@@ -774,7 +944,7 @@
                 fillColor: "#00000000" //make fill transparent
                 }
             }).addTo(map);
-            map.fitBounds(ChicagoBounds.getBounds(), { animate: false })
+   //         map.fitBounds(ChicagoBounds.getBounds())
         })
     }
 
@@ -811,11 +981,6 @@
             });
 
             ChicagoCommunityAreas.addTo(map);
-            
-            // Prevents map from involuntarily panning away from the Chicago area
-            if (window.ChicagoBounds) {
-                map.fitBounds(ChicagoBounds.getBounds(), { animate: false })
-            }
 
             // Keep boundaries behind sensor markers
             ChicagoCommunityAreas.bringToBack();
@@ -923,13 +1088,18 @@
         }
 
         Promise.all(requests)
-      .then(files => {
-          let combinedFeatures = [];
-          files.forEach(data => {
-              if (data) {
-                  combinedFeatures.push(...data.features);
-              }
-          });
+        .then(files => {
+            if (currentDataProduct !== "clarity" || TIME_SCALE !== "hourly") {
+                return;
+            }
+
+            let combinedFeatures = [];
+            
+            files.forEach(data => {
+                if (data) {
+                    combinedFeatures.push(...data.features);
+                }
+            });
 
           let filteredFeatures = combinedFeatures.filter(f => {
               let utcDate = new Date(f.properties.time + "Z");
@@ -964,23 +1134,184 @@
       });
   }
 
-  function formatHourForDisplay(dateStr, selectedHour) {
-      let baseUTC = new Date(`${dateStr}T12:00:00Z`);
-      let chicagoBase = new Date(
-          baseUTC.toLocaleString("en-US", { timeZone: "America/Chicago" })
-      );
-      let offset = chicagoBase.getHours() - 12;
-      let correctUTCHour = selectedHour - offset;
-      let adjusted = new Date(`${dateStr}T00:00:00Z`);
-      adjusted.setUTCHours(correctUTCHour);
+  function updateDateAndTimeLabels(date) {
+    const dateLabel = document.getElementById("dateLabel");
+    const timeLabel = document.getElementById("timeLabel");
 
-      return adjusted.toLocaleTimeString("en-US", {
-          timeZone: "America/Chicago",
-          hour: "numeric",
-          hour12: true,
-          timeZoneName: "short"
-      });
-  }
+    if (!date) {
+        return;
+    }
+
+    if (TIME_SCALE === "monthly") {
+        if (dateLabel) {
+            dateLabel.innerHTML = formatMonthForDisplay(date);
+        }
+    } else {
+        if (dateLabel) {
+            dateLabel.innerHTML = utcDateToCentralPretty(date);
+        }
+    }
+
+    if (timeLabel && TIME_SCALE === "hourly") {
+        timeLabel.innerHTML = `Time: ${formatHourForDisplay(date, selectedHour)}`;
+    }
+}
+
+function getChicagoDateStringFromUTC(utcString) {
+    if (!utcString) {
+        return null;
+    }
+
+    const normalizedUTC = utcString.endsWith("Z")
+        ? utcString
+        : utcString + "Z";
+
+    const utcDate = new Date(normalizedUTC);
+
+    const chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
+
+    const y = chicagoParts.find(p => p.type === "year").value;
+    const m = chicagoParts.find(p => p.type === "month").value.padStart(2, "0");
+    const d = chicagoParts.find(p => p.type === "day").value.padStart(2, "0");
+
+    return `${y}-${m}-${d}`;
+}
+function deriveClarityCentralDatesFromFiles(utcFileDates) {
+    return Promise.all(
+        utcFileDates.map(date => {
+            return fetch(`/data/clarity/${date}.geojson`)
+                .then(r => {
+                    if (!r.ok) {
+                        console.warn("Missing Clarity hourly file while deriving Central dates:", date);
+                        return null;
+                    }
+                    return r.json();
+                })
+                .catch(err => {
+                    console.warn("Could not inspect Clarity file:", date, err);
+                    return null;
+                });
+        })
+    ).then(files => {
+        const centralDates = new Set();
+
+        files.forEach(data => {
+            if (!data || !data.features) {
+                return;
+            }
+
+            data.features.forEach(feature => {
+                const p = feature.properties || {};
+
+                if (!p.time) {
+                    return;
+                }
+
+                const value = Number(p.no2concindividual_value);
+
+                if (isNaN(value)) {
+                    return;
+                }
+
+                const centralDate = getChicagoDateStringFromUTC(p.time);
+                    if (centralDate) {
+                        centralDates.add(centralDate);
+                    }
+            });
+        });
+
+        return Array.from(centralDates).sort();
+    });
+}
+
+ function getChicagoParts(date) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Chicago",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        hour12: false,
+        timeZoneName: "short"
+    }).formatToParts(date);
+
+    const lookup = {};
+
+    parts.forEach(part => {
+        lookup[part.type] = part.value;
+    });
+
+    return {
+        year: lookup.year,
+        month: lookup.month,
+        day: lookup.day,
+        hour: lookup.hour === "24" ? "00" : lookup.hour,
+        timeZoneName: lookup.timeZoneName
+    };
+}
+
+function formatHourForDisplay(dateStr, selectedHour) {
+    if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        return "";
+    }
+
+    // Simple DST fallback patch for Chicago on Nov 2, 2025.
+    // At 2 AM CDT, clocks fell back to 1 AM CST.
+    // Since our slider only has one "1 AM", show both labels.
+    if (dateStr === "2025-11-02") {
+        if (selectedHour === 0) {
+            return "12 AM CDT";
+        }
+
+        if (selectedHour === 1) {
+            return "1 AM CDT / 1 AM CST";
+        }
+
+        if (selectedHour === 2) {
+            return "2 AM CST";
+        }
+
+        const displayHour = selectedHour % 12 === 0
+            ? 12
+            : selectedHour % 12;
+
+        const suffix = selectedHour < 12 ? "AM" : "PM";
+
+        return `${displayHour} ${suffix} CST`;
+    }
+
+    const parts = dateStr.split("-");
+    const targetYear = parts[0];
+    const targetMonth = parts[1];
+    const targetDay = parts[2];
+    const targetHour = String(selectedHour).padStart(2, "0");
+
+    const searchStart = new Date(`${dateStr}T00:00:00Z`);
+    searchStart.setUTCHours(searchStart.getUTCHours() - 12);
+
+    for (let i = 0; i < 48; i++) {
+        const candidate = new Date(searchStart);
+        candidate.setUTCHours(searchStart.getUTCHours() + i);
+
+        const chicago = getChicagoParts(candidate);
+
+        if (
+            chicago.year === targetYear &&
+            chicago.month === targetMonth &&
+            chicago.day === targetDay &&
+            chicago.hour === targetHour
+        ) {
+            return candidate.toLocaleTimeString("en-US", {
+                timeZone: "America/Chicago",
+                hour: "numeric",
+                hour12: true,
+                timeZoneName: "short"
+            });
+        }
+    }
+
+    return `${selectedHour}:00 CT`;
+}
 
   function formatMonthForDisplay(dateStr) {
       if (!dateStr || typeof dateStr !== 'string') {
@@ -1016,27 +1347,220 @@ function utcDateToCentralPretty(dateStr) {
             day: "numeric"
         });
 }
+
+function isDailyDate(value) {
+    return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+function isMonthKey(value) {
+    return /^\d{4}-\d{2}$/.test(value);
+}
+
+function toMonthKey(value) {
+    if (!value || typeof value !== "string") {
+        return null;
+    }
+
+    return value.substring(0, 7);
+}
+
+function toDailyKey(value) {
+    if (!value || typeof value !== "string") {
+        return null;
+    }
+
+    return isDailyDate(value) ? value : null;
+}
+
   function getPreviousDate(dateStr) {
       let d = new Date(dateStr + "T00:00:00Z");
       d.setUTCDate(d.getUTCDate() - 1);
       return d.toISOString().split("T")[0];
   }
 
-  function showLoading(message = "Loading...") {
-      const overlay = document.getElementById('map-loading-overlay');
-      const textEl = document.getElementById('map-loading-text');
-      if (overlay && textEl) {
-          textEl.innerHTML = message;
-          overlay.classList.add('visible');
+  function showLoading(message) {
+    const overlay = document.getElementById("map-loading-overlay");
+    const textEl = document.getElementById("map-loading-text");
+    if (overlay) {
+        if (textEl && message) {
+            textEl.textContent = message;
+        }
+        overlay.classList.add("visible");
+    }
+}
+
+function hideLoading() {
+    const overlay = document.getElementById("map-loading-overlay");
+    if (overlay) {
+        overlay.classList.remove("visible");
+    }
+}
+
+async function exportMapAsPNG() {
+      const btn = document.getElementById('export-png-btn');
+      btn.disabled = true;
+      btn.textContent = 'Capturing...';
+
+      // Elements to hide during capture (legend and scalebar stay visible)
+      const coordsBar = document.getElementById('coords-bar');
+      const shareHeader = document.querySelector('.map-export-header');
+      const explorePanel = document.getElementById('explore-panel');
+      const bottomSlider = document.getElementById('bottom-slider-bar');
+      const loadingOverlay = document.getElementById('map-loading-overlay');
+      const leafletControls = document.querySelectorAll('.leaflet-control-zoom, .leaflet-control');
+      const homeControl = document.querySelector('.leaflet-control-home');
+
+      // Hide UI elements (keep legend and scalebar visible)
+      if (coordsBar) coordsBar.style.display = 'none';
+      if (shareHeader) shareHeader.style.display = 'none';
+      if (explorePanel) explorePanel.style.display = 'none';
+      if (bottomSlider) bottomSlider.style.display = 'none';
+      if (loadingOverlay) loadingOverlay.style.display = 'none';
+      leafletControls.forEach(el => { el.style.display = 'none'; });
+      if (homeControl) homeControl.style.display = 'none';
+
+      // Disable map interaction during capture
+      map.dragging.disable();
+      map.touchZoom.disable();
+      map.doubleClickZoom.disable();
+      map.scrollWheelZoom.disable();
+      map.boxZoom.disable();
+
+      // Wait for tiles to render
+      await new Promise(r => setTimeout(r, 300));
+
+      try {
+          const mapContainer = document.querySelector('.map-container');
+          const canvas = await html2canvas(mapContainer, {
+              useCORS: true,
+              allowTaint: false,
+              scale: 2,
+              backgroundColor: '#ffffff',
+              logging: false,
+              width: mapContainer.scrollWidth,
+              height: mapContainer.scrollHeight
+          });
+
+          // Trigger download
+          const link = document.createElement('a');
+          const now = new Date();
+          const timestamp = now.getFullYear() +
+              String(now.getMonth() + 1).padStart(2, '0') +
+              String(now.getDate()).padStart(2, '0') + '_' +
+              String(now.getHours()).padStart(2, '0') +
+              String(now.getMinutes()).padStart(2, '0');
+          link.download = `no2_map_${timestamp}.png`;
+          link.href = canvas.toDataURL('image/png', 1.0);
+          link.click();
+      } catch (err) {
+          console.error('PNG export failed:', err);
+          alert('Failed to export map as PNG. Please try again.');
+      } finally {
+          // Restore UI elements
+          if (coordsBar) coordsBar.style.display = '';
+          if (shareHeader) shareHeader.style.display = '';
+          if (explorePanel) explorePanel.style.display = '';
+          if (bottomSlider) bottomSlider.style.display = '';
+          if (loadingOverlay) loadingOverlay.style.display = '';
+          leafletControls.forEach(el => { el.style.display = ''; });
+          if (homeControl) homeControl.style.display = '';
+
+          // Re-enable map interaction
+          map.dragging.enable();
+          map.touchZoom.enable();
+          map.doubleClickZoom.enable();
+          map.scrollWheelZoom.enable();
+          map.boxZoom.enable();
+
+          btn.disabled = false;
+          btn.textContent = 'Export as PNG';
       }
   }
 
-  function hideLoading() {
-      const overlay = document.getElementById('map-loading-overlay');
-      if (overlay) {
-          overlay.classList.remove('visible');
+function updateScaleBar() {
+      const ruler = document.getElementById('scalebar-ruler');
+      const ticksContainer = document.getElementById('scalebar-ticks');
+      const labelsContainer = document.getElementById('scalebar-labels');
+      if (!ruler || !ticksContainer || !labelsContainer) return;
+
+      const center = map.getCenter();
+      const zoom = map.getZoom();
+
+      // meters per pixel at this zoom / latitude (Web Mercator)
+      const metersPerPixel = (2 * Math.PI * 6378137) /
+          (Math.pow(2, zoom + 1) * Math.cos(center.lat * Math.PI / 180));
+
+      const totalPixels = 200;  // fixed ruler width
+      const distanceMeters = metersPerPixel * totalPixels;
+
+      // Pick a nice round total distance
+      let value, units;
+      if (distanceMeters >= 1000) {
+          const distKm = distanceMeters / 1000;
+          const mag = Math.pow(10, Math.floor(Math.log10(distKm)));
+          const norm = distKm / mag;
+          value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
+          units = 'km';
+      } else {
+          const mag = Math.pow(10, Math.floor(Math.log10(distanceMeters || 1)));
+          const norm = distanceMeters / mag;
+          value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
+          units = 'm';
+      }
+
+      const totalMeters = (units === 'km' ? value * 1000 : value);
+      const majorSegments = 4;   // 5 major ticks: 0, 1/4, 2/4, 3/4, 1
+      const minorPerMajor = 4;   // 4 minor ticks between each major → 5 sub-segments
+      const minorSegmentMeters = totalMeters / (majorSegments * minorPerMajor);
+      const minorSegmentPixels = totalPixels / (majorSegments * minorPerMajor);
+
+      // Build ticks
+      ticksContainer.innerHTML = '';
+      labelsContainer.innerHTML = '';
+      labelsContainer.style.width = totalPixels + 'px';
+
+      const totalMinorTicks = majorSegments * minorPerMajor + 1;
+      for (let i = 0; i < totalMinorTicks; i++) {
+          const isMajor = (i % minorPerMajor === 0);
+          const tick = document.createElement('div');
+          tick.className = 'scalebar-tick ' + (isMajor ? 'major' : 'minor');
+          tick.style.left = (i * minorSegmentPixels) + 'px';
+          ticksContainer.appendChild(tick);
+
+          if (isMajor) {
+              const label = document.createElement('span');
+              label.className = 'scalebar-label';
+              const valMeters = minorSegmentMeters * i;
+              if (units === 'km') {
+                  const valKm = valMeters / 1000;
+                  label.textContent = valKm.toFixed(valKm < 10 ? 1 : 0) + ' km';
+              } else {
+                  label.textContent = Math.round(valMeters) + ' m';
+              }
+              label.style.left = (i * minorSegmentPixels) + 'px';
+              labelsContainer.appendChild(label);
+          }
       }
   }
+
+function resetPlaybackUI() {
+          playBtn.classList.remove('playing');
+          playBtn.disabled = false;
+          pauseBtn.disabled = true;
+          dateSlider.disabled = false;
+          timeSlider.disabled = false;
+      }
+
+function updateIndividualModeLabel() {
+          const label = document.getElementById('individual-mode-label');
+          if (label) {
+              label.textContent = currentDataProduct === "tempo" ? " Individual Pixel" : " Individual Sensor";
+    }
+  }
+
+  // ── SCALEBAR: update on zoom/pan ──
+  map.on('zoomend moveend', updateScaleBar);
+  setTimeout(updateScaleBar, 500);
 
   function refreshMap() {
       if (dates.length === 0) {
@@ -1157,114 +1681,541 @@ function utcDateToCentralPretty(dateStr) {
       });
   }
 
-  function loadMonthlyCommunities(month) {
-      fetch(`/data/clarity/monthly_community_${month}.geojson`)
-      .then(r => r.json())
-      .then(data => {
-          if (communityLayer) {
-              map.removeLayer(communityLayer);
-          }
-          communityLayer = L.geoJSON(data, {
-              style: function(feature) {
-                  let raw = feature.properties.avg_no2;
-                  let avg = raw === null || raw === "" ? null : Number(raw);
-                  return {
-                      color: "#222",
-                      weight: 1,
-                      fillColor: avg === null ? "transparent" : getColor(avg),
-                      fillOpacity: avg === null ? 0 : 0.65
-                  };
-              },
-              onEachFeature: function(feature, layer) {
-                  let p = feature.properties;
-                  layer.bindTooltip(`
-                      <b>${p.community || p.COMMUNITY || p.community_name || p.name}</b><br>
-                      Avg NO₂: ${p.avg_no2 == null ? "No Data" : Number(p.avg_no2).toFixed(1)} ppb<br>
-                      Measurements: ${p.count || 0}
-                  `);
-              }
-          });
-          communityLayer.addTo(map);
-          hideLoading();
-      })
-      .catch(err => {
-          console.error("Could not load monthly community file:", err);
-      });
-  }
+  function loadMonthlyCommunities(month, existingLoad) {
+    const load = existingLoad || startNewLoad("clarity");
 
-  function loadDailySensors(date) {
-      fetch(`/data/clarity/daily_sensor_${date}.geojson`)
-      .then(r => r.json())
-      .then(data => {
-          if (currentLayer) {
-              map.removeLayer(currentLayer);
-          }
-          currentLayer = L.layerGroup();
-          data.features.forEach(f => {
-              let p = f.properties;
-              let avg = parseFloat(p.avg_no2);
-              let marker = L.circleMarker([
-                  f.geometry.coordinates[1],
-                  f.geometry.coordinates[0]
-              ], {
-                  radius: 6,
-                  fillColor: getColor(avg),
-                  color: "#222",
-                  weight: 1,
-                  fillOpacity: 0.9
-              });
-              marker.bindTooltip(`
-                  <b>${p.sensor_name}</b><br>
-                  Daily Average<br>
-                  Avg NO₂: ${avg.toFixed(1)} ppb<br>
-                  Measurements: ${p.count}
-              `);
-              currentLayer.addLayer(marker);
-          });
-          currentLayer.addTo(map);
-          hideLoading();
-      })
-      .catch(err => {
-          console.error("Could not load daily sensor file:", err);
-      });
-  }
+    if (!isActiveLoad(load)) {
+        return;
+    }
 
-  function loadMonthlySensors(month) {
-      fetch(`/data/clarity/monthly_sensor_${month}.geojson`)
-      .then(r => r.json())
-      .then(data => {
-          if (currentLayer) {
-              map.removeLayer(currentLayer);
-          }
-          currentLayer = L.layerGroup();
-          data.features.forEach(f => {
-              let p = f.properties;
-              let avg = parseFloat(p.avg_no2);
-              let marker = L.circleMarker([
-                  f.geometry.coordinates[1],
-                  f.geometry.coordinates[0]
-              ], {
-                  radius: 6,
-                  fillColor: getColor(avg),
-                  color: "#222",
-                  weight: 1,
-                  fillOpacity: 0.9
-              });
-              marker.bindTooltip(`
-                  <b>${p.sensor_name}</b><br>
-                  Monthly Average<br>
-                  Avg NO₂: ${avg.toFixed(1)} ppb<br>
-                  Measurements: ${p.count}
-              `);
-              currentLayer.addLayer(marker);
-          });
-          currentLayer.addTo(map);
-          hideLoading();
-      })
-      .catch(err => {
-          console.error("Could not load monthly sensor file:", err);
-      });
-  }
+    fetch(`/data/clarity/monthly_community_${month}.geojson`)
+        .then(r => r.json())
+        .then(data => {
+            if (!isActiveLoad(load)) {
+                console.log("Ignoring stale Clarity monthly community load:", month);
+                return;
+            }
+
+            if (communityLayer) {
+                map.removeLayer(communityLayer);
+            }
+
+            communityLayer = L.geoJSON(data, {
+                style: function(feature) {
+                    let raw = feature.properties.avg_no2;
+                    let avg = raw === null || raw === "" ? null : Number(raw);
+
+                    return {
+                        color: "#222",
+                        weight: 1,
+                        fillColor: avg === null ? "transparent" : getColor(avg),
+                        fillOpacity: avg === null ? 0 : 0.65
+                    };
+                },
+                onEachFeature: function(feature, layer) {
+                    let p = feature.properties;
+
+                    layer.bindTooltip(`
+                        <b>${p.community || p.COMMUNITY || p.community_name || p.name}</b><br>
+                        Avg NO₂: ${p.avg_no2 == null ? "No Data" : Number(p.avg_no2).toFixed(1)} ppb<br>
+                        Measurements: ${p.count || 0}
+                    `);
+                }
+            });
+
+            communityLayer.addTo(map);
+            hideLoading();
+        })
+        .catch(err => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+            console.error("Could not load monthly community file:", err);
+        });
+}
+
+function loadDailySensors(date, existingLoad) {
+    const dailyKey = toDailyKey(date);
+
+    if (!dailyKey) {
+        console.warn(
+            "Blocked daily sensor load. daily_sensor requires YYYY-MM-DD, got:",
+            date
+        );
+        return;
+    }
+
+    const load = existingLoad || startNewLoad("clarity");
+
+    if (!isActiveLoad(load)) {
+        return;
+    }
+
+    fetch(`/data/clarity/daily_sensor_${dailyKey}.geojson`)
+        .then(r => {
+            if (!r.ok) {
+                throw new Error(`Missing daily sensor file: ${dailyKey}`);
+            }
+            return r.json();
+        })
+        .then(data => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            if (currentLayer) {
+                map.removeLayer(currentLayer);
+            }
+
+            currentLayer = L.layerGroup();
+
+            data.features.forEach(f => {
+                let p = f.properties;
+                let avg = parseFloat(p.avg_no2);
+
+                let marker = L.circleMarker([
+                    f.geometry.coordinates[1],
+                    f.geometry.coordinates[0]
+                ], {
+                    radius: 6,
+                    fillColor: getColor(avg),
+                    color: "#222",
+                    weight: 1,
+                    fillOpacity: 0.9
+                });
+
+                marker.bindTooltip(`
+                    <b>${p.sensor_name}</b><br>
+                    Daily Average<br>
+                    Avg NO₂: ${avg.toFixed(1)} ppb<br>
+                    Measurements: ${p.count}
+                `);
+
+                currentLayer.addLayer(marker);
+            });
+
+            currentLayer.addTo(map);
+            hideLoading();
+        })
+        .catch(err => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            console.error("Could not load daily sensor file:", err);
+        });
+}
+
+function loadMonthlySensors(month, existingLoad) {
+    month = toMonthKey(month);
+
+    if (!isMonthlyDate(month)) {
+        console.warn(
+            "Blocked invalid monthly sensor load. Expected YYYY-MM, got:",
+            month
+        );
+        return;
+    }
+
+    const load = existingLoad || startNewLoad("clarity");
+
+    if (!isActiveLoad(load)) {
+        return;
+    }
+
+    fetch(`/data/clarity/monthly_sensor_${month}.geojson`)
+        .then(r => {
+            if (!r.ok) {
+                throw new Error(`Missing monthly sensor file: ${month}`);
+            }
+            return r.json();
+        })
+        .then(data => {
+            if (!isActiveLoad(load)) {
+                console.log("Ignoring stale Clarity monthly sensor load:", month);
+                return;
+            }
+
+            if (currentLayer) {
+                map.removeLayer(currentLayer);
+            }
+
+            currentLayer = L.layerGroup();
+
+            data.features.forEach(f => {
+                let p = f.properties;
+                let avg = parseFloat(p.avg_no2);
+
+                let marker = L.circleMarker([
+                    f.geometry.coordinates[1],
+                    f.geometry.coordinates[0]
+                ], {
+                    radius: 6,
+                    fillColor: getColor(avg),
+                    color: "#222",
+                    weight: 1,
+                    fillOpacity: 0.9
+                });
+
+                marker.bindTooltip(`
+                    <b>${p.sensor_name}</b><br>
+                    Monthly Average<br>
+                    Avg NO₂: ${avg.toFixed(1)} ppb<br>
+                    Measurements: ${p.count}
+                `);
+
+                currentLayer.addLayer(marker);
+            });
+
+            currentLayer.addTo(map);
+            hideLoading();
+        })
+        .catch(err => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+            console.error("Could not load monthly sensor file:", err);
+        });
+}
+
+// ── FUSION DATA LOADING FUNCTIONS ───────────────────────────────────────────
+
+function getFusionValue(properties) {
+    if (!properties) {
+        return NaN;
+    }
+
+    return Number(properties.no2_estimate);
+}
+
+function getFusionTimeString(properties) {
+    if (!properties) {
+        return "";
+    }
+
+    return (
+        properties.datetime ||
+        properties.datetime_local ||
+        properties.time ||
+        properties.timestamp ||
+        ""
+    );
+}
+
+function getFusionChicagoDateHour(properties) {
+    const rawTime = getFusionTimeString(properties);
+
+    if (!rawTime) {
+        return null;
+    }
+
+    const normalized = rawTime.includes("T")
+        ? rawTime
+        : rawTime.replace(" ", "T");
+
+    const utcDate = new Date(
+        normalized.endsWith("Z")
+            ? normalized
+            : normalized + "Z"
+    );
+
+    if (isNaN(utcDate.getTime())) {
+        return null;
+    }
+
+    const chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
+    const chicagoHourParts = chicagoHourFormatter.formatToParts(utcDate);
+
+    const y = chicagoParts.find(p => p.type === "year").value;
+    const m = chicagoParts.find(p => p.type === "month").value.padStart(2, "0");
+    const d = chicagoParts.find(p => p.type === "day").value.padStart(2, "0");
+
+    const hour = Number(
+        chicagoHourParts.find(p => p.type === "hour").value
+    );
+
+    return {
+        date: `${y}-${m}-${d}`,
+        hour: hour
+    };
+}
+
+function showFusionNoDataMessage(date, detailText) {
+    if (currentLayer) {
+        map.removeLayer(currentLayer);
+        currentLayer = null;
+    }
+
+    if (communityLayer) {
+        map.removeLayer(communityLayer);
+        communityLayer = null;
+    }
+
+    const label =
+        TIME_SCALE === "monthly"
+            ? formatMonthForDisplay(date)
+            : utcDateToCentralPretty(date);
+
+    showLoading(`
+        No Fusion Data Available<br>
+        ${label}${detailText ? "<br>" + detailText : ""}
+    `);
+}
+
+function renderFusionFeatures(features, labelText) {
+    features = features || [];
+
+    if (currentDataProduct !== "fusion") {
+        console.log("Blocked Fusion render because current product is:", currentDataProduct);
+        return false;
+    }
+
+    const newLayer = L.layerGroup();
+    let renderedCount = 0;
+
+    features.forEach(f => {
+        const p = f.properties || {};
+        const value = getFusionValue(p);
+
+        if (isNaN(value)) {
+            return;
+        }
+
+        let lat = Number(p.latitude);
+        let lon = Number(p.longitude);
+
+        if ((isNaN(lat) || isNaN(lon)) && f.geometry && f.geometry.coordinates) {
+            if (f.geometry.type === "Polygon") {
+                const coords = f.geometry.coordinates[0];
+
+                if (coords && coords.length > 0) {
+                    const lons = coords.map(c => Number(c[0]));
+                    const lats = coords.map(c => Number(c[1]));
+
+                    lon = lons.reduce((a, b) => a + b, 0) / lons.length;
+                    lat = lats.reduce((a, b) => a + b, 0) / lats.length;
+                }
+            }
+
+            if (f.geometry.type === "Point") {
+                lon = Number(f.geometry.coordinates[0]);
+                lat = Number(f.geometry.coordinates[1]);
+            }
+        }
+
+        if (isNaN(lat) || isNaN(lon)) {
+            return;
+        }
+
+        const gridCell = L.geoJSON(f, {
+            style: {
+                color: getColorClarity(value),
+                fillColor: getColorClarity(value),
+                weight: 0.5,
+                opacity: 0.8,
+                fillOpacity: 0.75
+            },
+            onEachFeature: function(feature, layer) {
+                layer.bindTooltip(`
+                    <b>Fusion Grid Cell</b><br>
+                    ${labelText}<br>
+                    NO₂ Estimate: ${value.toFixed(2)} ppb<br>
+                    Lat: ${lat.toFixed(4)}<br>
+                    Lon: ${lon.toFixed(4)}
+                `);
+            }
+        });
+
+        newLayer.addLayer(gridCell);
+        renderedCount += 1;
+    });
+
+    if (renderedCount === 0) {
+        return false;
+    }
+
+    // Only swap layers after valid new Fusion data is ready.
+    if (currentLayer) {
+        map.removeLayer(currentLayer);
+    }
+
+    if (communityLayer) {
+        map.removeLayer(communityLayer);
+        communityLayer = null;
+    }
+
+    currentLayer = newLayer;
+    currentLayer.addTo(map);
+
+    hideLoading();
+    return true;
+}
+
+
+function loadFusionHourly(date, existingLoad) {
+    const load = existingLoad || startNewLoad("fusion");
+
+    if (!isActiveLoad(load)) {
+        return;
+    }
+
+    fetch(`/data/fused/${date}.geojson`)
+        .then(r => {
+            if (!r.ok) {
+                throw new Error(`Missing Fusion hourly file: ${date}`);
+            }
+            return r.json();
+        })
+        .then(data => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            const features = data && data.features ? data.features : [];
+
+            const filteredFeatures = features.filter(f => {
+                const parts = getFusionChicagoDateHour(f.properties || {});
+
+                if (!parts) {
+                    return false;
+                }
+
+                return (
+                    parts.date === date &&
+                    parts.hour === selectedHour
+                );
+            });
+
+            const hasValidData = filteredFeatures.some(f => {
+                return !isNaN(getFusionValue(f.properties || {}));
+            });
+
+            if (!hasValidData) {
+                console.warn("No valid Fusion data for", date, "hour", selectedHour);
+
+                showFusionNoDataMessage(
+                    date,
+                    `Time: ${formatHourForDisplay(date, selectedHour)}`
+                );
+
+                return;
+            }
+
+            const rendered = renderFusionFeatures(
+                filteredFeatures,
+                `Time: ${formatHourForDisplay(date, selectedHour)}`
+            );
+
+            if (!rendered) {
+                showFusionNoDataMessage(
+                    date,
+                    `Time: ${formatHourForDisplay(date, selectedHour)}`
+                );
+            }
+        })
+        .catch(err => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            console.error("Could not load Fusion hourly file:", err);
+
+            showFusionNoDataMessage(
+                date,
+                `Time: ${formatHourForDisplay(date, selectedHour)}`
+            );
+        });
+}
+
+function loadFusionDaily(date, existingLoad) {
+    const dailyKey = toDailyKey(date);
+
+    if (!dailyKey) {
+        console.warn("Blocked invalid Fusion daily load:", date);
+        return;
+    }
+
+    const load = existingLoad || startNewLoad("fusion");
+
+    if (!isActiveLoad(load)) {
+        return;
+    }
+
+    fetch(`/data/fused/day_${dailyKey}.geojson`)
+        .then(r => {
+            if (!r.ok) {
+                throw new Error(`Missing Fusion daily file: ${dailyKey}`);
+            }
+            return r.json();
+        })
+        .then(data => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            const rendered = renderFusionFeatures(
+                data.features || [],
+                "Daily Average"
+            );
+
+            if (!rendered) {
+                showFusionNoDataMessage(date, "Daily Average");
+            }
+        })
+        .catch(err => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            console.error("Could not load Fusion daily file:", err);
+            showFusionNoDataMessage(date, "Daily Average");
+        });
+}
+
+function loadFusionMonthly(month, existingLoad) {
+    month = toMonthKey(month);
+
+    if (!isMonthlyDate(month)) {
+        console.warn("Blocked invalid Fusion monthly load:", month);
+        return;
+    }
+
+    const load = existingLoad || startNewLoad("fusion");
+
+    if (!isActiveLoad(load)) {
+        return;
+    }
+
+    fetch(`/data/fused/month_${month}.geojson`)
+        .then(r => {
+            if (!r.ok) {
+                throw new Error(`Missing Fusion monthly file: ${month}`);
+            }
+            return r.json();
+        })
+        .then(data => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            const rendered = renderFusionFeatures(
+                data.features || [],
+                "Monthly Average"
+            );
+
+            if (!rendered) {
+                showFusionNoDataMessage(month, "Monthly Average");
+            }
+        })
+        .catch(err => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            console.error("Could not load Fusion monthly file:", err);
+            showFusionNoDataMessage(month, "Monthly Average");
+        });
+}
 
   // ── TEMPO DATA LOADING FUNCTIONS ──────────────────────────────────────────────────
 
@@ -1279,7 +2230,7 @@ function utcDateToCentralPretty(dateStr) {
   }
 
 function renderDailyTempoData(data) {
-
+    if (!canRenderTempo("renderDailyTempoData")) return;
     const newLayer = L.layerGroup();
 
     data.features.forEach(f => {
@@ -1314,9 +2265,14 @@ function renderDailyTempoData(data) {
     hideLoading();
 }
   // TEMPO Daily – renders grid cells as colored GeoJSON polygons
- function loadDailyTempo(date) {
+ function loadDailyTempo(date, existingLoad) {
+    const load = existingLoad || startNewLoad("tempo");
+
+    if (!isActiveLoad(load)) return;
+    if (!canRenderTempo("loadDailyTempo")) return;
 
     if (tempoDailyCache[date]) {
+        if (!isActiveLoad(load)) return;
         renderDailyTempoData(tempoDailyCache[date]);
         return;
     }
@@ -1327,19 +2283,33 @@ function renderDailyTempoData(data) {
             return r.json();
         })
         .then(data => {
+            if (!isActiveLoad(load)) return;
+            if (!canRenderTempo("loadDailyTempo.then")) return;
 
             if (!data || !data.features) {
                 return;
             }
 
             tempoDailyCache[date] = data;
-
             renderDailyTempoData(data);
-
         });
 }
 
-function renderMonthlyTempoData(data) {
+function renderMonthlyTempoData(data, load) {
+    console.log("Attempting TEMPO monthly render", {
+        currentDataProduct,
+        activeLoadToken,
+        passedLoad: load
+    });
+    if (!isActiveLoad(load)) {
+        console.log("Blocked stale TEMPO monthly render");
+        return;
+    }
+
+    if (currentDataProduct !== "tempo") {
+        console.log("Blocked TEMPO monthly render because current product is:", currentDataProduct);
+        return;
+    }
 
     if (!currentLayer) {
         currentLayer = L.layerGroup().addTo(map);
@@ -1348,7 +2318,6 @@ function renderMonthlyTempoData(data) {
     }
 
     data.features.forEach(f => {
-
         let value = parseFloat(
             f.properties.vertical_column_troposphere
         );
@@ -1371,16 +2340,28 @@ function renderMonthlyTempoData(data) {
     hideLoading();
 }
   // TEMPO Monthly – renders grid cells as colored GeoJSON polygons
-  function loadMonthlyTempo(month) {
+ function loadMonthlyTempo(month, existingLoad) {
+    const load = existingLoad || startNewLoad("tempo");
+
+    if (!isActiveLoad(load)) {
+        return;
+    }
 
     if (tempoMonthlyCache[month]) {
-        renderMonthlyTempoData(tempoMonthlyCache[month]);
+        if (!isActiveLoad(load)) {
+            return;
+        }
+        renderMonthlyTempoData(tempoMonthlyCache[month], load);
         return;
     }
 
     fetch(`/data/tempo/month_${month}.geojson`)
         .then(r => r.json())
         .then(data => {
+            if (!isActiveLoad(load)) {
+                console.log("Ignoring stale TEMPO monthly load:", month);
+                return;
+            }
 
             if (!data || !data.features) {
                 return;
@@ -1388,10 +2369,12 @@ function renderMonthlyTempoData(data) {
 
             tempoMonthlyCache[month] = data;
 
-            renderMonthlyTempoData(data);
-
+            renderMonthlyTempoData(data, load);
         })
         .catch(err => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
             console.error("Could not load TEMPO monthly file:", err);
         });
 }
@@ -1455,50 +2438,75 @@ function renderMonthlyTempoData(data) {
   }
 
   // TEMPO Monthly Communities
-  function loadTempoMonthlyCommunities(month) {
-      if (currentLayer) {
-          map.removeLayer(currentLayer);
-          currentLayer = null;
-      }
+  function loadTempoMonthlyCommunities(month, existingLoad) {
+    const load = existingLoad || startNewLoad("tempo");
 
-      fetch(`/data/tempo/monthly_community_${month}.geojson`)
-      .then(r => r.json())
-      .then(data => {
-          if (communityLayer) {
-              map.removeLayer(communityLayer);
-          }
+    if (!isActiveLoad(load)) {
+        return;
+    }
 
-          communityLayer = L.geoJSON(data, {
-              style: function(feature) {
-                  let raw = feature.properties.vertical_column_troposphere;
-                  let avg = raw === null || raw === "" ? null : Number(raw);
-                  return {
-                      color: "#222",
-                      weight: 1,
-                      fillColor: avg === null ? "transparent" : getColorTempo(avg),
-                      fillOpacity: avg === null ? 0 : 0.65
-                  };
-              },
-              onEachFeature: function(feature, layer) {
-                  let p = feature.properties;
-                  layer.bindTooltip(`
-                      <b>${p.community || p.COMMUNITY || p.community_name || p.name}</b><br>
-                      Avg NO₂: ${
-                          p.vertical_column_troposphere == null
-                              ? "No Data"
-                              : Number(p.vertical_column_troposphere).toExponential(2)
-                      }
-                  `);
-              }
-          });
+    if (!canRenderTempo("loadTempoMonthlyCommunities")) {
+        return;
+    }
 
-          communityLayer.addTo(map);
-          hideLoading();
-      })
-      .catch(err => {
-          console.error("Could not load TEMPO monthly community file:", err);
-      });
-  }
+    if (currentLayer) {
+        map.removeLayer(currentLayer);
+        currentLayer = null;
+    }
+
+    fetch(`/data/tempo/monthly_community_${month}.geojson`)
+        .then(r => r.json())
+        .then(data => {
+            if (!isActiveLoad(load)) {
+                console.log("Ignoring stale TEMPO monthly community load:", month);
+                return;
+            }
+
+            if (!canRenderTempo("loadTempoMonthlyCommunities.then")) {
+                return;
+            }
+
+            if (communityLayer) {
+                map.removeLayer(communityLayer);
+            }
+
+            communityLayer = L.geoJSON(data, {
+                style: function(feature) {
+                    let raw = feature.properties.vertical_column_troposphere;
+                    let avg = raw === null || raw === "" ? null : Number(raw);
+
+                    return {
+                        color: "#222",
+                        weight: 1,
+                        fillColor: avg === null ? "transparent" : getColorTempo(avg),
+                        fillOpacity: avg === null ? 0 : 0.65
+                    };
+                },
+                onEachFeature: function(feature, layer) {
+                    let p = feature.properties;
+
+                    layer.bindTooltip(`
+                        <b>${p.community || p.COMMUNITY || p.community_name || p.name}</b><br>
+                        Avg NO₂: ${
+                            p.vertical_column_troposphere == null
+                                ? "No Data"
+                                : Number(p.vertical_column_troposphere).toExponential(2)
+                        }
+                    `);
+                }
+            });
+
+            communityLayer.addTo(map);
+            hideLoading();
+        })
+        .catch(err => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            console.error("Could not load TEMPO monthly community file:", err);
+        });
+}
 
   // TEMPO Date Range – average grid cells across selected dates
   function loadTempoDateRange() {
@@ -1669,6 +2677,9 @@ function renderMonthlyTempoData(data) {
 
   // TEMPO renderFeatures – renders hourly grid cells as GeoJSON polygons
   function renderTempoFeatures(filteredFeatures, date) {
+    filteredFeatures = filteredFeatures || [];
+    if (!canRenderTempo("renderTempoFeatures")) return;
+
       if (currentLayer) {
           map.removeLayer(currentLayer);
       }
@@ -1732,7 +2743,12 @@ function renderMonthlyTempoData(data) {
       }
 
       Promise.all(requests).then(files => {
-          let combinedFeatures = [];
+        if (currentDataProduct !== "tempo" || TIME_SCALE !== "hourly") {
+            return;
+        }
+
+        let combinedFeatures = [];
+    
           files.forEach(data => {
               if (data) combinedFeatures.push(...data.features);
           });
@@ -1935,27 +2951,48 @@ function renderMonthlyTempoData(data) {
 
     // Initialize the correct date control visibility on page load
     selectMapType(TIME_SCALE);
-    // Also initialize hour-controls / range-controls visibility to match the current view
-    changeAggregation(TIME_SCALE);
+    
 
     // Handle click on map type buttons: update UI, then navigate to the matching view
     function handleMapTypeClick(event, type) {
-    // Update the local UI (active button highlight, date-control visibility, etc.)
-    selectMapType(type);
-
-    // Also update the V4 slider control radio buttons and trigger aggregation change
-    changeAggregation(type);
-
-    // Navigate to the corresponding map view (/hourly/, /daily/, /monthly/)
-    const btn = event && event.currentTarget;
-    if (btn && btn.dataset.url) {
-        window.location.href = btn.dataset.url;
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
     }
-    }
+
+    const checkedProduct =
+        document.querySelector('input[name="dataProduct"]:checked')?.value ||
+        localStorage.getItem("selectedDataProduct") ||
+        "openaq";
+
+    localStorage.setItem("selectedDataProduct", checkedProduct);
+
+    let url = `/map/${type}/`;
+
+    const separator = url.includes("?") ? "&" : "?";
+    url = `${url}${separator}product=${encodeURIComponent(checkedProduct)}`;
+
+    window.location.assign(url);
+}
+
     window.handleMapTypeClick = handleMapTypeClick;
 
     // ── CHANGE AGGREGATION (unified function for sidebar + in-map controls) ──
     function changeAggregation(type) {
+    if (
+        type !== TIME_SCALE &&
+        ["hourly", "daily", "monthly"].includes(type)
+    ) {
+        console.warn(
+            "Blocked changeAggregation page-switch attempt. Use navigation instead:",
+            {
+                from: TIME_SCALE,
+                to: type
+            }
+        );
+        return;
+    }
+
     TIME_SCALE = type;
 
     // Update the V4 slider radio buttons to match
@@ -1982,12 +3019,10 @@ function renderMonthlyTempoData(data) {
 
     console.log("Aggregation:", TIME_SCALE);
 
-    let hourControls = document.getElementById("hourControls");
+    updateBottomControlVisibility();
+
     let rangeControls = document.getElementById("rangeControls");
 
-    if (hourControls) {
-        hourControls.style.display = TIME_SCALE === "hourly" ? "block" : "none";
-    }
     if (rangeControls) {
         rangeControls.style.display = TIME_SCALE === "range" ? "block" : "none";
     }
@@ -2012,17 +3047,36 @@ function renderMonthlyTempoData(data) {
         map.removeLayer(communityLayer);
         communityLayer = null;
     }
+    if (!appInitialized) {
+        return;
+    }
+
+    clearDataLayers();
+
+    cachedDate = null;
+    cachedFeatures = null;
+    cachedHourBuckets = null;
+    nextCachedDate = null;
+    nextCachedHourBuckets = null;
+
     if (currentDataProduct === "tempo") {
         loadTempoDates();
         return;
     }
-    refreshMap();
+
+    if (currentDataProduct === "fusion") {
+        loadFusionDates();
+        return;
+    }
+
+    loadClarityDates();
     }
     
   // ── V4 RENDER FEATURES ──────────────────────────────────────────────────────
 
   function renderFeatures(filteredFeatures, date){
-      let grouped = {};
+    filteredFeatures = filteredFeatures || [];  
+    let grouped = {};
 
       filteredFeatures.forEach(f => {
           let p = f.properties;
@@ -2116,8 +3170,34 @@ function renderMonthlyTempoData(data) {
 
   // ── UNIFIED LOAD DATE (routes to Clarity or TEMPO based on currentDataProduct) ──
 
-  function loadDate(date) {
-      console.log("Loading:", date, "Product:", currentDataProduct, "Display:", displayMode, "Aggregation:", TIME_SCALE);
+  function loadDate(date, existingLoad) {
+    if (!date || typeof date !== "string") {
+        console.warn("Blocked loadDate because date is invalid:", date);
+        hideLoading();
+        return;
+    }
+
+    const load = existingLoad || startNewLoad(currentDataProduct);
+    const productAtStart = load.product;
+
+    if (!isActiveLoad(load)) {
+        return;
+    }
+
+    console.log(
+        "Loading:",
+        date,
+        "Product:",
+        productAtStart,
+        "Current Product:",
+        currentDataProduct,
+        "Display:",
+        displayMode,
+        "Aggregation:",
+        TIME_SCALE,
+        "Load token:",
+        load.id
+    );
 
       let loadingText;
       if (TIME_SCALE === "monthly") {
@@ -2135,13 +3215,10 @@ function renderMonthlyTempoData(data) {
       let currentIndex = dates.indexOf(date);
       let prevDate = currentIndex > 0 ? dates[currentIndex - 1] : null;
       let nextDate = currentIndex < dates.length - 1 ? dates[currentIndex + 1] : null;
-      let selectedMonth =
-        TIME_SCALE === "monthly"
-            ? date
-            : date.substring(0, 7);
+      let selectedMonth = date.substring(0, 7);
 
       // ── TEMPO ROUTING ──
-      if (currentDataProduct === "tempo") {
+      if (productAtStart === "tempo") {
           // Range mode
           if (TIME_SCALE === "range") {
               if (displayMode === "community") {
@@ -2157,20 +3234,20 @@ function renderMonthlyTempoData(data) {
               if (displayMode === "community") {
                   loadTempoDailyCommunities(date);
               } else {
-                  loadDailyTempo(date);
+                  loadDailyTempo(date, load);
               }
               return;
           }
 
           // Monthly mode
           if (TIME_SCALE === "monthly") {
-              if (displayMode === "community") {
-                  loadTempoMonthlyCommunities(selectedMonth);
-              } else {
-                  loadMonthlyTempo(selectedMonth);
-              }
-              return;
-          }
+                if (displayMode === "community") {
+                    loadTempoMonthlyCommunities(selectedMonth, load);
+                } else {
+                    loadMonthlyTempo(selectedMonth, load);
+                }
+                return;
+            }
 
           // Hourly mode – use cached or fetch
           if (TIME_SCALE === "hourly" && cachedDate === date && cachedHourBuckets) {
@@ -2202,6 +3279,10 @@ function renderMonthlyTempoData(data) {
           }
 
           Promise.all(tRequests).then(files => {
+            if (!isActiveLoad(load)) {
+                console.log("Ignoring stale TEMPO hourly load:", date);
+                return;
+            }
               let combinedFeatures = [];
               files.forEach(data => {
                   if (data) combinedFeatures.push(...data.features);
@@ -2250,33 +3331,60 @@ function renderMonthlyTempoData(data) {
           return;
       }
 
-      // ── CLARITY (Open Air) ROUTING (existing behavior) ──
-      if (TIME_SCALE === "range") {
-          loadDateRange();
+            // ── FUSION ROUTING ──
+      if (productAtStart === "fusion") {
+          // For now Fusion is point-based only.
+          // If user selected community mode earlier, force sensor-style rendering.
+          displayMode = "sensor";
+
+          if (TIME_SCALE === "hourly") {
+              loadFusionHourly(date, load);
+              return;
+          }
+
+          if (TIME_SCALE === "daily") {
+              loadFusionDaily(date, load);
+              return;
+          }
+
+          if (TIME_SCALE === "monthly") {
+              loadFusionMonthly(selectedMonth, load);
+              return;
+          }
+
+          console.warn("Unsupported Fusion TIME_SCALE:", TIME_SCALE);
+          hideLoading();
           return;
       }
+      // ── CLARITY ROUTING ──
+if (TIME_SCALE === "range") {
+    loadDateRange();
+    return;
+}
 
-      if (TIME_SCALE === "daily") {
-          if (displayMode === "sensor") {
-              loadDailySensors(date);
-              return;
-          }
-          if (displayMode === "community") {
-              loadDailyCommunities(date);
-              return;
-          }
-      }
+if (TIME_SCALE === "daily") {
+    if (displayMode === "sensor") {
+        loadDailySensors(date, load);
+        return;
+    }
 
-      if (TIME_SCALE === "monthly") {
-          if (displayMode === "sensor") {
-              loadMonthlySensors(selectedMonth);
-              return;
-          }
-          if (displayMode === "community") {
-              loadMonthlyCommunities(selectedMonth);
-              return;
-          }
-      }
+    if (displayMode === "community") {
+        loadDailyCommunities(date, load);
+        return;
+    }
+}
+
+if (TIME_SCALE === "monthly") {
+    if (displayMode === "sensor") {
+        loadMonthlySensors(date, load);
+        return;
+    }
+
+    if (displayMode === "community") {
+        loadMonthlyCommunities(toMonthKey(date), load);
+        return;
+    }
+}
 
       if (TIME_SCALE === "hourly" && cachedDate === date && cachedHourBuckets) {
           renderFeatures(cachedHourBuckets[selectedHour], date);
@@ -2306,7 +3414,11 @@ function renderMonthlyTempoData(data) {
 
       let loadPromise = Promise.all(requests);
 
-      loadPromise.then(files => {
+        loadPromise.then(files => {
+            if (!isActiveLoad(load)) {
+                console.log("Ignoring stale Clarity hourly load:", date);
+                return;
+            }
           let combinedFeatures = [];
           files.forEach(data => {
               if (data) {
@@ -2341,9 +3453,16 @@ function renderMonthlyTempoData(data) {
           });
 
           if (!hasValidData) {
-              console.warn("No valid data for", date);
-              return;
-          }
+            console.warn("No valid data for", date);
+
+            if (TIME_SCALE === "hourly" && currentDataProduct === "clarity") {
+                removeInvalidHourlyDate(date, "No valid filtered features");
+                return;
+            }
+
+            hideLoading();
+            return;
+        }
 
           if (TIME_SCALE === "hourly") {
               renderFeatures(cachedHourBuckets[selectedHour], date);
@@ -2356,6 +3475,8 @@ function renderMonthlyTempoData(data) {
   // ── TEMPO COMMUNITY AREAS (hourly) ──────────────────────────────────────────────
   // Aggregates TEMPO grid cell values into Chicago community areas
   function drawTempoCommunityAreas(filteredFeatures) {
+    filteredFeatures = filteredFeatures || [];
+    if (!canRenderTempo("drawTempoCommunityAreas")) return;
       if (!communityData) {
           console.warn("Community data not loaded");
           return;
@@ -2445,6 +3566,8 @@ function renderMonthlyTempoData(data) {
       var playBtn = document.getElementById("playBtn");
       var pauseBtn = document.getElementById("pauseBtn");
 
+      updateBottomControlVisibility();
+
       var startDateInput = document.getElementById("startDate");
       var endDateInput = document.getElementById("endDate");
 
@@ -2458,15 +3581,6 @@ function renderMonthlyTempoData(data) {
                 nextCachedDate = null;
                 nextCachedHourBuckets = null;
               console.log("Display Mode:", displayMode);
-
-              // Stop playback and reset slider to beginning when display mode changes
-              if (timeInterval) {
-                  clearInterval(timeInterval);
-                  timeInterval = null;
-                  resetPlaybackUI();
-                  dateSlider.value = 0;
-                  timeSlider.value = 0;
-              }
 
               if (currentLayer) {
                   map.removeLayer(currentLayer);
@@ -2508,22 +3622,34 @@ function renderMonthlyTempoData(data) {
               console.warn("Date slider: no date at index", index);
               return;
           }
-          if (TIME_SCALE === "monthly") {
-              dateLabel.innerHTML = formatMonthForDisplay(date);
-          } else {
-              dateLabel.innerHTML = utcDateToCentralPretty(date);
-          }
-          loadDate(date);
+          updateDateAndTimeLabels(date);
+            loadDate(date);
       });
 
       // Time slider
-      timeSlider.addEventListener("input", function () {
-          selectedHour = Number(this.value);
-          let baseDate = dates[Number(dateSlider.value)];
-          let formattedTime = formatHourForDisplay(baseDate, selectedHour);
-          timeLabel.textContent = `Time: ${formattedTime}`;
-          loadDate(baseDate);
-      });
+      if (timeSlider) {
+        timeSlider.addEventListener("input", function () {
+            if (TIME_SCALE !== "hourly") {
+                return;
+            }
+
+            selectedHour = Number(this.value);
+            let baseDate = dates[Number(dateSlider.value)];
+
+            if (!baseDate) {
+                console.warn("Time slider: no base date available");
+                return;
+            }
+
+            let formattedTime = formatHourForDisplay(baseDate, selectedHour);
+
+            if (timeLabel) {
+                timeLabel.textContent = `Time: ${formattedTime}`;
+            }
+
+            loadDate(baseDate);
+        });
+    }
 
       // Start date input
       startDateInput.addEventListener("change", function() {
@@ -2555,9 +3681,9 @@ function renderMonthlyTempoData(data) {
       playBtn.addEventListener("click", () => {
           if (timeInterval) return;
 
-          // Disable play button and lock sliders during playback
-          playBtn.classList.add('playing');
+          // Disable play button & slider, enable pause button
           playBtn.disabled = true;
+          playBtn.classList.add('playing');
           pauseBtn.disabled = false;
           dateSlider.disabled = true;
           timeSlider.disabled = true;
@@ -2591,26 +3717,31 @@ function renderMonthlyTempoData(data) {
 
                         console.log("Using precache:", date);
 
-                        dateLabel.innerHTML = utcDateToCentralPretty(date);
+                        updateDateAndTimeLabels(date);
                         timeSlider.value = 0;
                         timeLabel.innerHTML =
                             `Time: ${formatHourForDisplay(date, 0)}`;
 
                         if (currentDataProduct === "tempo") {
                             renderTempoFeatures(cachedHourBuckets[0], date);
+                        } else if (currentDataProduct === "fusion") {
+                            loadDate(date);
                         } else {
                             renderFeatures(cachedHourBuckets[0], date);
                         }
 
                         return;
                     }
-
-                      dateLabel.innerHTML = utcDateToCentralPretty(date);
+                    updateDateAndTimeLabels(date);
+                      
                   }
                   timeSlider.value = selectedHour;
                   let baseDate = dates[Number(dateSlider.value)];
-                  timeLabel.innerHTML = `Time: ${formatHourForDisplay(baseDate, selectedHour)}`;
-                  loadDate(baseDate);
+                  if (timeLabel && TIME_SCALE === "hourly") {
+                        timeLabel.innerHTML = `Time: ${formatHourForDisplay(baseDate, selectedHour)}`;
+                    }
+
+                    loadDate(baseDate);
               }
               else if (TIME_SCALE === "range") {
                   let endIndex = dates.indexOf(rangeCurrentEndDate);
@@ -2652,12 +3783,12 @@ function renderMonthlyTempoData(data) {
                   let nextIndex =
                         Number(dateSlider.value) + 1;
 
-                    if (nextIndex >= dates.length) {
-                        clearInterval(timeInterval);
-                        timeInterval = null;
-                        resetPlaybackUI();
-                        return;
-                    }
+                  if (nextIndex >= dates.length) {
+                      clearInterval(timeInterval);
+                      timeInterval = null;
+                      resetPlaybackUI();
+                      return;
+                  }
                   dateSlider.value = nextIndex;
                   let date = dates[nextIndex];
                   dateLabel.innerHTML = formatMonthForDisplay(date);
@@ -2670,48 +3801,58 @@ function renderMonthlyTempoData(data) {
       pauseBtn.addEventListener("click", () => {
           clearInterval(timeInterval);
           timeInterval = null;
-          resetPlaybackUI();
-      });
-
-      // Reset playback UI: re-enable play button, unlock sliders
-      function resetPlaybackUI() {
-          playBtn.classList.remove('playing');
+          // Re-enable play button & slider, disable pause button
           playBtn.disabled = false;
+          playBtn.classList.remove('playing');
           pauseBtn.disabled = true;
           dateSlider.disabled = false;
           timeSlider.disabled = false;
-      }
+      });
 
-     // ── PAGE LOAD: Sync displayMode with sidebar radio defaults ──
-     // The sidebar's "Spatial Scale" section has displayMode radios (sensor/community).
-     // The sidebar's "Data Products" section has dataProduct radios (tempo/openaq/fusion).
-     // On page load we must read the checked radio for dataProduct and set displayMode accordingly
-     // so that the JS state matches what the user sees in the sidebar.
-    // Read the data product from the sidebar's checked radio button (HTML default)
-const checkedRadio = document.querySelector('input[name="dataProduct"]:checked');
-if (checkedRadio) {
-    if (checkedRadio.value === "openaq" || checkedRadio.value === "clarity") {
-        currentDataProduct = "clarity";
-    } else if (checkedRadio.value === "tempo") {
-        currentDataProduct = "tempo";
-    } else if (checkedRadio.value === "fusion") {
-        currentDataProduct = "fusion";
-    }
+      // ── PAGE LOAD: Sync displayMode with sidebar radio defaults ──
+      // The sidebar's "Spatial Scale" section has displayMode radios (sensor/community).
+      // The sidebar's "Data Products" section has dataProduct radios (tempo/openaq/fusion).
+      // On page load we must read the checked radio for dataProduct and set displayMode accordingly
+      // so that the JS state matches what the user sees in the sidebar.
+     // Restore previously selected data product
+const urlProduct =
+    new URLSearchParams(window.location.search).get("product");
+
+const savedDataProduct =
+    urlProduct ||
+    localStorage.getItem("selectedDataProduct") ||
+    "openaq";
+
+const savedRadio = document.querySelector(
+    `input[name="dataProduct"][value="${savedDataProduct}"]`
+);
+
+if (savedRadio) {
+    savedRadio.checked = true;
 }
 
+currentDataProduct = normalizeDataProduct(savedDataProduct);
+localStorage.setItem("selectedDataProduct", savedDataProduct);
 
-     // Sync the displayMode radio buttons to match the current displayMode
+appInitialized = true;
+
+console.log("INITIAL PRODUCT STATE", {
+    urlProduct,
+    savedDataProduct,
+    currentDataProduct,
+    checkedRadio: document.querySelector('input[name="dataProduct"]:checked')?.value,
+    timeScale: TIME_SCALE
+});
+
+      // Sync the displayMode radio buttons to match the current displayMode
       document.querySelectorAll('input[name="displayMode"]').forEach(radio => {
           radio.checked = (radio.value === displayMode);
       });
 
-     // Update the legend to match the default data product
-     updateLegend();
+      // Update the legend to match the default data product
+      updateLegend();
 
-     // Update the Individual Sensor/Pixel label to match the default data product
-     updateIndividualModeLabel();
-
-     // Load community areas using map.html's static path
+      // Load community areas using map.html's static path
       loadCommunityAreas();
       loadChicagoBorder();
 
@@ -2736,7 +3877,7 @@ if (checkedRadio) {
               }
               // Move the date slider to that date and load it
               dateSlider.value = index;
-              dateLabel.innerHTML = utcDateToCentralPretty(selectedDate);
+              updateDateAndTimeLabels(selectedDate);
               loadDate(selectedDate);
               showToast(`Loaded ${selectedDate}`);
           });
@@ -2821,7 +3962,7 @@ if (checkedRadio) {
               dateSlider.value = 0;
               dateLabel.innerHTML = formatMonthForDisplay(filteredDates[0]);
               loadDate(filteredDates[0]);
-              showToast(`Loaded ${filteredDates.length} months from ${startMonth} to ${endMonth}`);
+              showToast(`Loaded ${filteredDates.length} days from ${startMonth} to ${endMonth}`);
           });
       }
 
@@ -2890,87 +4031,15 @@ if (checkedRadio) {
    }
    window.showToast = showToast;
 
-  // ── SCALEBAR ───────────────────────────────────────────────────────────────
-  // Ruler-style scalebar with major + minor tick marks and labeled values
-  function updateScaleBar() {
-      const ruler = document.getElementById('scalebar-ruler');
-      const ticksContainer = document.getElementById('scalebar-ticks');
-      const labelsContainer = document.getElementById('scalebar-labels');
-      if (!ruler || !ticksContainer || !labelsContainer) return;
-
-      const center = map.getCenter();
-      const zoom = map.getZoom();
-
-      // meters per pixel at this zoom / latitude (Web Mercator)
-      const metersPerPixel = (2 * Math.PI * 6378137) /
-          (Math.pow(2, zoom + 1) * Math.cos(center.lat * Math.PI / 180));
-
-      const totalPixels = 200;  // fixed ruler width
-      const distanceMeters = metersPerPixel * totalPixels;
-
-      // Pick a nice round total distance
-      let value, units;
-      if (distanceMeters >= 1000) {
-          const distKm = distanceMeters / 1000;
-          const mag = Math.pow(10, Math.floor(Math.log10(distKm)));
-          const norm = distKm / mag;
-          value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
-          units = 'km';
-      } else {
-          const mag = Math.pow(10, Math.floor(Math.log10(distanceMeters || 1)));
-          const norm = distanceMeters / mag;
-          value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
-          units = 'm';
-      }
-
-      const totalMeters = (units === 'km' ? value * 1000 : value);
-      const majorSegments = 4;   // 5 major ticks: 0, 1/4, 2/4, 3/4, 1
-      const minorPerMajor = 4;   // 4 minor ticks between each major → 5 sub-segments
-      const minorSegmentMeters = totalMeters / (majorSegments * minorPerMajor);
-      const minorSegmentPixels = totalPixels / (majorSegments * minorPerMajor);
-
-      // Build ticks
-      ticksContainer.innerHTML = '';
-      labelsContainer.innerHTML = '';
-      labelsContainer.style.width = totalPixels + 'px';
-
-      const totalMinorTicks = majorSegments * minorPerMajor + 1;
-      for (let i = 0; i < totalMinorTicks; i++) {
-          const isMajor = (i % minorPerMajor === 0);
-          const tick = document.createElement('div');
-          tick.className = 'scalebar-tick ' + (isMajor ? 'major' : 'minor');
-          tick.style.left = (i * minorSegmentPixels) + 'px';
-          ticksContainer.appendChild(tick);
-
-          if (isMajor) {
-              const label = document.createElement('span');
-              label.className = 'scalebar-label';
-              const valMeters = minorSegmentMeters * i;
-              if (units === 'km') {
-                  const valKm = valMeters / 1000;
-                  label.textContent = valKm.toFixed(valKm < 10 ? 1 : 0) + ' km';
-              } else {
-                  label.textContent = Math.round(valMeters) + ' m';
-              }
-              label.style.left = (i * minorSegmentPixels) + 'px';
-              labelsContainer.appendChild(label);
-          }
-      }
-  }
-
-  map.on('zoomend moveend', updateScaleBar);
-  // Initial call after a short delay to ensure map is ready
-  setTimeout(updateScaleBar, 500);
-
-  // ── COORDS BAR ─────────────────────────────────────────────────────────────
-    map.on('mousemove', e => {
-    document.getElementById('coords-text').textContent =
-        `Lat: ${e.latlng.lat.toFixed(5)}  Lng: ${e.latlng.lng.toFixed(5)}`;
-    });
-    map.on('zoomend', () => {
-    document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
-    });
-    document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
+   // ── COORDS BAR ─────────────────────────────────────────────────────────────
+     map.on('mousemove', e => {
+     document.getElementById('coords-text').textContent =
+         `Lat: ${e.latlng.lat.toFixed(5)}  Lng: ${e.latlng.lng.toFixed(5)}`;
+     });
+     map.on('zoomend', () => {
+     document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
+     });
+     document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
 
      // ── coords PANEL ───────────────────────────────────────────────────────────────
      const coordsPanel = document.getElementById('coords-panel');
@@ -2987,8 +4056,10 @@ if (checkedRadio) {
      const explorePanel = document.getElementById('explore-panel');
      const explorePanelToggle = document.getElementById('explore-panel-toggle');
      const explorePanelBody = document.getElementById('explore-panel-body');
-    if (explorePanelToggle && explorePanel) {
-    // Also prevent the toggle button & body from propagating to map
+     if (explorePanelToggle && explorePanel) {
+     explorePanel.classList.add('retracted'); // start retracted
+
+     // Also prevent the toggle button & body from propagating to map
      if (explorePanelToggle) {
          L.DomEvent.disableClickPropagation(explorePanelToggle);
          L.DomEvent.disableScrollPropagation(explorePanelToggle);
@@ -3006,60 +4077,35 @@ if (checkedRadio) {
      });
      }
 
-     // ── SIDEBAR TOGGLE (retractable map sidebar) ──────────────────────────────
-     const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
-     const mapSidebar = document.getElementById('map-controls');
-     if (sidebarToggleBtn && mapSidebar) {
-         // Prevent the toggle button from propagating clicks to the map
-         L.DomEvent.disableClickPropagation(sidebarToggleBtn);
-         L.DomEvent.disableScrollPropagation(sidebarToggleBtn);
-
-         // Load saved state from localStorage (default: expanded)
-         const savedState = localStorage.getItem('map_sidebar_retracted');
-         if (savedState === 'true') {
-             mapSidebar.classList.add('retracted');
-         }
-
-         sidebarToggleBtn.addEventListener('click', (e) => {
-             e.stopPropagation();
-             e.preventDefault();
-             mapSidebar.classList.toggle('retracted');
-
-             // Save state
-             const isRetracted = mapSidebar.classList.contains('retracted');
-             localStorage.setItem('map_sidebar_retracted', isRetracted);
-
-             // After CSS transition completes, invalidate the Leaflet map size
-             // so tiles re-render correctly in the new layout
-             setTimeout(() => {
-                 map.invalidateSize();
-             }, 350);
-         });
-     }
-
      // ── DATA PRODUCT RADIO BUTTONS (sidebar: tempo / openaq / fusion) ──────────
      document.querySelectorAll('input[name="dataProduct"]').forEach(radio => {
      radio.addEventListener('change', e => {
-         const selected = e.target.value;
-         localStorage.setItem("selectedDataProduct", selected);
+    const selected = e.target.value;
+    const normalizedSelected = normalizeDataProduct(selected);
 
-         // Stop playback if active — use DOM access since this handler is outside setTimeout scope
-         if (timeInterval) {
-            clearInterval(timeInterval);
-            timeInterval = null;
-         }
+    localStorage.setItem("selectedDataProduct", selected);
 
-         // Reset playback UI via DOM (resetPlaybackUI is scoped inside setTimeout)
-         const playBtn = document.getElementById('playBtn');
-         const pauseBtn = document.getElementById('pauseBtn');
-         const dateSlider = document.getElementById('dateSlider');
-         const timeSlider = document.getElementById('timeSlider');
-         if (playBtn) { playBtn.classList.remove('playing'); playBtn.disabled = false; }
-         if (pauseBtn) { pauseBtn.disabled = true; }
-         if (dateSlider) { dateSlider.disabled = false; dateSlider.value = 0; }
-         if (timeSlider) { timeSlider.disabled = false; timeSlider.value = 0; }
+    currentDataProduct = normalizedSelected;
 
-         console.log("Data Product Changed to:", selected);
+    // Cancel all still-running async loads after setting currentDataProduct
+    startNewLoad(currentDataProduct);
+
+            
+
+            if (timeInterval) {
+                clearInterval(timeInterval);
+                timeInterval = null;
+            }
+
+            clearDataLayers();
+
+            cachedDate = null;
+            cachedFeatures = null;
+            cachedHourBuckets = null;
+            nextCachedDate = null;
+            nextCachedHourBuckets = null;
+
+            console.log("Data Product Changed to:", selected, "normalized:", currentDataProduct);
 
          // Remove all data layers first
          map.removeLayer(tempoLayerGroup);
@@ -3068,8 +4114,7 @@ if (checkedRadio) {
 
 
          // Switch currentDataProduct and reload data
-         if (selected === "tempo") {
-             currentDataProduct = "tempo";
+         if (currentDataProduct === "tempo") {
              displayMode = "sensor";  // TEMPO uses grid cells, not point sensors
 
              // Sync Spatial Scale radio buttons: uncheck both since TEMPO uses "grid" internally
@@ -3078,19 +4123,15 @@ if (checkedRadio) {
                  r.checked = (r.value === "sensor");
              });
 
-            // Update legend for TEMPO scale
-            updateLegend();
+             // Update legend for TEMPO scale
+             updateLegend();
 
-            // Update Individual Sensor/Pixel label
-            updateIndividualModeLabel();
+             // Load TEMPO dates
+             loadTempoDates();
 
-            // Load TEMPO dates
-            loadTempoDates();
+             showToast("TEMPO data product selected");
 
-            showToast("TEMPO data product selected");
-
-         } else if (selected === "openaq" || selected === "clarity") {
-             currentDataProduct = "clarity";
+         } else if (currentDataProduct === "clarity") {
              displayMode = "sensor";
 
              // Sync Spatial Scale radio buttons
@@ -3098,20 +4139,16 @@ if (checkedRadio) {
                  r.checked = (r.value === "sensor");
              });
 
-            // Update legend for Clarity scale
-            updateLegend();
+             // Update legend for Clarity scale
+             updateLegend();
 
-            // Update Individual Sensor/Pixel label
-            updateIndividualModeLabel();
+             // Reload Clarity dates and data
+             loadClarityDates();
 
-            // Reload Clarity dates and data
-            loadClarityDates();
+             showToast("Open Air Chicago (Clarity) data product selected");
 
-            showToast("Open Air Chicago (Clarity) data product selected");
-
-         } else if (selected === "fusion") {
+         } else if (currentDataProduct === "fusion") {
              // Fusion is a separate dataset with its own files and rendering
-             currentDataProduct = "fusion";
              displayMode = "sensor";
 
              // Sync Spatial Scale radio buttons
@@ -3119,27 +4156,15 @@ if (checkedRadio) {
                  r.checked = (r.value === "sensor");
              });
 
-            // Update legend for Fusion scale
-            updateLegend();
+             // Update legend for Fusion scale
+             updateLegend();
 
-            // Update Individual Sensor/Pixel label
-            updateIndividualModeLabel();
+             // Load Fusion dates and data
+             loadFusionDates();
 
-            // Load Fusion dates and data
-            loadFusionDates();
-
-            showToast("Fusion data product selected");
+             showToast("Fusion data product selected");
          }
 
-         // Clear ALL existing layers and reload current view
-         if (currentLayer) {
-             map.removeLayer(currentLayer);
-             currentLayer = null;
-         }
-         if (communityLayer) {
-             map.removeLayer(communityLayer);
-             communityLayer = null;
-         }
 
          // Clear caches when switching data products
          cachedDate = null;
@@ -3150,7 +4175,33 @@ if (checkedRadio) {
      });
      });
 
-     // ── UPDATE LEGEND based on current data product ──────────────────────────────
+     
+
+    // ── LAYER TOGGLES (legacy: for any remaining .layer-toggle checkboxes) ─────
+    document.querySelectorAll('.layer-toggle').forEach(checkbox => {
+    checkbox.addEventListener('change', e => {
+        const layer = e.target.dataset.layer;
+        const isChecked = e.target.checked;
+
+        const layerMap = {
+        tempo: tempoLayerGroup,
+        openaq: openaqLayerGroup,
+        fusion: fusionLayerGroup,
+        wind: windLayerGroup
+        };
+
+        if (layerMap[layer]) {
+            if (isChecked) {
+                layerMap[layer].addTo(map);
+            } else {
+                map.removeLayer(layerMap[layer]);
+            }
+            showToast(`${layer} layer ${isChecked ? 'enabled' : 'disabled'}`);
+        }
+    });
+    });
+
+    // ── UPDATE LEGEND based on current data product ──────────────────────────────
      function updateLegend() {
          const legendOverlay = document.getElementById('map-legend-overlay');
          if (!legendOverlay) return;
@@ -3176,16 +4227,13 @@ if (checkedRadio) {
          }
      }
 
-      // ── UPDATE "Individual Sensor/Pixel" label based on current data product ──
-      function updateIndividualModeLabel() {
-          const label = document.getElementById('individual-mode-label');
-          if (label) {
-              label.textContent = currentDataProduct === "tempo" ? " Individual Pixel" : " Individual Sensor";
-          }
-      }
+     // ── LOAD TEMPO DATES ──────────────────────────────────────────────────────
+     function loadTempoDates() {
+            const load = startNewLoad("tempo");
 
-      // ── LOAD TEMPO DATES ──────────────────────────────────────────────────────
-      function loadTempoDates() {
+            if (!isActiveLoad(load)) {
+                return;
+            }
 
             let datesFile;
 
@@ -3203,6 +4251,10 @@ if (checkedRadio) {
             fetch(datesFile)
              .then(r => r.json())
              .then(response => {
+                if (!isActiveLoad(load)) {
+                    console.log("Ignoring stale TEMPO dates load");
+                    return;
+                }
                  // Handle both array and {dates: [...]} formats
                  let loadedDates = Array.isArray(response) ? response : (response.dates || []);
                  
@@ -3245,7 +4297,11 @@ if (checkedRadio) {
                  }
 
                  var timeLabel = document.getElementById("timeLabel");
-                 if (timeLabel) timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
+                    if (timeLabel && TIME_SCALE === "hourly") {
+                        timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
+                    } else if (timeLabel) {
+                        timeLabel.innerHTML = "";
+                    }
 
                  cachedDate = null;
                 cachedFeatures = null;
@@ -3253,11 +4309,14 @@ if (checkedRadio) {
 
                 nextCachedDate = null;
                 nextCachedHourBuckets = null;
-                loadDate(dates[0]);
+                loadDate(dates[0], load);
              })
              .catch(err => {
                  console.error("Could not load Clarity dates.json:", err);
                  // Fallback: generate dates from available clarity files
+                 if (!isActiveLoad(load)) {
+                    return;
+                }
                  dates = generateClarityDatesFromFiles();
                  allDates = dates;
                  if (dates.length > 0) {
@@ -3273,108 +4332,134 @@ if (checkedRadio) {
      }
 
      // ── LOAD CLARITY DATES ────────────────────────────────────────────────────
-     function loadClarityDates() {
-    // Use absolute URL so it works from /map/hourly/, /map/daily/, /map/monthly/
-    fetch("/data/clarity/dates.json")
-        .then(r => r.json())
-        .then(response => {
+function loadClarityDates() {
+    invalidClarityHourlyDates = new Set();
+    const load = startNewLoad("clarity");
 
-            // Handle both array and {dates:[...]} formats
+    if (!isActiveLoad(load)) {
+        return;
+    }
+
+    fetch("/data/clarity/dates.json")
+        .then(r => {
+            if (!r.ok) {
+                throw new Error("Could not load /data/clarity/dates.json");
+            }
+            return r.json();
+        })
+        .then(response => {
+            if (!isActiveLoad(load)) {
+                console.log("Ignoring stale Clarity dates load");
+                return;
+            }
+
             let loadedDates = Array.isArray(response)
                 ? response
                 : (response.dates || []);
 
-            if (TIME_SCALE === "monthly") {
+            if (!loadedDates || loadedDates.length === 0) {
+                console.warn("No Clarity dates found in API response, generating fallback dates.");
+                loadedDates = generateClarityDatesFromFiles();
+            }
 
+            if (TIME_SCALE === "monthly") {
                 loadedDates = [
                     ...new Set(
-                        loadedDates.map(
-                            d => d.substring(0, 7)
-                        )
+                        loadedDates.map(d => d.substring(0, 7))
                     )
                 ];
 
                 console.log("Monthly dates:", loadedDates);
             }
-            if (!loadedDates || loadedDates.length === 0) {
-                console.warn("No Clarity dates found in API response, generating from clarity files.");
-
-                // Fallback: scan clarity directory for available dates
-                loadedDates = generateClarityDatesFromFiles();
-            }
 
             dates = loadedDates;
             allDates = loadedDates;
+
+            if (!dates || dates.length === 0) {
+                console.warn("No usable Clarity dates.");
+                hideLoading();
+                return;
+            }
 
             rangeStartDate = dates[0];
             rangeEndDate = dates[dates.length - 1];
             rangeCurrentEndDate = rangeEndDate;
 
-            var dateSlider = document.getElementById("dateSlider");
-            var dateLabel = document.getElementById("dateLabel");
-            var startDateInput = document.getElementById("startDate");
-            var endDateInput = document.getElementById("endDate");
+            const dateSlider = document.getElementById("dateSlider");
+            const startDateInput = document.getElementById("startDate");
+            const endDateInput = document.getElementById("endDate");
+
+            if (dateSlider) {
+                dateSlider.min = 0;
+                dateSlider.max = dates.length - 1;
+                dateSlider.value = 0;
+            }
 
             if (TIME_SCALE === "monthly") {
-
                 if (startDateInput) startDateInput.value = "";
                 if (endDateInput) endDateInput.value = "";
-
             } else {
-
                 if (startDateInput) startDateInput.value = rangeStartDate;
                 if (endDateInput) endDateInput.value = rangeEndDate;
             }
 
-            dateSlider.max = dates.length - 1;
-            dateSlider.value = 0;
+            selectedHour = Number(
+                document.getElementById("timeSlider")?.value || 0
+            );
 
-            if (TIME_SCALE === "monthly") {
-                if (dateLabel) {
-                    dateLabel.innerHTML = formatMonthForDisplay(dates[0]);
-                }
-            } else {
-                if (dateLabel) {
-                    dateLabel.innerHTML = utcDateToCentralPretty(dates[0]);
-                }
-            }
-
-            var timeLabel = document.getElementById("timeLabel");
-            if (timeLabel) {
-                timeLabel.innerHTML =
-                    `Time: ${formatHourForDisplay(dates[0], 0)}`;
-            }
+            updateDateAndTimeLabels(dates[0]);
+            updateBottomControlVisibility();
 
             cachedDate = null;
             cachedFeatures = null;
             cachedHourBuckets = null;
-
             nextCachedDate = null;
             nextCachedHourBuckets = null;
 
-            loadDate(dates[0]);
+            console.log("Loaded Clarity dates:", {
+                timeScale: TIME_SCALE,
+                count: dates.length,
+                first: dates[0],
+                last: dates[dates.length - 1]
+            });
+
+            loadDate(dates[0], load);
         })
         .catch(err => {
             console.error("Could not load Clarity dates.json:", err);
 
-            // Fallback: generate dates from available clarity files
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
             dates = generateClarityDatesFromFiles();
             allDates = dates;
 
-            if (dates.length > 0) {
-                rangeStartDate = dates[0];
-                rangeEndDate = dates[dates.length - 1];
-                rangeCurrentEndDate = rangeEndDate;
+            if (!dates || dates.length === 0) {
+                hideLoading();
+                return;
+            }
 
-                var dateSlider = document.getElementById("dateSlider");
+            rangeStartDate = dates[0];
+            rangeEndDate = dates[dates.length - 1];
+            rangeCurrentEndDate = rangeEndDate;
+
+            const dateSlider = document.getElementById("dateSlider");
+
+            if (dateSlider) {
+                dateSlider.min = 0;
                 dateSlider.max = dates.length - 1;
                 dateSlider.value = 0;
-
-                loadDate(dates[0]);
             }
+
+            selectedHour = Number(
+                document.getElementById("timeSlider")?.value || 0
+            );
+
+            updateDateAndTimeLabels(dates[0]);
+            loadDate(dates[0], load);
         });
 }
-
      // ── GENERATE CLARITY DATES FROM AVAILABLE FILES (fallback) ─────────────
      function generateClarityDatesFromFiles() {
          // Build dates from the clarity geojson files we know exist (2025-09 through 2026-03)
@@ -3392,127 +4477,167 @@ if (checkedRadio) {
      }
 
      // ── LOAD FUSION DATES ────────────────────────────────────────────────────
-     function loadFusionDates() {
-         // Use absolute URL so it works from any map view
-         fetch("/data/fused/dates.json")
-             .then(r => {
-                 if (!r.ok) {
-                     console.warn("Fusion dates.json not found.");
-                     // Show notification that Fusion has no data
-                     showToast(
-                         "Fusion data product is not yet available. No dates or data points exist for this product.",
-                         "warning"
-                     );
-                     // Clear the map – do NOT silently fall back to Clarity
-                     dates = [];
-                     rangeStartDate = null;
-                     rangeEndDate = null;
-                     rangeCurrentEndDate = null;
+function loadFusionDates() {
+    const load = startNewLoad("fusion");
 
-                     var dateSlider = document.getElementById("dateSlider");
-                     var dateLabel = document.getElementById("dateLabel");
-                     if (dateSlider) {
-                         dateSlider.max = 0;
-                         dateSlider.value = 0;
-                     }
-                     if (dateLabel) dateLabel.innerHTML = "No Fusion Data Available";
+    if (!isActiveLoad(load)) {
+        return;
+    }
 
-                     // Clear any existing layers
-                     if (currentLayer) {
-                         map.removeLayer(currentLayer);
-                         currentLayer = null;
-                     }
-                     if (communityLayer) {
-                         map.removeLayer(communityLayer);
-                         communityLayer = null;
-                     }
-                     hideLoading();
-                     return null;
-                 }
-                 return r.json();
-             })
-             .then(loadedDates => {
-                 if (!loadedDates) return; // Already handled the "no file" case above
-                 // Handle both array and {dates: [...]} formats
-                 allDates = Array.isArray(loadedDates) ? loadedDates : (loadedDates.dates || loadedDates);
-                 dates = allDates;
-                 if (!dates || dates.length === 0) {
-                     console.warn("No Fusion dates found in dates.json.");
-                     showToast(
-                         "Fusion data product has no dates or data points available yet.",
-                         "warning"
-                     );
-                     // Clear slider and layers
-                     var dateSlider = document.getElementById("dateSlider");
-                     var dateLabel = document.getElementById("dateLabel");
-                     if (dateSlider) {
-                         dateSlider.max = 0;
-                         dateSlider.value = 0;
-                     }
-                     if (dateLabel) dateLabel.innerHTML = "No Fusion Data Available";
-                     if (currentLayer) {
-                         map.removeLayer(currentLayer);
-                         currentLayer = null;
-                     }
-                     if (communityLayer) {
-                         map.removeLayer(communityLayer);
-                         communityLayer = null;
-                     }
-                     hideLoading();
-                     return;
-                 }
-                 rangeStartDate = dates[0];
-                 rangeEndDate = dates[dates.length - 1];
-                 rangeCurrentEndDate = rangeEndDate;
+    fetch("/data/fused/dates.json")
+        .then(r => {
+            if (!r.ok) {
+                throw new Error("Could not load /data/fused/fused_dates.json");
+            }
+            return r.json();
+        })
+        .then(response => {
+            if (!isActiveLoad(load)) {
+                console.log("Ignoring stale Fusion dates load");
+                return;
+            }
 
-                 var dateSlider = document.getElementById("dateSlider");
-                 var dateLabel = document.getElementById("dateLabel");
-                 var startDateInput = document.getElementById("startDate");
-                 var endDateInput = document.getElementById("endDate");
+            let loadedDates = Array.isArray(response)
+                ? response
+                : (response.dates || []);
 
-                 if (startDateInput) startDateInput.value = rangeStartDate;
-                 if (endDateInput) endDateInput.value = rangeEndDate;
+            if (!loadedDates || loadedDates.length === 0) {
+                console.warn("No Fusion dates found in fused_dates.json.");
 
-                 dateSlider.max = dates.length - 1;
-                 dateSlider.value = 0;
+                showToast(
+                    "Fusion data product has no dates or data points available yet.",
+                    "warning"
+                );
 
-                 if (TIME_SCALE === "monthly") {
-                     if (dateLabel) dateLabel.innerHTML = formatMonthForDisplay(dates[0]);
-                 } else {
-                     if (dateLabel) dateLabel.innerHTML = utcDateToCentralPretty(dates[0]);
-                 }
+                dates = [];
+                allDates = [];
 
-                 var timeLabel = document.getElementById("timeLabel");
-                 if (timeLabel) timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
+                const dateSlider = document.getElementById("dateSlider");
+                const dateLabel = document.getElementById("dateLabel");
+                const timeLabel = document.getElementById("timeLabel");
 
-                 cachedDate = null;
-                cachedFeatures = null;
-                cachedHourBuckets = null;
+                if (dateSlider) {
+                    dateSlider.min = 0;
+                    dateSlider.max = 0;
+                    dateSlider.value = 0;
+                }
 
-                nextCachedDate = null;
-                nextCachedHourBuckets = null;
-             })
-             .catch(err => {
-                 console.error("Could not load Fusion dates:", err);
-                 showToast(
-                     "Fusion data product is not yet available. No dates or data points exist for this product.",
-                     "warning"
-                 );
-                 dates = [];
-                 var dateSlider = document.getElementById("dateSlider");
-                 var dateLabel = document.getElementById("dateLabel");
-                 if (dateSlider) {
-                     dateSlider.max = 0;
-                     dateSlider.value = 0;
-                 }
-                 if (dateLabel) dateLabel.innerHTML = "No Fusion Data Available";
-                 if (currentLayer) {
-                     map.removeLayer(currentLayer);
-                     currentLayer = null;
-                 }
-                 hideLoading();
-             });
-     }
+                if (dateLabel) {
+                    dateLabel.innerHTML = "No Fusion Data Available";
+                }
+
+                if (timeLabel) {
+                    timeLabel.innerHTML = "";
+                }
+
+                clearDataLayers();
+                hideLoading();
+                return;
+            }
+
+            if (TIME_SCALE === "monthly") {
+                loadedDates = [
+                    ...new Set(
+                        loadedDates.map(d => d.substring(0, 7))
+                    )
+                ];
+            }
+
+            dates = [...loadedDates];
+            allDates = [...loadedDates];
+
+            rangeStartDate = dates[0];
+            rangeEndDate = dates[dates.length - 1];
+            rangeCurrentEndDate = rangeEndDate;
+
+            const dateSlider = document.getElementById("dateSlider");
+            const dateLabel = document.getElementById("dateLabel");
+            const timeLabel = document.getElementById("timeLabel");
+            const startDateInput = document.getElementById("startDate");
+            const endDateInput = document.getElementById("endDate");
+
+            if (dateSlider) {
+                dateSlider.min = 0;
+                dateSlider.max = dates.length - 1;
+                dateSlider.value = 0;
+            }
+
+            if (startDateInput) {
+                startDateInput.value = TIME_SCALE === "monthly" ? "" : rangeStartDate;
+            }
+
+            if (endDateInput) {
+                endDateInput.value = TIME_SCALE === "monthly" ? "" : rangeEndDate;
+            }
+
+            if (dateLabel) {
+                if (TIME_SCALE === "monthly") {
+                    dateLabel.innerHTML = formatMonthForDisplay(dates[0]);
+                } else {
+                    dateLabel.innerHTML = utcDateToCentralPretty(dates[0]);
+                }
+            }
+
+            if (timeLabel && TIME_SCALE === "hourly") {
+                timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], selectedHour)}`;
+            } else if (timeLabel) {
+                timeLabel.innerHTML = "";
+            }
+
+            cachedDate = null;
+            cachedFeatures = null;
+            cachedHourBuckets = null;
+            nextCachedDate = null;
+            nextCachedHourBuckets = null;
+
+            updateBottomControlVisibility();
+
+            console.log("Loaded Fusion dates:", {
+                timeScale: TIME_SCALE,
+                count: dates.length,
+                first: dates[0],
+                last: dates[dates.length - 1]
+            });
+
+            loadDate(dates[0], load);
+        })
+        .catch(err => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            console.error("Could not load Fusion dates:", err);
+
+            showToast(
+                "Fusion data product is not yet available. No dates or data points exist for this product.",
+                "warning"
+            );
+
+            dates = [];
+            allDates = [];
+
+            const dateSlider = document.getElementById("dateSlider");
+            const dateLabel = document.getElementById("dateLabel");
+            const timeLabel = document.getElementById("timeLabel");
+
+            if (dateSlider) {
+                dateSlider.min = 0;
+                dateSlider.max = 0;
+                dateSlider.value = 0;
+            }
+
+            if (dateLabel) {
+                dateLabel.innerHTML = "No Fusion Data Available";
+            }
+
+            if (timeLabel) {
+                timeLabel.innerHTML = "";
+            }
+
+            clearDataLayers();
+            hideLoading();
+        });
+}
 
      // Helper: load Clarity dates and return a promise with the dates array
      function loadClarityDatesAndReturn() {
@@ -3554,68 +4679,21 @@ if (checkedRadio) {
              });
      }
 
-    // ── LAYER TOGGLES (legacy: for any remaining .layer-toggle checkboxes) ─────
-    document.querySelectorAll('.layer-toggle').forEach(checkbox => {
-    checkbox.addEventListener('change', e => {
-        const layer = e.target.dataset.layer;
-        const isChecked = e.target.checked;
-
-        const layerMap = {
-        tempo: tempoLayerGroup,
-        openaq: openaqLayerGroup,
-        fusion: fusionLayerGroup,
-        wind: windLayerGroup
-        };
-
-        if (layerMap[layer]) {
-            if (isChecked) {
-                layerMap[layer].addTo(map);
-            } else {
-                map.removeLayer(layerMap[layer]);
-            }
-            showToast(`${layer} layer ${isChecked ? 'enabled' : 'disabled'}`);
-        }
-    });
-    });
-
     // ── TIME SLIDER (original sidebar slider) ────────────────────────────────────
     const origTimeSlider = document.getElementById('time-slider');
     const timeDisplay = document.getElementById('time-display');
     let playInterval = null;
 
-    if (origTimeSlider) {
+    if (origTimeSlider && typeof loadTempoData === "function") {
         origTimeSlider.addEventListener('input', () => {
             const hour = parseInt(origTimeSlider.value);
-            timeDisplay.textContent = `${String(hour).padStart(2, '0')}:00 UTC`;
-            // Reload data for the selected hour
+
+            if (timeDisplay) {
+                timeDisplay.textContent = `${String(hour).padStart(2, '0')}:00 UTC`;
+            }
+
             const today = new Date().toISOString().split('T')[0];
             loadTempoData(today, hour);
-        });
-
-        document.getElementById('time-prev')?.addEventListener('click', () => {
-            origTimeSlider.value = Math.max(0, parseInt(origTimeSlider.value) - 1);
-            origTimeSlider.dispatchEvent(new Event('input'));
-        });
-
-        document.getElementById('time-next')?.addEventListener('click', () => {
-            origTimeSlider.value = Math.min(23, parseInt(origTimeSlider.value) + 1);
-            origTimeSlider.dispatchEvent(new Event('input'));
-        });
-
-        document.getElementById('time-play')?.addEventListener('click', function() {
-            if (playInterval) {
-                clearInterval(playInterval);
-                playInterval = null;
-                this.textContent = '▶';
-            } else {
-                this.textContent = '⏸';
-                playInterval = setInterval(() => {
-                    let val = parseInt(origTimeSlider.value) + 1;
-                    if (val > 23) val = 0;
-                    origTimeSlider.value = val;
-                    origTimeSlider.dispatchEvent(new Event('input'));
-                }, 1500);
-            }
         });
     }
 
@@ -3629,87 +4707,20 @@ if (checkedRadio) {
     });
     }
 
-  // ── EXPORT MAP AS PNG ──────────────────────────────────────────────────────
-  // Captures the map canvas as PNG, hiding UI controls (coords bar, zoom, home)
-  async function exportMapAsPNG() {
-      const btn = document.getElementById('export-png-btn');
-      btn.disabled = true;
-      btn.textContent = 'Capturing...';
-
-      // Elements to hide during capture (legend and scalebar stay visible)
-      const coordsBar = document.getElementById('coords-bar');
-      const shareHeader = document.querySelector('.map-export-header');
-      const explorePanel = document.getElementById('explore-panel');
-      const bottomSlider = document.getElementById('bottom-slider-bar');
-      const loadingOverlay = document.getElementById('map-loading-overlay');
-      const leafletControls = document.querySelectorAll('.leaflet-control-zoom, .leaflet-control');
-      const homeControl = document.querySelector('.leaflet-control-home');
-
-      // Hide UI elements (keep legend and scalebar visible)
-      if (coordsBar) coordsBar.style.display = 'none';
-      if (shareHeader) shareHeader.style.display = 'none';
-      if (explorePanel) explorePanel.style.display = 'none';
-      if (bottomSlider) bottomSlider.style.display = 'none';
-      if (loadingOverlay) loadingOverlay.style.display = 'none';
-      leafletControls.forEach(el => { el.style.display = 'none'; });
-      if (homeControl) homeControl.style.display = 'none';
-
-      // Disable map interaction during capture
-      map.dragging.disable();
-      map.touchZoom.disable();
-      map.doubleClickZoom.disable();
-      map.scrollWheelZoom.disable();
-      map.boxZoom.disable();
-
-      // Wait for tiles to render
-      await new Promise(r => setTimeout(r, 300));
-
-      try {
-          const mapContainer = document.querySelector('.map-container');
-          const canvas = await html2canvas(mapContainer, {
-              useCORS: true,
-              allowTaint: false,
-              scale: 2,
-              backgroundColor: '#ffffff',
-              logging: false,
-              width: mapContainer.scrollWidth,
-              height: mapContainer.scrollHeight
-          });
-
-          // Trigger download
-          const link = document.createElement('a');
-          const now = new Date();
-          const timestamp = now.getFullYear() +
-              String(now.getMonth() + 1).padStart(2, '0') +
-              String(now.getDate()).padStart(2, '0') + '_' +
-              String(now.getHours()).padStart(2, '0') +
-              String(now.getMinutes()).padStart(2, '0');
-          link.download = `no2_map_${timestamp}.png`;
-          link.href = canvas.toDataURL('image/png', 1.0);
-          link.click();
-      } catch (err) {
-          console.error('PNG export failed:', err);
-          alert('Failed to export map as PNG. Please try again.');
-      } finally {
-          // Restore UI elements
-          if (coordsBar) coordsBar.style.display = '';
-          if (shareHeader) shareHeader.style.display = '';
-          if (explorePanel) explorePanel.style.display = '';
-          if (bottomSlider) bottomSlider.style.display = '';
-          if (loadingOverlay) loadingOverlay.style.display = '';
-          leafletControls.forEach(el => { el.style.display = ''; });
-          if (homeControl) homeControl.style.display = '';
-
-          // Re-enable map interaction
-          map.dragging.enable();
-          map.touchZoom.enable();
-          map.doubleClickZoom.enable();
-          map.scrollWheelZoom.enable();
-          map.boxZoom.enable();
-
-          btn.disabled = false;
-          btn.textContent = 'Export as PNG';
-      }
+  // ── SIDEBAR TOGGLE ──────────────────────────────────────────────────────────
+  const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+  const mapControls = document.getElementById('map-controls');
+  if (sidebarToggleBtn && mapControls) {
+    sidebarToggleBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      mapControls.classList.toggle('retracted');
+      // Invalidate map size after transition completes
+      setTimeout(() => { map.invalidateSize(); }, 350);
+    });
+    // Prevent map events from leaking through the toggle button
+    L.DomEvent.disableClickPropagation(sidebarToggleBtn);
+    L.DomEvent.disableScrollPropagation(sidebarToggleBtn);
   }
 
   // ── OVERLAYS: prevent map from stealing pointer events ──────────────────────
@@ -3728,8 +4739,6 @@ if (checkedRadio) {
       L.DomEvent.disableClickPropagation(explore);
       L.DomEvent.disableScrollPropagation(explore);
     }
-
-    // Note: map-share-header is above the map (not an overlay), so no pointer event prevention needed
   }, 0);
 
   </script>
