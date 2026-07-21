@@ -1344,6 +1344,346 @@ function loadMonthlySensors(month, existingLoad) {
             console.error("Could not load monthly sensor file:", err);
         });
 }
+
+// ── FUSION DATA LOADING FUNCTIONS ───────────────────────────────────────────
+
+function getFusionValue(properties) {
+    if (!properties) {
+        return NaN;
+    }
+
+    return Number(properties.no2_estimate);
+}
+
+function getFusionTimeString(properties) {
+    if (!properties) {
+        return "";
+    }
+
+    return (
+        properties.datetime ||
+        properties.datetime_local ||
+        properties.time ||
+        properties.timestamp ||
+        ""
+    );
+}
+
+function getFusionChicagoDateHour(properties) {
+    const rawTime = getFusionTimeString(properties);
+
+    if (!rawTime) {
+        return null;
+    }
+
+    const normalized = rawTime.includes("T")
+        ? rawTime
+        : rawTime.replace(" ", "T");
+
+    const utcDate = new Date(
+        normalized.endsWith("Z")
+            ? normalized
+            : normalized + "Z"
+    );
+
+    if (isNaN(utcDate.getTime())) {
+        return null;
+    }
+
+    const chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
+    const chicagoHourParts = chicagoHourFormatter.formatToParts(utcDate);
+
+    const y = chicagoParts.find(p => p.type === "year").value;
+    const m = chicagoParts.find(p => p.type === "month").value.padStart(2, "0");
+    const d = chicagoParts.find(p => p.type === "day").value.padStart(2, "0");
+
+    const hour = Number(
+        chicagoHourParts.find(p => p.type === "hour").value
+    );
+
+    return {
+        date: `${y}-${m}-${d}`,
+        hour: hour
+    };
+}
+
+function showFusionNoDataMessage(date, detailText) {
+    if (currentLayer) {
+        map.removeLayer(currentLayer);
+        currentLayer = null;
+    }
+
+    if (communityLayer) {
+        map.removeLayer(communityLayer);
+        communityLayer = null;
+    }
+
+    const label =
+        TIME_SCALE === "monthly"
+            ? formatMonthForDisplay(date)
+            : utcDateToCentralPretty(date);
+
+    showLoading(`
+        No Fusion Data Available<br>
+        ${label}${detailText ? "<br>" + detailText : ""}
+    `);
+}
+
+function renderFusionFeatures(features, labelText) {
+    features = features || [];
+
+    if (currentDataProduct !== "fusion") {
+        console.log("Blocked Fusion render because current product is:", currentDataProduct);
+        return false;
+    }
+
+    const newLayer = L.layerGroup();
+    let renderedCount = 0;
+
+    features.forEach(f => {
+        const p = f.properties || {};
+        const value = getFusionValue(p);
+
+        if (isNaN(value)) {
+            return;
+        }
+
+        let lat = Number(p.latitude);
+        let lon = Number(p.longitude);
+
+        if ((isNaN(lat) || isNaN(lon)) && f.geometry && f.geometry.coordinates) {
+            if (f.geometry.type === "Polygon") {
+                const coords = f.geometry.coordinates[0];
+
+                if (coords && coords.length > 0) {
+                    const lons = coords.map(c => Number(c[0]));
+                    const lats = coords.map(c => Number(c[1]));
+
+                    lon = lons.reduce((a, b) => a + b, 0) / lons.length;
+                    lat = lats.reduce((a, b) => a + b, 0) / lats.length;
+                }
+            }
+
+            if (f.geometry.type === "Point") {
+                lon = Number(f.geometry.coordinates[0]);
+                lat = Number(f.geometry.coordinates[1]);
+            }
+        }
+
+        if (isNaN(lat) || isNaN(lon)) {
+            return;
+        }
+
+        const gridCell = L.geoJSON(f, {
+            style: {
+                color: getColorClarity(value),
+                fillColor: getColorClarity(value),
+                weight: 0.5,
+                opacity: 0.8,
+                fillOpacity: 0.75
+            },
+            onEachFeature: function(feature, layer) {
+                layer.bindTooltip(`
+                    <b>Fusion Grid Cell</b><br>
+                    ${labelText}<br>
+                    NO₂ Estimate: ${value.toFixed(2)} ppb<br>
+                    Lat: ${lat.toFixed(4)}<br>
+                    Lon: ${lon.toFixed(4)}
+                `);
+            }
+        });
+
+        newLayer.addLayer(gridCell);
+        renderedCount += 1;
+    });
+
+    if (renderedCount === 0) {
+        return false;
+    }
+
+    // Only swap layers after valid new Fusion data is ready.
+    if (currentLayer) {
+        map.removeLayer(currentLayer);
+    }
+
+    if (communityLayer) {
+        map.removeLayer(communityLayer);
+        communityLayer = null;
+    }
+
+    currentLayer = newLayer;
+    currentLayer.addTo(map);
+
+    hideLoading();
+    return true;
+}
+
+
+function loadFusionHourly(date, existingLoad) {
+    const load = existingLoad || startNewLoad("fusion");
+
+    if (!isActiveLoad(load)) {
+        return;
+    }
+
+    fetch(`/data/fused/${date}.geojson`)
+        .then(r => {
+            if (!r.ok) {
+                throw new Error(`Missing Fusion hourly file: ${date}`);
+            }
+            return r.json();
+        })
+        .then(data => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            const features = data && data.features ? data.features : [];
+
+            const filteredFeatures = features.filter(f => {
+                const parts = getFusionChicagoDateHour(f.properties || {});
+
+                if (!parts) {
+                    return false;
+                }
+
+                return (
+                    parts.date === date &&
+                    parts.hour === selectedHour
+                );
+            });
+
+            const hasValidData = filteredFeatures.some(f => {
+                return !isNaN(getFusionValue(f.properties || {}));
+            });
+
+            if (!hasValidData) {
+                console.warn("No valid Fusion data for", date, "hour", selectedHour);
+
+                showFusionNoDataMessage(
+                    date,
+                    `Time: ${formatHourForDisplay(date, selectedHour)}`
+                );
+
+                return;
+            }
+
+            const rendered = renderFusionFeatures(
+                filteredFeatures,
+                `Time: ${formatHourForDisplay(date, selectedHour)}`
+            );
+
+            if (!rendered) {
+                showFusionNoDataMessage(
+                    date,
+                    `Time: ${formatHourForDisplay(date, selectedHour)}`
+                );
+            }
+        })
+        .catch(err => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            console.error("Could not load Fusion hourly file:", err);
+
+            showFusionNoDataMessage(
+                date,
+                `Time: ${formatHourForDisplay(date, selectedHour)}`
+            );
+        });
+}
+
+function loadFusionDaily(date, existingLoad) {
+    const dailyKey = toDailyKey(date);
+
+    if (!dailyKey) {
+        console.warn("Blocked invalid Fusion daily load:", date);
+        return;
+    }
+
+    const load = existingLoad || startNewLoad("fusion");
+
+    if (!isActiveLoad(load)) {
+        return;
+    }
+
+    fetch(`/data/fused/day_${dailyKey}.geojson`)
+        .then(r => {
+            if (!r.ok) {
+                throw new Error(`Missing Fusion daily file: ${dailyKey}`);
+            }
+            return r.json();
+        })
+        .then(data => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            const rendered = renderFusionFeatures(
+                data.features || [],
+                "Daily Average"
+            );
+
+            if (!rendered) {
+                showFusionNoDataMessage(date, "Daily Average");
+            }
+        })
+        .catch(err => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            console.error("Could not load Fusion daily file:", err);
+            showFusionNoDataMessage(date, "Daily Average");
+        });
+}
+
+function loadFusionMonthly(month, existingLoad) {
+    month = toMonthKey(month);
+
+    if (!isMonthlyDate(month)) {
+        console.warn("Blocked invalid Fusion monthly load:", month);
+        return;
+    }
+
+    const load = existingLoad || startNewLoad("fusion");
+
+    if (!isActiveLoad(load)) {
+        return;
+    }
+
+    fetch(`/data/fused/month_${month}.geojson`)
+        .then(r => {
+            if (!r.ok) {
+                throw new Error(`Missing Fusion monthly file: ${month}`);
+            }
+            return r.json();
+        })
+        .then(data => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            const rendered = renderFusionFeatures(
+                data.features || [],
+                "Monthly Average"
+            );
+
+            if (!rendered) {
+                showFusionNoDataMessage(month, "Monthly Average");
+            }
+        })
+        .catch(err => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            console.error("Could not load Fusion monthly file:", err);
+            showFusionNoDataMessage(month, "Monthly Average");
+        });
+}
+
   // ── TEMPO DATA LOADING FUNCTIONS ──────────────────────────────────────────────────
 
   function formatCentralTimePretty(utcString) {
@@ -2458,6 +2798,31 @@ function renderMonthlyTempoData(data, load) {
           return;
       }
 
+            // ── FUSION ROUTING ──
+      if (productAtStart === "fusion") {
+          // For now Fusion is point-based only.
+          // If user selected community mode earlier, force sensor-style rendering.
+          displayMode = "sensor";
+
+          if (TIME_SCALE === "hourly") {
+              loadFusionHourly(date, load);
+              return;
+          }
+
+          if (TIME_SCALE === "daily") {
+              loadFusionDaily(date, load);
+              return;
+          }
+
+          if (TIME_SCALE === "monthly") {
+              loadFusionMonthly(selectedMonth, load);
+              return;
+          }
+
+          console.warn("Unsupported Fusion TIME_SCALE:", TIME_SCALE);
+          hideLoading();
+          return;
+      }
       // ── CLARITY ROUTING ──
 if (TIME_SCALE === "range") {
     loadDateRange();
@@ -2818,6 +3183,8 @@ if (TIME_SCALE === "monthly") {
 
                         if (currentDataProduct === "tempo") {
                             renderTempoFeatures(cachedHourBuckets[0], date);
+                        } else if (currentDataProduct === "fusion") {
+                            loadDate(date);
                         } else {
                             renderFeatures(cachedHourBuckets[0], date);
                         }
@@ -2829,8 +3196,11 @@ if (TIME_SCALE === "monthly") {
                   }
                   timeSlider.value = selectedHour;
                   let baseDate = dates[Number(dateSlider.value)];
-                  timeLabel.innerHTML = `Time: ${formatHourForDisplay(baseDate, selectedHour)}`;
-                  loadDate(baseDate);
+                  if (timeLabel && TIME_SCALE === "hourly") {
+                        timeLabel.innerHTML = `Time: ${formatHourForDisplay(baseDate, selectedHour)}`;
+                    }
+
+                    loadDate(baseDate);
               }
               else if (TIME_SCALE === "range") {
                   let endIndex = dates.indexOf(rangeCurrentEndDate);
@@ -3557,127 +3927,167 @@ function loadClarityDates() {
      }
 
      // ── LOAD FUSION DATES ────────────────────────────────────────────────────
-     function loadFusionDates() {
-         // Use absolute URL so it works from any map view
-         fetch("/data/fused/dates.json")
-             .then(r => {
-                 if (!r.ok) {
-                     console.warn("Fusion dates.json not found.");
-                     // Show notification that Fusion has no data
-                     showToast(
-                         "Fusion data product is not yet available. No dates or data points exist for this product.",
-                         "warning"
-                     );
-                     // Clear the map – do NOT silently fall back to Clarity
-                     dates = [];
-                     rangeStartDate = null;
-                     rangeEndDate = null;
-                     rangeCurrentEndDate = null;
+function loadFusionDates() {
+    const load = startNewLoad("fusion");
 
-                     var dateSlider = document.getElementById("dateSlider");
-                     var dateLabel = document.getElementById("dateLabel");
-                     if (dateSlider) {
-                         dateSlider.max = 0;
-                         dateSlider.value = 0;
-                     }
-                     if (dateLabel) dateLabel.innerHTML = "No Fusion Data Available";
+    if (!isActiveLoad(load)) {
+        return;
+    }
 
-                     // Clear any existing layers
-                     if (currentLayer) {
-                         map.removeLayer(currentLayer);
-                         currentLayer = null;
-                     }
-                     if (communityLayer) {
-                         map.removeLayer(communityLayer);
-                         communityLayer = null;
-                     }
-                     hideLoading();
-                     return null;
-                 }
-                 return r.json();
-             })
-             .then(loadedDates => {
-                 if (!loadedDates) return; // Already handled the "no file" case above
-                 // Handle both array and {dates: [...]} formats
-                 allDates = Array.isArray(loadedDates) ? loadedDates : (loadedDates.dates || loadedDates);
-                 dates = allDates;
-                 if (!dates || dates.length === 0) {
-                     console.warn("No Fusion dates found in dates.json.");
-                     showToast(
-                         "Fusion data product has no dates or data points available yet.",
-                         "warning"
-                     );
-                     // Clear slider and layers
-                     var dateSlider = document.getElementById("dateSlider");
-                     var dateLabel = document.getElementById("dateLabel");
-                     if (dateSlider) {
-                         dateSlider.max = 0;
-                         dateSlider.value = 0;
-                     }
-                     if (dateLabel) dateLabel.innerHTML = "No Fusion Data Available";
-                     if (currentLayer) {
-                         map.removeLayer(currentLayer);
-                         currentLayer = null;
-                     }
-                     if (communityLayer) {
-                         map.removeLayer(communityLayer);
-                         communityLayer = null;
-                     }
-                     hideLoading();
-                     return;
-                 }
-                 rangeStartDate = dates[0];
-                 rangeEndDate = dates[dates.length - 1];
-                 rangeCurrentEndDate = rangeEndDate;
+    fetch("/data/fused/dates.json")
+        .then(r => {
+            if (!r.ok) {
+                throw new Error("Could not load /data/fused/fused_dates.json");
+            }
+            return r.json();
+        })
+        .then(response => {
+            if (!isActiveLoad(load)) {
+                console.log("Ignoring stale Fusion dates load");
+                return;
+            }
 
-                 var dateSlider = document.getElementById("dateSlider");
-                 var dateLabel = document.getElementById("dateLabel");
-                 var startDateInput = document.getElementById("startDate");
-                 var endDateInput = document.getElementById("endDate");
+            let loadedDates = Array.isArray(response)
+                ? response
+                : (response.dates || []);
 
-                 if (startDateInput) startDateInput.value = rangeStartDate;
-                 if (endDateInput) endDateInput.value = rangeEndDate;
+            if (!loadedDates || loadedDates.length === 0) {
+                console.warn("No Fusion dates found in fused_dates.json.");
 
-                 dateSlider.max = dates.length - 1;
-                 dateSlider.value = 0;
+                showToast(
+                    "Fusion data product has no dates or data points available yet.",
+                    "warning"
+                );
 
-                 if (TIME_SCALE === "monthly") {
-                     if (dateLabel) dateLabel.innerHTML = formatMonthForDisplay(dates[0]);
-                 } else {
-                     if (dateLabel) dateLabel.innerHTML = utcDateToCentralPretty(dates[0]);
-                 }
+                dates = [];
+                allDates = [];
 
-                 var timeLabel = document.getElementById("timeLabel");
-                 if (timeLabel) timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
+                const dateSlider = document.getElementById("dateSlider");
+                const dateLabel = document.getElementById("dateLabel");
+                const timeLabel = document.getElementById("timeLabel");
 
-                 cachedDate = null;
-                cachedFeatures = null;
-                cachedHourBuckets = null;
+                if (dateSlider) {
+                    dateSlider.min = 0;
+                    dateSlider.max = 0;
+                    dateSlider.value = 0;
+                }
 
-                nextCachedDate = null;
-                nextCachedHourBuckets = null;
-             })
-             .catch(err => {
-                 console.error("Could not load Fusion dates:", err);
-                 showToast(
-                     "Fusion data product is not yet available. No dates or data points exist for this product.",
-                     "warning"
-                 );
-                 dates = [];
-                 var dateSlider = document.getElementById("dateSlider");
-                 var dateLabel = document.getElementById("dateLabel");
-                 if (dateSlider) {
-                     dateSlider.max = 0;
-                     dateSlider.value = 0;
-                 }
-                 if (dateLabel) dateLabel.innerHTML = "No Fusion Data Available";
-                 if (currentLayer) {
-                     map.removeLayer(currentLayer);
-                     currentLayer = null;
-                 }
-                 hideLoading();
-             });
-     }
+                if (dateLabel) {
+                    dateLabel.innerHTML = "No Fusion Data Available";
+                }
+
+                if (timeLabel) {
+                    timeLabel.innerHTML = "";
+                }
+
+                clearDataLayers();
+                hideLoading();
+                return;
+            }
+
+            if (TIME_SCALE === "monthly") {
+                loadedDates = [
+                    ...new Set(
+                        loadedDates.map(d => d.substring(0, 7))
+                    )
+                ];
+            }
+
+            dates = [...loadedDates];
+            allDates = [...loadedDates];
+
+            rangeStartDate = dates[0];
+            rangeEndDate = dates[dates.length - 1];
+            rangeCurrentEndDate = rangeEndDate;
+
+            const dateSlider = document.getElementById("dateSlider");
+            const dateLabel = document.getElementById("dateLabel");
+            const timeLabel = document.getElementById("timeLabel");
+            const startDateInput = document.getElementById("startDate");
+            const endDateInput = document.getElementById("endDate");
+
+            if (dateSlider) {
+                dateSlider.min = 0;
+                dateSlider.max = dates.length - 1;
+                dateSlider.value = 0;
+            }
+
+            if (startDateInput) {
+                startDateInput.value = TIME_SCALE === "monthly" ? "" : rangeStartDate;
+            }
+
+            if (endDateInput) {
+                endDateInput.value = TIME_SCALE === "monthly" ? "" : rangeEndDate;
+            }
+
+            if (dateLabel) {
+                if (TIME_SCALE === "monthly") {
+                    dateLabel.innerHTML = formatMonthForDisplay(dates[0]);
+                } else {
+                    dateLabel.innerHTML = utcDateToCentralPretty(dates[0]);
+                }
+            }
+
+            if (timeLabel && TIME_SCALE === "hourly") {
+                timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], selectedHour)}`;
+            } else if (timeLabel) {
+                timeLabel.innerHTML = "";
+            }
+
+            cachedDate = null;
+            cachedFeatures = null;
+            cachedHourBuckets = null;
+            nextCachedDate = null;
+            nextCachedHourBuckets = null;
+
+            updateBottomControlVisibility();
+
+            console.log("Loaded Fusion dates:", {
+                timeScale: TIME_SCALE,
+                count: dates.length,
+                first: dates[0],
+                last: dates[dates.length - 1]
+            });
+
+            loadDate(dates[0], load);
+        })
+        .catch(err => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            console.error("Could not load Fusion dates:", err);
+
+            showToast(
+                "Fusion data product is not yet available. No dates or data points exist for this product.",
+                "warning"
+            );
+
+            dates = [];
+            allDates = [];
+
+            const dateSlider = document.getElementById("dateSlider");
+            const dateLabel = document.getElementById("dateLabel");
+            const timeLabel = document.getElementById("timeLabel");
+
+            if (dateSlider) {
+                dateSlider.min = 0;
+                dateSlider.max = 0;
+                dateSlider.value = 0;
+            }
+
+            if (dateLabel) {
+                dateLabel.innerHTML = "No Fusion Data Available";
+            }
+
+            if (timeLabel) {
+                timeLabel.innerHTML = "";
+            }
+
+            clearDataLayers();
+            hideLoading();
+        });
+}
 
      // Helper: load Clarity dates and return a promise with the dates array
      function loadClarityDatesAndReturn() {

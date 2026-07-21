@@ -168,7 +168,7 @@
   #community-map {
   width: 100%;
   height: 100%;
-  min-height: 280px;
+  min-height: 340px;
   z-index: 0;
 }
 
@@ -970,8 +970,8 @@ function renderPercentileGraph(communityName) {
     x: xValues,
     y: yValues,
     fill: 'tozeroy',
-    fillcolor: 'rgba(54, 162, 235, 0.25)',
-    line: { color: 'rgba(54, 162, 235, 0.8)', width: 2 },
+    fillcolor: 'rgba(38, 55, 102, 0.25)',
+    line: { color: 'rgba(38, 55, 102, 0.8)', width: 2 },
     name: 'Distribution',
     showlegend: false,
     hoverinfo: 'skip',
@@ -983,9 +983,9 @@ function renderPercentileGraph(communityName) {
     mode: 'markers',
     marker: {
       size: 14,
-      color: '#e74c3c',
+      color: '#263766',
       symbol: 'circle-open',
-      line: { width: 3, color: '#e74c3c' },
+      line: { width: 3, color: '#263766' },
     },
     name: communityName,
     text: `${communityName}<br>Percentile: ${communityPercentile.toFixed(1)}`,
@@ -1077,18 +1077,28 @@ function renderWeekdayBoxPlot(communityName, source) {
         type: 'box',
         y: byDay[day],
         name: day,
+        width: 0.65,
+
         boxmean: false,
         boxpoints: 'outliers',
-        jitter: 0.3,
-        pointpos: -1.8,
-        marker: { color: '#263766', size: 4, outliercolor: '#e74c3c' },
-        fillcolor: 'rgba(159, 177, 222, 0.5)',
-        line: { color: '#263766', width: 1.5 },
-        whiskerwidth: 0.5,
+
+        marker: {
+          color: '#263766',
+          size: 4,
+          outliercolor: '#e74c3c'
+        },
+
+        fillcolor: 'rgba(159, 177, 222, 0.65)',
+        line: {
+          color: '#263766',
+          width: 1.8
+        },
+
+        whiskerwidth: 0.8,
       }));
 
       const layout = {
-        margin: { t: 10, r: 20, b: 70, l: 85 },
+        margin: { t: 10, r: 20, b: 82, l: 85 },
         xaxis: {
           title: 'Day of Week',
           tickangle: -45,
