@@ -1,0 +1,5 @@
+{
+    "python.defaultInterpreterPath": ".venvv/Scripts/python.exe",
+    "python.venvFolders": [".venvv"],
+    "python.envFile": "${workspaceFolder}/.venvv/Scripts/activate"
+}

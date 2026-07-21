@@ -6,6 +6,15 @@
 {% block extra_css %}
 <style>
 
+  /* Background image for about page */
+  main.content {
+    background-image: url({% static 'dashboard/images/aboutpage.png' %});
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: right center;
+    background-attachment: fixed;
+  }
+
   /* Hero (Heading) banner */
   .hero {
     text-align: center;
@@ -90,6 +99,8 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     background: var(--bg);
     margin-bottom: 0.75rem;
+    object-fit: cover;
+    object-position: center top;
   }
 
   .portrait-card .portrait-name {
@@ -123,8 +134,7 @@
 <div class="hero">
   <h1>About the Dashboard</h1>
   <p class="subtitle">
-    The Regional Ozone Precoursor Dashboard is a real-time visualization tool for TEMPO satellite and Open Air Clarity ground sensor NO₂ data, developed by the
-    EarthRISE Developers Academy in collaboration with NASA LaRC and community partners.
+    The Regional Ozone Precoursor Dashboard is a visualization tool for TEMPO satellite and Open Air Chicago ground sensor NO₂ data, developed by the EarthRISE Developers Academy.
   </p>
 </div>
 
@@ -132,10 +142,7 @@
 <div class="about-section">
   <h2>Project Overview</h2>
   <p class="section-blurb">
-    [Insert project overview.]
-  </p>
-  <p class="section-blurb" style="margin-bottom:0;">
-    [Paragaph two.]
+    This project aimed to assess regional air quality concerns from potential sources of NO<sub>2</sub> pollution across Chicago and the broader Cook County, Illinois, region. Utilizing TEMPO satellite data and Open Air Chicago ground sensor data collected from September 4, 2025 to June 1, 2026, the team created this dashboard to visualize spatiotemporal trends of NO<sub>2</sub> pollution across Chicago. This dashboard allows users to see hourly, daily, and monthly trends of NO<sub>2</sub> pollution across Chicago and its community areas. 
   </p>
 </div>
 
@@ -143,35 +150,29 @@
 <div class="about-section">
   <h2>Meet the Developers</h2>
   <p class="section-blurb">
-    These dedicated Developers designed, built, and tested every component
-    of the dashboard to deliver a seamless experience for exploring satellite air-quality data.
+    Meet the summer 2026 NASA EarthRISE Developer's Academy Chicago Health and Air Quality team!
   </p>
 
   <div class="portrait-grid">
     <div class="portrait-card">
-      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Picture of Anya" />
+      <img class="portrait-image" src="{% static 'dashboard/images/anya_desai.jpg' %}" alt="Picture of Anya" />
       <span class="portrait-name">Anya Desai</span>
-      <span class="portrait-role">[Role]</span>
     </div>
     <div class="portrait-card">
-      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Picture of Margot" />
+      <img class="portrait-image" src="{% static 'dashboard/images/margot_langenbach.jpg' %}" alt="Picture of Margot" />
       <span class="portrait-name">Margot Langenbach</span>
-      <span class="portrait-role">[Role]</span>
     </div>
     <div class="portrait-card">
-      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Picture of Caitlyn" />
+      <img class="portrait-image" src="{% static 'dashboard/images/caitlyn_mcclanahan.jpg' %}" alt="Picture of Caitlyn" />
       <span class="portrait-name">Caitlyn McClanahan</span>
-      <span class="portrait-role">[Role]</span>
     </div>
     <div class="portrait-card">
-      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Picture of Kathryn" />
+      <img class="portrait-image" src="{% static 'dashboard/images/kathryn_phung.jpg' %}" alt="Picture of Kathryn" />
       <span class="portrait-name">Kathryn Phung</span>
-      <span class="portrait-role">[Role]</span>
     </div>
     <div class="portrait-card">
-      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Picture of Noah" />
+      <img class="portrait-image" src="{% static 'dashboard/images/noah_ring.jpg' %}" alt="Picture of Noah" />
       <span class="portrait-name">Noah Ring</span>
-      <span class="portrait-role">[Role]</span>
     </div>
   </div>
 </div>
@@ -180,27 +181,8 @@
 <div class="about-section">
   <h2>Meet the Partners</h2>
   <p class="section-blurb">
-    About LADCO. These organizations provide scientific guidance, data
-    resources, and domain expertise that make this dashboard possible.
+    The Lake Michigan Air Directors Consortium (LADCO) is a multi-jurisdictional research and planning organization that works with agencies across the Great Lakes Region to improve air quality. We would like to thank Zac Adelman, Angie Dickens, and Grant Coleman from LADCO for their valuable insights regarding the methodology of this project and dashboard. 
   </p>
-
-  <div class="portrait-grid three-col">
-    <div class="portrait-card">
-      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Portrait of Partner One" />
-      <span class="portrait-name">Zac Adelman</span>
-      <span class="portrait-role">[Role]</span>
-    </div>
-    <div class="portrait-card">
-      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Portrait of Partner Two" />
-      <span class="portrait-name">Angie Dickens</span>
-      <span class="portrait-role">[Role]</span>
-    </div>
-    <div class="portrait-card">
-      <img class="portrait-image" src="{% static 'dashboard/images/portrait.png' %}" alt="Portrait of Partner Three" />
-      <span class="portrait-name">Grant Coleman</span>
-      <span class="portrait-role">[Role]</span>
-    </div>
-  </div>
 </div>
 
 </div>

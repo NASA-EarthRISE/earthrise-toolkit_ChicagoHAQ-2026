@@ -1,21 +1,27 @@
-<nav>
-  <div class="container" onclick="Menu(this)">
-  <div class="bar1"></div>
-  <div class="bar2"></div>
-  <div class="bar3"></div>
+{% load static %}
+<!--ESD Atmospheric Logo-->
+<a target="_blank">
+        <img class="logo logo-atmosphere" src="{% static 'dashboard/images/atmosphere.png' %}" alt="Regional Ozone Precursor Map"/>
+</a>
+
+<span class="nav-brand">
+    <a href="/">Regional Ozone Precursor Map</a>
+</span>
+
+<!-- Mobile menu button -->
+<div class="mobile-menu-container" id="mobile-menu-container" onclick="MenuToggle(this)" style="display:none;">
+    <span class="mobile-menu-arrow">&#11167;</span>
 </div>
 
-  <span class="nav-brand"> <a href = "/">Regional Ozone Precoursor Map</a></span>
-  <div class="nav-links">
-    <a href="/map/">Map</a>
-    <a href ="/info">Info</a>
-    <a href="/tutorial">User Guide</a>
-    <a href="/export">Export Figure</a>
-    <a href="/admin">Sign In</a>
-    <a href="/about">About</a>
-    <!--Clickable Nasa Logo-->
-    <a href="/">
-      <img class= "logo" src = "develop-AQ_LaRC_2026\dashboard\static\dashboard\images\nasalogo.png" alt="Nasa Logo"></a>
-    
-  </div>
-</nav>
+<div class="nav-links" id="nav-links">
+    <a href="{% url 'map_hourly' %}">Pollution Map</a>
+    <a href="/community/">Community Statistics</a>
+    <a href="{% url 'info' %}">Info</a>
+    <a href="{% url 'tutorial' %}">User Guide</a>
+    <a href="{% url 'export' %}">Export Files</a>
+    <a href="{% url 'about' %}">About</a>
+    <a href="https://www.nasa.gov/tempo" target="_blank">
+        <img class="logo logo-nasa" src="{% static 'dashboard/images/nasalogo.png' %}" alt="NASA Logo"/>
+    </a>
+</div>
+

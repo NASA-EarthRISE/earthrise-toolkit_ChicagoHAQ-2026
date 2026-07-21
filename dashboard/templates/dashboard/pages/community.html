@@ -1,7 +1,41 @@
 {% extends "dashboard/layout.html" %}
+{% load static %}
 {%block title%} Community Tools {% endblock %}
 {% block extra_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
 <style>
+  /* Background image for page */
+  main.content {
+    background-image: url({% static 'dashboard/images/community.png' %});
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: right center;
+    background-attachment: fixed;
+  }
+
+  :root {
+    --site-header-bottom: 80px;
+    --sticky-gap: 16px;
+  }
+
+  header,
+  .navbar,
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 3000;
+  }
+
+  /* Background image for page */
+  main.content {
+   /* background-image: url({% static 'dashboard/images/community.png' %}); */
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: right center;
+    background-attachment: fixed;
+  }
     /* Hero (Heading) banner */
     .hero {
     text-align: center;
@@ -19,7 +53,7 @@
     .hero .subtitle {
     font-size: 1rem;
     color: var(--text-muted);
-    max-width: 640px;
+    max-width: 75vw; /*maximum width is set to 75% of screen width*/
     margin: 0 auto;
     line-height: 1.6;
     }
@@ -29,13 +63,1427 @@
         font-size: 1.4rem;
     }
     }
+
+  /* Main two-column layout */
+  .community-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  width: 100%;
+  min-height: 1000px;
+  align-items: flex-start;
+  position: relative;
+}
+
+  /* Left column: map + help */
+.community-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 5px;
+  flex-shrink: 0;
+
+  position: relative;
+  z-index: 20;
+
+  max-height: calc(100vh - 96px);
+  overflow: hidden;
+  min-height: 0;
+}
+
+.community-left.is-fixed {
+  position: fixed;
+}
+
+.community-left.is-anchored {
+  position: absolute;
+}
+
+.community-left,
+.community-left-placeholder {
+  box-sizing: border-box;
+}
+
+.community-left-placeholder {
+  display: none;
+  flex: 0 0 auto;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+#community-dropdown,
+#community-go-btn,
+.help-container {
+  flex: 0 0 auto;
+}
+
+  /* right column: graphs */
+  .community-right {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    min-height: 1000px;
+    gap: 1rem;
+  }
+
+  /*container to hold dropdown and go in same row*/
+  .dropdown-go {
+    display: flex;
+    flex-direction: row;
+  }
+
+  /* dropdown styling */
+  #community-dropdown {
+    overflow: auto;
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--bg-card);
+    flex: 5;
+  }
+
+  /* go button styling */
+  #community-go-btn {
+    padding: 0.5rem 1.2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: 1px solid var(--primary);
+    border-radius: 5px;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+    flex: 1;
+  }
+
+  #community-go-btn:hover {
+    opacity: 0.85;
+  }
+
+  /* Map container for community */
+ .community-map-container {
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  position: relative;
+
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  z-index: 1;
+}
+
+  #community-map {
+  width: 100%;
+  height: 100%;
+  min-height: 340px;
+  z-index: 0;
+}
+
+  /* Help container */
+  .help-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    text-align: center;
+  }
+
+  .help-container p {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  .help-container a {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+
+  .help-container a:hover {
+    opacity: 0.9;
+  }
+
+   /* Graph placeholder container */
+   .graph-container {
+     background: var(--bg-card);
+     border: 1px solid var(--border);
+     border-radius: 5px;
+     flex: 1;
+     min-height: 310px;
+     box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+     display: flex;
+     flex-direction: column;
+     padding: 1rem;
+     position: relative;
+   }
+
+   /* Loading spinner overlay */
+   .graph-loading {
+     position: absolute;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     justify-content: center;
+     background: rgba(255, 255, 255, 0.85);
+     z-index: 10;
+     border-radius: 5px;
+     pointer-events: none;
+     opacity: 0;
+     transition: opacity 0.2s ease;
+   }
+
+   .graph-loading.visible {
+     opacity: 1;
+     pointer-events: auto;
+   }
+
+   .graph-loading .spinner {
+     width: 40px;
+     height: 40px;
+     border: 4px solid var(--border);
+     border-top-color: var(--primary);
+     border-radius: 50%;
+     animation: graph-spin 0.7s linear infinite;
+   }
+
+   .graph-loading .loading-text {
+     margin-top: 0.75rem;
+     font-size: 0.85rem;
+     color: var(--text-muted);
+     font-style: italic;
+   }
+
+   @keyframes graph-spin {
+     to { transform: rotate(360deg); }
+   }
+
+  .graph-container img {
+    max-width: 50%;
+    height: auto;
+  }
+
+  .graph-placeholder {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.9rem;
+    text-align: center;
+    margin: auto;
+  }
+
+  /* Graph title */
+  .graph-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  /* Percentile toggle */
+  .percentile-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    margin-bottom: 0.25rem;
+  }
+
+  .percentile-toggle label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .percentile-toggle input[type="radio"] {
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  /* Plotly chart container */
+  .plotly-chart {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Plotly zoom notification — styled like explore-panel-body */
+  .plotly-zoom-notification {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .75rem 1rem;
+    font-size: .8rem;
+    color: var(--text);
+    min-width: 180px;
+    max-width: 220px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  .plotly-zoom-notification.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .plotly-zoom-notification strong {
+    color: var(--primary);
+  }
+
+  /* Responsive: stack columns on small screens */
+  @media (max-width: 900px) {
+    .community-layout {
+      flex-direction: column;
+    }
+
+    /* Make left column full width and remove sticky positioning */
+    .community-left {
+      position: static;
+      width: 100%;
+      flex: none;
+      padding: 0.75rem;
+    }
+
+    /* Make right column full width */
+    .community-right {
+      width: 100%;
+      flex: none;
+    }
+
+    /* Map container — full width with comfortable height on mobile */
+    .community-map-container {
+      min-height: 350px;
+      max-height: 450px;
+    }
+
+    #community-map {
+      min-height: 350px;
+    }
+
+    /* Graph containers — full width with adequate height */
+    .graph-container {
+      width: 100%;
+      min-height: 280px;
+    }
+  }
+
+  /* ── Share / Export PDF header ── */
+  .community-export-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: right;
+    gap: 10px;
+    padding: 8px 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+  .community-export-header .share-label {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: #888;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .community-export-header .btn-export-pdf {
+    padding: 4px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: transparent;
+    color: #666;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .community-export-header .btn-export-pdf:hover {
+    background: #f0f0f0;
+    border-color: #999;
+    color: #333;
+  }
+  .community-export-header .btn-export-pdf:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Extra small screens — tighten up spacing */
+  @media (max-width: 600px) {
+    .community-left {
+      padding: 0.5rem;
+    }
+
+    .community-map-container {
+      min-height: 280px;
+      max-height: 350px;
+    }
+
+    #community-map {
+      min-height: 280px;
+    }
+
+    .graph-container {
+      min-height: 250px;
+    }
+  }
+
 </style>
 {% endblock %}
 {% block content %}
 <div class="hero">
-  <h1>Community Tools</h1>
-  <p class="subtitle">
-    Welcome to the community tools page. 
-  </p>
+<h1>Statistical Analysis</h1>
+<p class="subtitle">
+  Use the tool below to see detailed information on the spatiotemporal trends of NO<sub>2</sub> pollution for any Chicago Community.
+</p>
 </div>
+
+<!-- Share / Export PDF header -->
+<div class="community-export-header">
+  <span class="share-label">Want to share this page?</span>
+  <button class="btn-export-pdf" id="export-pdf-btn" onclick="exportCommunityAsPDF()">Save as PDF</button>
+</div>
+
+<div class="community-layout">
+
+  <!-- LEFT COLUMN: Dropdown + Map preview + Help -->
+  <div class="community-left">
+    <div class="dropdown-go">
+      <!-- dropdown element-->
+       <select id="community-dropdown">
+        <option value="">Select a Community Area...</option>
+       </select>
+       <button id="community-go-btn" type="button">Go</button>
+    </div>
+
+
+    <div class="community-map-container">
+      <div id="community-map"></div>
+    </div>
+
+    <!-- Help container -->
+    <div class="help-container">
+       <p>Need help finding your community?</p>
+      <a href="https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-Community-Areas-Map/cauq-8yn6" target="_blank" rel="noopener noreferrer">Get Help</a>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: Three graphs -->
+  <div class="community-right">
+    <!-- Percentile toggle -->
+    <div class="percentile-toggle">
+      <span style="font-weight:600; font-size:0.9rem;">Percentile Metric:</span>
+      <label>
+        <input type="radio" name="percentile-metric" value="ground" checked /> Ground (OpenAir)
+      </label>
+      <label>
+        <input type="radio" name="percentile-metric" value="tempo" /> TEMPO
+      </label>
+    </div>
+
+    <!-- Graph 1: Percentile Bell Curve -->
+    <div class="graph-container" id="graph-percentile">
+      <div class="graph-title">Community Percentile Ranking</div>
+      <div class="plotly-zoom-notification" id="zoom-notify-percentile">
+        <strong>Double-click to reset view.</strong>
+      </div>
+      <div class="graph-placeholder">Select a community and press "Go" to view graphs.</div>
+    </div>
+
+    <!-- Graph 2: NO2 Weekday Box Plot (toggled by radio) -->
+    <div class="graph-container" id="graph-ground">
+      <div class="graph-title" id="graph-ground-title">Ground NO₂ by Day of Week (ppb)</div>
+      <div class="plotly-zoom-notification" id="zoom-notify-ground">
+        <strong>Double-click to reset view.</strong>
+      </div>
+      <div class="graph-loading" id="graph-ground-loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading box plot...</div>
+      </div>
+      <div class="graph-placeholder">Select a community and press "Go" to view graphs.</div>
+    </div>
+
+    <!-- Graph 3: NO2 Distribution Plot (toggled by radio) -->
+    <div class="graph-container" id="graph-tempo">
+      <div class="graph-title" id="graph-tempo-title">Ground NO₂ Distribution (ppb)</div>
+      <div class="plotly-zoom-notification" id="zoom-notify-tempo">
+        <strong>Double-click to reset view.</strong>
+      </div>
+      <div class="graph-loading" id="graph-tempo-loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading distribution plot...</div>
+      </div>
+      <div class="graph-placeholder">Select a community and press "Go" to view graphs.</div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Plotly JS -->
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<!-- html2canvas for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- jsPDF for PDF generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+function initManualStickyCommunityPanel() {
+  const panel = document.querySelector(".community-left");
+  const layout = document.querySelector(".community-layout");
+
+  if (!panel || !layout) {
+    return;
+  }
+
+  const placeholder = document.createElement("div");
+  placeholder.className = "community-left-placeholder";
+  panel.parentNode.insertBefore(placeholder, panel);
+
+  function getHeaderBottom() {
+    const header =
+      document.querySelector("header") ||
+      document.querySelector(".navbar") ||
+      document.querySelector(".site-header") ||
+      document.querySelector(".topbar") ||
+      document.querySelector(".app-header");
+
+    if (!header) {
+      return 0;
+    }
+
+    return Math.ceil(header.getBoundingClientRect().bottom);
+  }
+
+  function resetPanel() {
+    panel.classList.remove("is-fixed", "is-anchored");
+
+    panel.style.top = "";
+    panel.style.left = "";
+    panel.style.width = "";
+    panel.style.height = "";
+    panel.style.maxHeight = "";
+
+    placeholder.style.display = "none";
+    placeholder.style.width = "";
+    placeholder.style.height = "";
+    placeholder.style.flex = "";
+  }
+
+  function updatePanel() {
+  if (window.innerWidth <= 900) {
+    resetPanel();
+    return;
+  }
+
+  const gap = 16;
+  const searchBarOffset = 56; // dropdown height + gap between dropdown and Go button
+  const headerBottom = getHeaderBottom();
+
+  const layoutRect = layout.getBoundingClientRect();
+  const layoutTopDoc = layoutRect.top + window.scrollY;
+  const layoutBottomDoc = layoutTopDoc + layout.offsetHeight;
+
+  // If placeholder is visible, it is the source of truth for the original column slot.
+  // If not, use the panel's natural position.
+  const slotRect =
+    placeholder.style.display === "block"
+      ? placeholder.getBoundingClientRect()
+      : panel.getBoundingClientRect();
+
+  const slotWidth = Math.round(slotRect.width);
+  const slotLeft = Math.round(slotRect.left);
+
+  const panelHeight = panel.offsetHeight;
+  const fixedTopViewport = headerBottom + gap + searchBarOffset;
+  const fixedTopDoc = window.scrollY + fixedTopViewport;
+  const naturalPanelTopDoc = layoutTopDoc;
+  const stopTopDoc = layoutBottomDoc - panelHeight;
+
+  if (fixedTopDoc < naturalPanelTopDoc) {
+    resetPanel();
+    return;
+  }
+
+  // Lock the placeholder to the exact column width.
+  placeholder.style.display = "block";
+  placeholder.style.width = `${slotWidth}px`;
+  placeholder.style.height = `${panelHeight}px`;
+  placeholder.style.flex = `0 0 ${slotWidth}px`;
+
+  if (fixedTopDoc >= stopTopDoc) {
+    panel.classList.remove("is-fixed");
+    panel.classList.add("is-anchored");
+
+    panel.style.top = `${layout.offsetHeight - panelHeight}px`;
+    panel.style.left = `${slotLeft - Math.round(layoutRect.left)}px`;
+    panel.style.width = `${slotWidth}px`;
+    panel.style.maxHeight = `calc(100vh - ${headerBottom + gap * 2 + searchBarOffset}px)`;
+    panel.style.boxSizing = "border-box";
+    panel.style.boxSizing = "";
+
+    return;
+  }
+
+  panel.classList.remove("is-anchored");
+  panel.classList.add("is-fixed");
+
+  panel.style.top = `${fixedTopViewport}px`;
+  panel.style.left = `${slotLeft}px`;
+  panel.style.width = `${slotWidth}px`;
+  panel.style.maxHeight = `calc(100vh - ${headerBottom + gap * 2 + searchBarOffset}px)`;
+  panel.style.boxSizing = "border-box";
+}
+
+  let ticking = false;
+
+  function requestUpdate() {
+    if (ticking) {
+      return;
+    }
+
+    ticking = true;
+
+    window.requestAnimationFrame(() => {
+      updatePanel();
+      ticking = false;
+    });
+  }
+
+  updatePanel();
+
+  window.addEventListener("scroll", requestUpdate, { passive: true });
+  window.addEventListener("resize", requestUpdate);
+}
+
+initManualStickyCommunityPanel();
+// ── MAP INIT ───────────────────────────────────────────────────────────────
+  const map = L.map('community-map', {
+    center: [41.83772083187901, -87.68664593458594], //chicago boundary centroid
+    zoom: 10,
+    zoomControl: true,
+    scrollWheelZoom:false //disable zoom when scrolling down the page
+  });
+
+  map.on('click', function() { //enable zoom when clicking map
+    if (!map.scrollWheelZoom.enabled()) {
+        map.scrollWheelZoom.enabled();
+      }
+    });
+  map.on('mouseout', function() { //disable zooming in after mouse leaves map
+    map.scrollWheelZoom.disable();
+  });
+
+    // ── HOME BUTTON (reset view to Chicago) ──────────────────────────────────
+  const homeCoords = [41.83772083187901, -87.68664593458594];
+  const homeZoom = 10;
+
+  var HomeButton = L.Control.extend({
+    options: { position: 'topleft' },
+    onAdd: function (map) {
+      var btn = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+            btn.style.backgroundColor = 'white';
+            btn.style.width = '30px';
+            btn.style.height = '30px';
+            btn.style.cursor = 'pointer';
+            btn.innerHTML = '<span style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; font-weight: bold;">&#8962;</span>';
+            btn.title = 'Zoom to Home';
+
+      // inline SVG house icon – no external dependencies
+      btn.innerHTML =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" ' +
+        'width="16" height="16" style="vertical-align:middle;display:block;margin:5px auto 0" ' +
+        'fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M3 12L5 10M19 10L21 12M12 2L4 10V20H9V15H15V20H20V10L12 2Z"/>' +
+        '</svg>';
+
+      L.DomEvent.disableClickPropagation(btn);
+      L.DomEvent.disableScrollPropagation(btn);
+
+      L.DomEvent.on(btn, 'click', L.DomEvent.preventDefault);
+      L.DomEvent.on(btn, 'click', function () {
+        map.flyTo(homeCoords, homeZoom, { duration: 0.5 });
+      });
+
+      return btn;
+    }
+  });
+
+  map.addControl(new HomeButton());
+
+  // Basemap
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri',
+    maxZoom: 15
+  }).addTo(map);
+
+  // ── SENSORS, CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
+  fetch("{% static 'dashboard/layers/oacd.geojson' %}") //load sensors
+  .then(response => response.json())
+  .then(data => {
+    var sensorMarker = L.divIcon({
+      className: 'custom-point-marker', 
+      html: '<div style="font-size: 15px; color: #624786;">◉</div>',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
+    });
+
+      var Sensors = L.geoJSON(data, {
+         pointToLayer: function (feature, latlng) {
+          return L.marker(latlng, {icon: sensorMarker});
+        }
+        }).addTo(map);
+    })
+
+
+  let ChicagoBounds = null;
+
+fetch("{% static 'dashboard/layers/Chicago.geojson' %}") // load Chicago boundary
+  .then(response => {
+    if (!response.ok) {
+      throw new Error("Could not load Chicago.geojson");
+    }
+    return response.json();
+  })
+  .then(data => {
+    ChicagoBounds = L.geoJSON(data, {
+      style: {
+        color: "#636363",
+        weight: 1.75,
+        fillColor: "#00000000"
+      }
+    }).addTo(map);
+
+ //   if (ChicagoBounds && ChicagoBounds.getBounds().isValid()) {
+  //    map.fitBounds(ChicagoBounds.getBounds());
+ //   }
+  })
+  .catch(err => {
+    console.error("Chicago boundary load failed:", err);
+  });
+
+  //set styles
+  const defaultStyle = {color: "#636363", weight: 1, fillColor: "#00000066"}
+  const highlightStyle = {color: "#000000", weight: 2.5, fillColor: "#fbf719"}
+
+  var selectedCommunity = null //keep track of clicked community
+  let CommunityAreasLayer = null    //keep reference to community layer for dropdown zoom and go button
+
+  //load dropdown
+  var dropdownCommunity = document.getElementById('community-dropdown');
+
+  function selectCommunityArea(selectedArea, options = {}) {
+  if (!selectedArea || !CommunityAreasLayer) {
+    return;
+  }
+
+  const shouldZoom = options.zoom !== false;
+  const shouldOpenPopup = options.popup !== false;
+  const shouldRenderGraphs = options.renderGraphs === true;
+
+  selectedCommunity = selectedArea;
+  dropdownCommunity.value = selectedArea;
+
+  CommunityAreasLayer.eachLayer(function(layer) {
+    const communityName = layer.feature.properties.community;
+
+    if (communityName === selectedArea) {
+      layer.setStyle(highlightStyle);
+      layer.bringToFront();
+
+      if (shouldZoom) {
+        map.flyToBounds(layer.getBounds(), {
+          padding: [20, 20],
+          duration: 0.6,
+          maxZoom: 12
+        });
+      }
+
+      if (shouldOpenPopup) {
+        const center = layer.getBounds().getCenter();
+        layer.bindPopup("<b>" + communityName + "</b>");
+        layer.openPopup(center);
+      }
+    } else {
+      layer.setStyle(defaultStyle);
+    }
+  });
+
+  if (shouldRenderGraphs) {
+    renderGraphs(selectedArea);
+  }
+}
+
+  fetch("{% static 'dashboard/layers/ChicagoCommunityAreas.geojson' %}")
+    .then(response => response.json())
+    .then(data => {
+        CommunityAreasLayer = L.geoJSON(data, {
+            style: defaultStyle,
+            onEachFeature: function(feature, layer) {
+              //create dropdown option for each feature
+              var option = document.createElement('option');
+              option.value = feature.properties.community;
+              option.textContent = feature.properties.community;
+              option.idNumber = feature.properties.area_num_1;
+              dropdownCommunity.appendChild(option);
+              
+              // add pop-up with name for community in bold
+              layer.bindPopup("<b>" + feature.properties.community + "</b>")
+              
+              layer.on('click', function(e) {
+                selectCommunityArea(feature.properties.community, {
+                  zoom: true,
+                  popup: true,
+                  renderGraphs: true
+                });
+              });
+
+                
+              
+            //highlight on hover
+              layer.on({
+                mouseover: function(e) {
+                  e.target.setStyle(highlightStyle);
+                  e.target.bringToFront();
+                },
+
+                mouseout: function(e) {
+                  const communityName = e.target.feature.properties.community;
+
+                  if (communityName === selectedCommunity) {
+                    e.target.setStyle(highlightStyle);
+                    e.target.bringToFront();
+                  } else {
+                    e.target.setStyle(defaultStyle);
+                  }
+                }
+              });
+      }}).addTo(map)
+        
+
+      //choose name from dropdown and zoom in on map
+      dropdownCommunity.addEventListener('change', function(e) {
+        selectCommunityArea(e.target.value, {
+          zoom: true,
+          popup: true,
+          renderGraphs: true
+        });
+      });
+    })
+
+
+  // ── GO BUTTON: zoom, highlight, and render graphs (outside fetch callback) ──
+  var goBtn = document.getElementById('community-go-btn');
+  goBtn.addEventListener('click', function() {
+    var selectedArea = dropdownCommunity.value;
+    selectedCommunity = selectedArea;
+    if (!selectedArea) {
+      console.warn('No community selected');
+      return;
+    }
+    if (!CommunityAreasLayer) {
+      console.warn('Community layer not loaded yet');
+      return;
+    }
+
+    console.log('Go button clicked for:', selectedArea);
+
+    // Highlight selected community and render graphs
+    selectCommunityArea(selectedArea, {
+      zoom: true,
+      popup: true,
+      renderGraphs: true
+    });
+  });
+
+
+// ── GRAPH RENDERING ────────────────────────────────────────────────────────────────────────
+let rankingsData = null; // cached rankings data
+
+function getActivePercentileMetric() {
+  return document.querySelector('input[name="percentile-metric"]:checked').value;
+}
+
+// Fetch rankings data from API
+fetch('/api/community-rankings/')
+  .then(response => response.json())
+  .then(data => {
+    rankingsData = data.rankings;
+  })
+  .catch(err => console.error('Failed to load community rankings:', err));
+
+// Listen for toggle changes to re-render all graphs based on selected source
+document.querySelectorAll('input[name="percentile-metric"]').forEach(radio => {
+  radio.addEventListener('change', function() {
+    var selectedArea = dropdownCommunity.value;
+    selectedCommunity = selectedArea;
+    if (selectedArea) {
+      // Update dynamic titles
+      updateGraphTitles();
+      if (rankingsData) {
+        drawGraphs(selectedArea);
+      }
+    }
+  });
+});
+
+function updateGraphTitles() {
+  const source = getActivePercentileMetric();
+  const groundTitle = document.getElementById('graph-ground-title');
+  const tempoTitle = document.getElementById('graph-tempo-title');
+  if (source === 'ground') {
+    if (groundTitle) groundTitle.textContent = 'Ground NO₂ by Day of Week (ppb)';
+    if (tempoTitle) tempoTitle.textContent = 'Ground NO₂ Distribution (ppb)';
+  } else {
+    if (groundTitle) groundTitle.textContent = 'TEMPO NO₂ by Day of Week (molecules/cm²)';
+    if (tempoTitle) tempoTitle.textContent = 'TEMPO NO₂ Distribution (molecules/cm²)';
+  }
+}
+
+function renderGraphs(communityName) {
+  if (!rankingsData) {
+    // Try fetching again if not yet loaded
+    fetch('/api/community-rankings/')
+      .then(response => response.json())
+      .then(data => {
+        rankingsData = data.rankings;
+        drawGraphs(communityName);
+      })
+      .catch(err => console.error('Failed to load community rankings:', err));
+  } else {
+    drawGraphs(communityName);
+  }
+}
+
+function drawGraphs(communityName) {
+  const source = getActivePercentileMetric(); // "ground" or "tempo"
+  updateGraphTitles();
+  renderPercentileGraph(communityName);
+  renderWeekdayBoxPlot(communityName, source);
+  renderDistributionPlot(communityName, source);
+}
+
+// Percentile with Tempo and Clarity selection
+function renderPercentileGraph(communityName) {
+  const container = document.getElementById('graph-percentile');
+  // Remove old chart div if exists
+  const oldChart = container.querySelector('.plotly-chart');
+  if (oldChart) oldChart.remove();
+
+  // Hide placeholder
+  const placeholder = container.querySelector('.graph-placeholder');
+  if (placeholder) placeholder.style.display = 'none';
+
+  const chartDiv = document.createElement('div');
+  chartDiv.className = 'plotly-chart';
+  container.appendChild(chartDiv);
+
+  // Calculate available height from container (minus title + padding)
+  const availableHeight = Math.max(200, container.clientHeight - 50);
+
+  // Find the selected community data
+  const comm = rankingsData.find(r => r.community === communityName);
+  if (!comm) {
+    container.innerHTML = '<div class="graph-placeholder">Community data not found in rankings.</div>';
+    return;
+  }
+
+  const metric = getActivePercentileMetric(); // "ground" or "tempo"
+  const percentileCol = metric === 'ground' ? 'ground_percentile' : 'tempo_percentile';
+  const rankCol = metric === 'ground' ? 'ground_rank' : 'tempo_rank';
+  const no2Col = metric === 'ground' ? 'ground_no2_ppb' : 'tempo_no2_molecules_cm2';
+  const label = metric === 'ground' ? 'Ground (OpenAir)' : 'TEMPO';
+
+   const communityPercentile = comm[percentileCol];
+   const communityRank = comm[rankCol];
+
+   // Check if percentile data is available for this community
+   if (communityPercentile === null || communityPercentile === undefined) {
+     const noDataMsg = metric === 'ground'
+       ? 'No Ground (OpenAir) sensors available for this community. Percentile ranking cannot be calculated.'
+       : 'No TEMPO data available for this community. Percentile ranking cannot be calculated.';
+     container.innerHTML = `
+       <div class="graph-placeholder">
+         <strong>Percentile data unavailable</strong><br>
+         ${noDataMsg}
+       </div>`;
+     return;
+   }
+
+   // Build normal distribution (bell curve) for percentiles 0-100
+   const allPercentiles = rankingsData
+    .filter(r => r[percentileCol] !== null && r[percentileCol] !== undefined)
+    .map(r => r[percentileCol]);
+
+  // Calculate mean and std of percentiles across all communities
+  const n = allPercentiles.length;
+  const mean = allPercentiles.reduce((a, b) => a + b, 0) / n;
+  const variance = allPercentiles.reduce((a, b) => a + (b - mean) ** 2, 0) / n;
+  const std = Math.sqrt(variance);
+
+  // Generate smooth bell curve
+  const xValues = [];
+  const yValues = [];
+  for (let x = 0; x <= 100; x += 0.5) {
+    xValues.push(x);
+    // Normal PDF
+    const coeff = 1 / (std * Math.sqrt(2 * Math.PI));
+    const exponent = -0.5 * ((x - mean) / std) ** 2;
+    yValues.push(coeff * Math.exp(exponent));
+  }
+
+  const traceBell = {
+    x: xValues,
+    y: yValues,
+    fill: 'tozeroy',
+    fillcolor: 'rgba(38, 55, 102, 0.25)',
+    line: { color: 'rgba(38, 55, 102, 0.8)', width: 2 },
+    name: 'Distribution',
+    showlegend: false,
+    hoverinfo: 'skip',
+  };
+
+  const traceMarker = {
+    x: [communityPercentile],
+    y: [yValues.find(y => Math.abs(y - (1 / (std * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * ((communityPercentile - mean) / std) ** 2)) || 0)],
+    mode: 'markers',
+    marker: {
+      size: 14,
+      color: '#263766',
+      symbol: 'circle-open',
+      line: { width: 3, color: '#263766' },
+    },
+    name: communityName,
+    text: `${communityName}<br>Percentile: ${communityPercentile.toFixed(1)}`,
+    hoverinfo: 'text',
+  };
+
+  // Calculate the exact y position for the marker
+  const markerCoeff = 1 / (std * Math.sqrt(2 * Math.PI));
+  const markerExponent = -0.5 * ((communityPercentile - mean) / std) ** 2;
+  traceMarker.y = [markerCoeff * Math.exp(markerExponent)];
+
+  const layout = {
+    margin: { t: 10, r: 20, b: 40, l: 60 },
+    xaxis: {
+      title: `${label} Percentile`,
+      range: [0, 100],
+      gridcolor: 'rgba(0,0,0,0.05)',
+    },
+    yaxis: {
+      title: { text: 'Density', standoff: 10 },
+      gridcolor: 'rgba(0,0,0,0.05)',
+    },
+    hovermode: 'closest',
+    height: availableHeight,
+    showlegend: false,
+    autosize: true,
+  };
+
+  const config = { displayModeBar: false, responsive: true };
+
+  Plotly.newPlot(chartDiv, [traceBell, traceMarker], layout, config);
+  setupZoomNotification(chartDiv, 'zoom-notify-percentile');
+}
+
+// Weekday box plot for selected source (Ground or TEMPO) based on radio toggle
+// Replicates the Python seaborn boxplot: boxes for each day-of-week showing NO2 distribution
+function renderWeekdayBoxPlot(communityName, source) {
+   const container = document.getElementById('graph-ground');
+   const oldChart = container.querySelector('.plotly-chart');
+   if (oldChart) oldChart.remove();
+
+   const placeholder = container.querySelector('.graph-placeholder');
+   if (placeholder) placeholder.style.display = 'none';
+
+   // Show loading spinner
+   const loadingEl = container.querySelector('.graph-loading');
+   if (loadingEl) loadingEl.classList.add('visible');
+
+   const chartDiv = document.createElement('div');
+   chartDiv.className = 'plotly-chart';
+   container.appendChild(chartDiv);
+
+  const availableHeight = Math.max(200, container.clientHeight - 50);
+
+  const sourceKey = source === 'ground' ? 'Ground' : 'TEMPO';
+  const yLabel = source === 'ground' ? 'NO₂ (ppb)' : 'NO₂ (molecules/cm²)';
+  const sourceLabel = source === 'ground' ? 'Open Air Chicago' : 'TEMPO';
+
+  fetch(`/api/community-no2-data/?community=${encodeURIComponent(communityName)}`)
+    .then(response => response.json())
+    .then(result => {
+      if (!result.data || result.data.length === 0) {
+        if (loadingEl) loadingEl.classList.remove('visible');
+        container.innerHTML = '<div class="graph-placeholder">No data available for this community.</div>';
+        return;
+      }
+
+      const filteredData = result.data.filter(d => d.source === sourceKey && d.NO2 !== null && d.weekday !== null);
+
+      if (filteredData.length === 0) {
+        if (loadingEl) loadingEl.classList.remove('visible');
+        container.innerHTML = `<div class="graph-placeholder">${sourceLabel} NO₂ data not available.</div>`;
+        return;
+      }
+
+      const weekdayOrder = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+      // Group NO2 values by weekday
+      const byDay = {};
+      for (const day of weekdayOrder) byDay[day] = [];
+      for (const row of filteredData) {
+        if (byDay.hasOwnProperty(row.weekday)) {
+          byDay[row.weekday].push(row.NO2);
+        }
+      }
+
+      // Build box traces for each weekday
+      const traces = weekdayOrder.map(day => ({
+        type: 'box',
+        y: byDay[day],
+        name: day,
+        width: 0.65,
+
+        boxmean: false,
+        boxpoints: 'outliers',
+
+        marker: {
+          color: '#263766',
+          size: 4,
+          outliercolor: '#e74c3c'
+        },
+
+        fillcolor: 'rgba(159, 177, 222, 0.65)',
+        line: {
+          color: '#263766',
+          width: 1.8
+        },
+
+        whiskerwidth: 0.8,
+      }));
+
+      const layout = {
+        margin: { t: 10, r: 20, b: 82, l: 85 },
+        xaxis: {
+          title: 'Day of Week',
+          tickangle: -45,
+          gridcolor: 'rgba(0,0,0,0.05)',
+        },
+        yaxis: {
+          title: { text: yLabel, standoff: 15 },
+          gridcolor: 'rgba(0,0,0,0.05)',
+        },
+        height: availableHeight,
+        showlegend: false,
+        autosize: true,
+        boxmode: 'group',
+        annotations: [{
+          text: `${sourceLabel} NO₂`,
+          x: 0.5, y: 1.05, xref: 'paper', yref: 'paper',
+          showarrow: false, font: { size: 13, weight: 600 }
+        }],
+      };
+
+      const config = { displayModeBar: false, responsive: true };
+      Plotly.newPlot(chartDiv, traces, layout, config);
+      setupZoomNotification(chartDiv, 'zoom-notify-ground');
+      // Hide loading spinner after plot renders
+      if (loadingEl) loadingEl.classList.remove('visible');
+    })
+    .catch(err => {
+      console.error('Failed to load NO2 data for box plot:', err);
+      if (loadingEl) loadingEl.classList.remove('visible');
+      container.innerHTML = '<div class="graph-placeholder">Failed to load data.</div>';
+    });
+}
+
+// Distribution (KDE) plot for selected source (Ground or TEMPO) based on radio toggle
+// Replicates the Python seaborn kdeplot: density curve with IQR shading, median and mean lines
+function renderDistributionPlot(communityName, source) {
+   const container = document.getElementById('graph-tempo');
+   const oldChart = container.querySelector('.plotly-chart');
+   if (oldChart) oldChart.remove();
+
+   const placeholder = container.querySelector('.graph-placeholder');
+   if (placeholder) placeholder.style.display = 'none';
+
+   // Show loading spinner
+   const loadingEl = container.querySelector('.graph-loading');
+   if (loadingEl) loadingEl.classList.add('visible');
+
+   const chartDiv = document.createElement('div');
+   chartDiv.className = 'plotly-chart';
+   container.appendChild(chartDiv);
+
+  const availableHeight = Math.max(200, container.clientHeight - 50);
+
+  const sourceKey = source === 'ground' ? 'Ground' : 'TEMPO';
+  const useScientific = source === 'tempo';
+  const yLabel = source === 'ground' ? 'NO₂ (ppb)' : 'NO₂ (molecules/cm²)';
+  const sourceLabel = source === 'ground' ? 'Open Air Chicago' : 'TEMPO';
+
+  fetch(`/api/community-no2-data/?community=${encodeURIComponent(communityName)}`)
+    .then(response => response.json())
+    .then(result => {
+      if (!result.data || result.data.length === 0) {
+        if (loadingEl) loadingEl.classList.remove('visible');
+        container.innerHTML = '<div class="graph-placeholder">No data available for this community.</div>';
+        return;
+      }
+
+      const filteredData = result.data.filter(d => d.source === sourceKey && d.NO2 !== null);
+
+      if (filteredData.length === 0) {
+        if (loadingEl) loadingEl.classList.remove('visible');
+        container.innerHTML = `<div class="graph-placeholder">${sourceLabel} NO₂ data not available.</div>`;
+        return;
+      }
+
+      const values = filteredData.map(d => d.NO2).sort((a, b) => a - b);
+      const n = values.length;
+      const mean = values.reduce((s, v) => s + v, 0) / n;
+      const median = n % 2 === 0 ? (values[n / 2 - 1] + values[n / 2]) / 2 : values[Math.floor(n / 2)];
+      const q1 = values[Math.floor(n * 0.25)];
+      const q3 = values[Math.floor(n * 0.75)];
+      const std = Math.sqrt(values.reduce((s, v) => s + (v - mean) ** 2, 0) / n);
+      const bandwidth = 1.06 * std * Math.pow(n, -0.2);
+
+      const minVal = values[0];
+      const maxVal = values[n - 1];
+      const range = maxVal - minVal || 1;
+      const xPoints = 200;
+      const xValues = [];
+      const yValues = [];
+      for (let i = 0; i < xPoints; i++) {
+        xValues.push(minVal - range * 0.1 + (range * 1.2) * i / (xPoints - 1));
+      }
+
+      for (const x of xValues) {
+        let density = 0;
+        for (const v of values) {
+          const z = (x - v) / bandwidth;
+          density += Math.exp(-0.5 * z * z);
+        }
+        density /= n * bandwidth * Math.sqrt(2 * Math.PI);
+        yValues.push(density);
+      }
+
+      const maxDensity = Math.max(...yValues);
+      const fmt = useScientific ? (v => v.toExponential(2)) : (v => v.toFixed(2));
+
+      const traceKDE = {
+        type: 'scatter', mode: 'lines',
+        x: xValues, y: yValues, fill: 'tozeroy',
+        fillcolor: 'rgba(38, 55, 102, 0.35)',
+        line: { color: '#263766', width: 2 },
+        hoverinfo: 'x',
+      };
+
+      const traceIQR = {
+        type: 'scatter', mode: 'none',
+        x: [q1, q3, q3, q1],
+        y: [0, 0, maxDensity, maxDensity],
+        fill: 'toself', fillcolor: 'rgba(0, 128, 0, 0.15)',
+        name: `IQR (${fmt(q1)} - ${fmt(q3)})`,
+        hoverinfo: 'name', showlegend: true,
+      };
+
+      const traceMedian = {
+        type: 'scatter', mode: 'lines',
+        x: [median, median], y: [0, maxDensity],
+        line: { color: 'black', width: 2 },
+        name: `Median = ${fmt(median)}`,
+        hoverinfo: 'name', showlegend: true,
+      };
+
+      const traceMean = {
+        type: 'scatter', mode: 'lines',
+        x: [mean, mean], y: [0, maxDensity],
+        line: { color: 'navy', width: 2, dash: 'dash' },
+        name: `Mean = ${fmt(mean)}`,
+        hoverinfo: 'name', showlegend: true,
+      };
+
+      const layout = {
+        margin: { t: 25, r: 20, b: 80, l: 85 },
+        xaxis: {
+          title: { text: yLabel, standoff: 15 },
+          tickformat: useScientific ? '.1e' : undefined,
+          gridcolor: 'rgba(0,0,0,0.05)',
+        },
+        yaxis: {
+          title: { text: 'Density', standoff: 15 },
+          gridcolor: 'rgba(0,0,0,0.05)',
+        },
+        height: availableHeight,
+        showlegend: true,
+        legend: { x: 1, y: 1, xanchor: 'right', yanchor: 'top', font: { size: 10 }, bgcolor: 'rgba(255,255,255,0.8)' },
+        autosize: true,
+        hovermode: 'x unified',
+        hoverlabel: {
+          namelength: -1
+        },
+        annotations: [{
+          text: `${sourceLabel} NO₂`,
+          x: 0.5, y: 1.05, xref: 'paper', yref: 'paper',
+          showarrow: false, font: { size: 13, weight: 600 }
+        }],
+      };
+
+       const config = { displayModeBar: false, responsive: true };
+       Plotly.newPlot(chartDiv, [traceKDE, traceIQR, traceMedian, traceMean], layout, config);
+       setupZoomNotification(chartDiv, 'zoom-notify-tempo');
+       // Hide loading spinner after plot renders
+       if (loadingEl) loadingEl.classList.remove('visible');
+     })
+     .catch(err => {
+       console.error('Failed to load NO2 data for distribution plot:', err);
+       if (loadingEl) loadingEl.classList.remove('visible');
+       container.innerHTML = '<div class="graph-placeholder">Failed to load data.</div>';
+     });
+}
+
+// ── ZOOM NOTIFICATION ──────────────────────────────────────────────────────────────────────
+// Listen for Plotly relayout events (zoom, pan, reset) and show/hide notification
+function setupZoomNotification(chartDiv, notificationId) {
+  const notification = document.getElementById(notificationId);
+  if (!notification) return;
+
+  chartDiv.on('plotly_relayout', function(eventData) {
+    // Check if zoom or reset occurred
+    if (eventData['xaxis.range[0]'] !== undefined || eventData['yaxis.range[0]'] !== undefined) {
+      // User zoomed or panned — show notification
+      notification.classList.add('visible');
+    }
+    if (eventData['xaxis.autorange'] === true || eventData['yaxis.autorange'] === true) {
+      // User reset (double-click) — hide notification
+      notification.classList.remove('visible');
+    }
+  });
+}
+
+fetch("{% static 'dashboard/layers/oacd.geojson' %}") //load sensors
+.then(response => response.json())
+.then(data => {
+  var circleOptions = {
+    radius: 1,
+    fillColor: "#263766",
+    opacity: 1,
+    color: "#263766",
+    weight: 2,
+  };
+
+    var Sensors = L.geoJSON(data, {
+        pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng, circleOptions);
+      },
+    }).addTo(map);
+  })
+
+// ── PDF EXPORT ─────────────────────────────────────────────────────────────────────────────
+// Captures the entire community page content (hero + layout) as a PDF using html2canvas + jsPDF
+function exportCommunityAsPDF() {
+  const btn = document.getElementById('export-pdf-btn');
+  btn.disabled = true;
+  btn.textContent = 'Generating PDF...';
+  // The element to capture: everything under the navbar
+  const element = document.querySelector('.hero');
+  // We need to capture hero + community-layout together
+  const tempWrapper = document.createElement('div');
+  // Insert temp wrapper before hero
+  element.parentNode.insertBefore(tempWrapper, element);
+  // Move hero and community-layout into the wrapper
+  tempWrapper.appendChild(element);
+  tempWrapper.appendChild(document.querySelector('.community-layout'));
+  const captureEl = tempWrapper;
+  // Temporarily hide the export header from the screenshot
+  const exportHeaders = document.querySelectorAll('.community-export-header');
+  exportHeaders.forEach(h => h.style.visibility = 'hidden');
+  // Wait for Plotly charts to be ready
+  setTimeout(() => {
+    html2canvas(captureEl, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      scrollY: -window.scrollY,
+      windowHeight: captureEl.scrollHeight,
+    }).then(canvas => {
+      // Restore visibility
+      exportHeaders.forEach(h => h.style.visibility = '');
+      // Restore DOM structure
+      tempWrapper.parentNode.insertBefore(element, tempWrapper);
+      tempWrapper.parentNode.insertBefore(document.querySelector('.community-layout'), tempWrapper);
+      tempWrapper.remove();
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageHeight = 297; // A4 height in mm
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      const community = dropdownCommunity.value || 'Community';
+      pdf.save(`${community}_Statistical_Analysis.pdf`);
+      btn.disabled = false;
+      btn.textContent = 'Export as PDF';
+    }).catch(err => {
+      console.error('PDF export failed:', err);
+      exportHeaders.forEach(h => h.style.visibility = '');
+      // Restore DOM even on error
+      if (tempWrapper.parentNode) {
+        tempWrapper.parentNode.insertBefore(element, tempWrapper);
+        const layout = document.querySelector('.community-layout');
+        if (layout && layout.parentNode !== tempWrapper) {
+          tempWrapper.parentNode.insertBefore(layout, tempWrapper);
+        }
+        tempWrapper.remove();
+      }
+      btn.disabled = false;
+      btn.textContent = 'Export as PDF';
+      alert('Failed to generate PDF. Please try again.');
+    });
+  }, 300);
+}
+
+</script>
+
 {% endblock %}

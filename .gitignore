@@ -1,0 +1,5 @@
+dashboard/data/
+.venvv/
+.vscode/
+activity_log.json
+dashboard/__pycache__/
