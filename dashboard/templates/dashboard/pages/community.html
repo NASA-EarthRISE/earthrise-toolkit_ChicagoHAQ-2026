@@ -497,12 +497,20 @@
   <div class="community-right">
     <!-- Percentile toggle -->
     <div class="percentile-toggle">
-      <span style="font-weight:600; font-size:0.9rem;">Percentile Metric:</span>
-      <label>
-        <input type="radio" name="percentile-metric" value="ground" checked /> Ground (OpenAir)
+      <span style="font-weight:600; font-size:0.9rem;">Data Source:</span>
+          <label>
+        <input type="radio" name="percentile-metric" value="ground" checked />
+        Ground (Open Air Chicago)
       </label>
+
       <label>
-        <input type="radio" name="percentile-metric" value="tempo" /> TEMPO
+        <input type="radio" name="percentile-metric" value="tempo" />
+        TEMPO
+      </label>
+
+      <label>
+        <input type="radio" name="percentile-metric" value="fused" />
+        Fused
       </label>
     </div>
 
@@ -958,14 +966,29 @@ document.querySelectorAll('input[name="percentile-metric"]').forEach(radio => {
 
 function updateGraphTitles() {
   const source = getActivePercentileMetric();
+
   const groundTitle = document.getElementById('graph-ground-title');
   const tempoTitle = document.getElementById('graph-tempo-title');
+
   if (source === 'ground') {
-    if (groundTitle) groundTitle.textContent = 'Ground NO₂ by Day of Week (ppb)';
-    if (tempoTitle) tempoTitle.textContent = 'Ground NO₂ Distribution (ppb)';
-  } else {
-    if (groundTitle) groundTitle.textContent = 'TEMPO NO₂ by Day of Week (molecules/cm²)';
-    if (tempoTitle) tempoTitle.textContent = 'TEMPO NO₂ Distribution (molecules/cm²)';
+    groundTitle.textContent =
+      'Ground NO₂ by Day of Week (ppb)';
+    tempoTitle.textContent =
+      'Ground NO₂ Distribution (ppb)';
+  }
+
+  else if (source === 'tempo') {
+    groundTitle.textContent =
+      'TEMPO NO₂ by Day of Week (molecules/cm²)';
+    tempoTitle.textContent =
+      'TEMPO NO₂ Distribution (molecules/cm²)';
+  }
+
+  else if (source === 'fused') {
+    groundTitle.textContent =
+      'Fused NO₂ by Day of Week (ppb)';
+    tempoTitle.textContent =
+      'Fused NO₂ Distribution (ppb)';
   }
 }
 
@@ -1018,10 +1041,33 @@ function renderPercentileGraph(communityName) {
   }
 
   const metric = getActivePercentileMetric(); // "ground" or "tempo"
-  const percentileCol = metric === 'ground' ? 'ground_percentile' : 'tempo_percentile';
-  const rankCol = metric === 'ground' ? 'ground_rank' : 'tempo_rank';
-  const no2Col = metric === 'ground' ? 'ground_no2_ppb' : 'tempo_no2_molecules_cm2';
-  const label = metric === 'ground' ? 'Ground (OpenAir)' : 'TEMPO';
+  const percentileCol =
+  metric === 'ground'
+    ? 'ground_percentile'
+    : metric === 'tempo'
+      ? 'tempo_percentile'
+      : 'fused_percentile';
+
+const rankCol =
+  metric === 'ground'
+    ? 'ground_rank'
+    : metric === 'tempo'
+      ? 'tempo_rank'
+      : 'fused_rank';
+
+const no2Col =
+  metric === 'ground'
+    ? 'ground_no2_ppb'
+    : metric === 'tempo'
+      ? 'tempo_no2_molecules_cm2'
+      : 'fused_no2_ppb';
+
+const label =
+  metric === 'ground'
+    ? 'Ground (OpenAir)'
+    : metric === 'tempo'
+      ? 'TEMPO'
+      : 'Fused';
 
    const communityPercentile = comm[percentileCol];
    const communityRank = comm[rankCol];
@@ -1135,9 +1181,24 @@ function renderWeekdayBoxPlot(communityName, source) {
 
   const availableHeight = Math.max(200, container.clientHeight - 50);
 
-  const sourceKey = source === 'ground' ? 'Ground' : 'TEMPO';
-  const yLabel = source === 'ground' ? 'NO₂ (ppb)' : 'NO₂ (molecules/cm²)';
-  const sourceLabel = source === 'ground' ? 'Open Air Chicago' : 'TEMPO';
+  const sourceKey =
+  source === 'ground'
+    ? 'Ground'
+    : source === 'tempo'
+      ? 'TEMPO'
+      : 'Fused';
+
+const yLabel =
+  source === 'tempo'
+    ? 'NO₂ (molecules/cm²)'
+    : 'NO₂ (ppb)';
+
+const sourceLabel =
+  source === 'ground'
+    ? 'Open Air Chicago'
+    : source === 'tempo'
+      ? 'TEMPO'
+      : 'Fused';
 
   fetch(`/api/community-no2-data/?community=${encodeURIComponent(communityName)}`)
     .then(response => response.json())
@@ -1247,10 +1308,26 @@ function renderDistributionPlot(communityName, source) {
 
   const availableHeight = Math.max(200, container.clientHeight - 50);
 
-  const sourceKey = source === 'ground' ? 'Ground' : 'TEMPO';
-  const useScientific = source === 'tempo';
-  const yLabel = source === 'ground' ? 'NO₂ (ppb)' : 'NO₂ (molecules/cm²)';
-  const sourceLabel = source === 'ground' ? 'Open Air Chicago' : 'TEMPO';
+  const sourceKey =
+  source === 'ground'
+    ? 'Ground'
+    : source === 'tempo'
+      ? 'TEMPO'
+      : 'Fused';
+
+const useScientific = source === 'tempo';
+
+const yLabel =
+  source === 'tempo'
+    ? 'NO₂ (molecules/cm²)'
+    : 'NO₂ (ppb)';
+
+const sourceLabel =
+  source === 'ground'
+    ? 'Open Air Chicago'
+    : source === 'tempo'
+      ? 'TEMPO'
+      : 'Fused';
 
   fetch(`/api/community-no2-data/?community=${encodeURIComponent(communityName)}`)
     .then(response => response.json())
