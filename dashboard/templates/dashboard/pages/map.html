@@ -13,6 +13,10 @@
 
   <style>
 
+    :root {
+        --nav-height: 56px;
+        --map-export-height: 38px;
+    }
     /* Background image for page */
     main.content {
     background-image: url({% static 'dashboard/images/map.png' %});
@@ -403,7 +407,7 @@
     .sidebar-content-wrapper {
         overflow-y: auto !important;
         overflow-x: hidden !important;
-        max-height: calc(100vh - var(--nav-height, 56px) - 80px) !important;
+        max-height: calc(100vh - var(--nav-height, 56px) - var(--map-export-height, 38px)) !important;
         transition: opacity 0.2s ease, max-height 0.3s ease !important;
         padding: 1.25rem !important;
         overscroll-behavior: contain;
@@ -482,7 +486,8 @@
     .map-layout {
         display: flex !important;
         flex: 1 !important;
-        min-height: calc(100vh - var(--nav-height, 56px)) !important;
+        height: calc(100vh - var(--nav-height, 56px) - var(--map-export-height, 38px)) !important;
+        min-height: 0 !important;
         position: relative !important;
         overflow: hidden !important;
     }
@@ -491,9 +496,64 @@
     .map-layout .map-container {
         flex: 1 !important;
         min-width: 0 !important;
+        min-height: 0 !important;
+        height: 100% !important;
         display: flex !important;
         flex-direction: column !important;
+        position: relative !important;
+        overflow: hidden !important;
     }
+
+    .map-no-data-notice {
+    position: absolute;
+    top: 62px;
+    right: 12px;
+    z-index: 1600;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #d6d6d6;
+    border-left: 4px solid #d88c00;
+    border-radius: 6px;
+    padding: 8px 12px;
+    max-width: 280px;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 0.82rem;
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    display: none;
+    pointer-events: none;
+}
+
+.map-no-data-notice.visible {
+        display: block;
+    }
+
+    .map-no-data-notice strong {
+        display: block;
+        color: #7a4b00;
+        font-size: 0.82rem;
+        margin-bottom: 2px;
+    }
+
+    .map-no-data-notice span {
+        display: block;
+        font-size: 0.78rem;
+        color: #555;
+        line-height: 1.25;
+    }
+
+    #map {
+        flex: 1 1 auto !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+    }
+
+    .map-export-header {
+    height: var(--map-export-height, 38px);
+    box-sizing: border-box;
+    padding: 4px 0;
+    margin: 0;
+}
   </style>
 
 {% endblock %}
@@ -613,6 +673,12 @@
         </div>
       </div>
 
+    </div>
+
+    <!-- Small non-blocking no-data notice -->
+    <div class="map-no-data-notice" id="map-no-data-notice">
+    <strong>No data available</strong>
+    <span id="map-no-data-text"></span>
     </div>
 
     <!-- Centered loading spinner overlay -->
@@ -790,6 +856,9 @@ function canRenderTempo(label) {
 }
 
 function clearDataLayers() {
+    hideNoDataNotice();
+    hideLoading();
+
     if (currentLayer) {
         map.removeLayer(currentLayer);
         currentLayer = null;
@@ -1388,21 +1457,55 @@ function toDailyKey(value) {
       return d.toISOString().split("T")[0];
   }
 
-  function showLoading(message) {
+function showLoading(message) {
+    hideNoDataNotice();
+
     const overlay = document.getElementById("map-loading-overlay");
     const textEl = document.getElementById("map-loading-text");
+
     if (overlay) {
         if (textEl && message) {
             textEl.textContent = message;
         }
+
         overlay.classList.add("visible");
     }
 }
+
+
 
 function hideLoading() {
     const overlay = document.getElementById("map-loading-overlay");
     if (overlay) {
         overlay.classList.remove("visible");
+    }
+}
+function showNoDataNotice(title, detailText) {
+    const notice = document.getElementById("map-no-data-notice");
+    const textEl = document.getElementById("map-no-data-text");
+
+    if (!notice) {
+        return;
+    }
+
+    const strongEl = notice.querySelector("strong");
+
+    if (strongEl) {
+        strongEl.textContent = title || "No data available";
+    }
+
+    if (textEl) {
+        textEl.textContent = detailText || "";
+    }
+
+    notice.classList.add("visible");
+}
+
+function hideNoDataNotice() {
+    const notice = document.getElementById("map-no-data-notice");
+
+    if (notice) {
+        notice.classList.remove("visible");
     }
 }
 
@@ -1951,6 +2054,10 @@ function getFusionChicagoDateHour(properties) {
 }
 
 function showFusionNoDataMessage(date, detailText) {
+    // Stop the spinner first.
+    hideLoading();
+
+    // Clear the previous Fusion layer only when the selected date/time has no data.
     if (currentLayer) {
         map.removeLayer(currentLayer);
         currentLayer = null;
@@ -1966,10 +2073,20 @@ function showFusionNoDataMessage(date, detailText) {
             ? formatMonthForDisplay(date)
             : utcDateToCentralPretty(date);
 
-    showLoading(`
-        No Fusion Data Available<br>
-        ${label}${detailText ? "<br>" + detailText : ""}
-    `);
+    const detailParts = [];
+
+    if (label) {
+        detailParts.push(label);
+    }
+
+    if (detailText) {
+        detailParts.push(detailText);
+    }
+
+    showNoDataNotice(
+        "No Fusion Data Available",
+        detailParts.join(" • ")
+    );
 }
 
 function renderFusionFeatures(features, labelText) {
@@ -2058,7 +2175,10 @@ function renderFusionFeatures(features, labelText) {
     currentLayer.addTo(map);
 
     hideLoading();
+    hideNoDataNotice();
+
     return true;
+
 }
 
 
