@@ -111,7 +111,7 @@
   flex: 0 0 auto;
 }
 
-  /* Right column: graphs */
+  /* right column: graphs */
   .community-right {
     flex: 2;
     display: flex;
@@ -120,7 +120,14 @@
     gap: 1rem;
   }
 
-  /* Dropdown styling */
+  /*container to hold dropdown and go in same row*/
+  .dropdown-go {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+  }
+
+  /* dropdown styling */
   #community-dropdown {
     overflow: auto;
     width: 100%;
@@ -131,7 +138,7 @@
     background: var(--bg-card);
   }
 
-  /* Go button styling */
+  /* go button styling */
   #community-go-btn {
     padding: 0.5rem 1.2rem;
     font-size: 1rem;
@@ -457,11 +464,14 @@
 
   <!-- LEFT COLUMN: Dropdown + Map preview + Help -->
   <div class="community-left">
-    <!-- Dropdown element -->
-    <select id="community-dropdown">
-      <option value="">Select a Community Area...</option>
-    </select>
-    <button id="community-go-btn" type="button">Go</button>
+    <div class="dropdown-go">
+      <!-- dropdown element-->
+       <select id="community-dropdown">
+        <option value="">Select a Community Area...</option>
+       </select>
+       <button id="community-go-btn" type="button">Go</button>
+    </div>
+
 
     <div class="community-map-container">
       <div id="community-map"></div>
@@ -727,7 +737,25 @@ initManualStickyCommunityPanel();
     maxZoom: 15
   }).addTo(map);
 
-  // ── CHICAGO BORDERS & COMMUNITIES, SENSORS LAYERS ───────────────────────────────────────────────────────────────
+  // ── SENSORS, CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
+  fetch("{% static 'dashboard/layers/oacd.geojson' %}") //load sensors
+  .then(response => response.json())
+  .then(data => {
+    var sensorMarker = L.divIcon({
+      className: 'custom-point-marker', 
+      html: '<div style="font-size: 15px; color: #624786;">◉</div>',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
+    });
+
+      var Sensors = L.geoJSON(data, {
+         pointToLayer: function (feature, latlng) {
+          return L.marker(latlng, {icon: sensorMarker});
+        }
+        }).addTo(map);
+    })
+
+
   let ChicagoBounds = null;
 
 fetch("{% static 'dashboard/layers/Chicago.geojson' %}") // load Chicago boundary
