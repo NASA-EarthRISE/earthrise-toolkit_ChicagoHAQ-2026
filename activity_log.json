@@ -1,5 +1,17 @@
 [
   {
+    "type": "server_start",
+    "title": "Dashboard server started",
+    "details": "",
+    "timestamp": "2026-07-21 14:35:00"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-21 14:34:22"
+  },
+  {
     "type": "community_analysis",
     "title": "User opened community analysis tool",
     "details": "",
@@ -286,17 +298,5 @@
     "title": "Dashboard home page refreshed",
     "details": "",
     "timestamp": "2026-07-20 13:41:01"
-  },
-  {
-    "type": "server_start",
-    "title": "Dashboard server started",
-    "details": "",
-    "timestamp": "2026-07-20 13:40:52"
-  },
-  {
-    "type": "map_view",
-    "title": "User viewed hourly map",
-    "details": "",
-    "timestamp": "2026-07-16 13:27:45"
   }
 ]
