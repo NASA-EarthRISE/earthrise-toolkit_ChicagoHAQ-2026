@@ -122,7 +122,6 @@
 
   /*container to hold dropdown and go in same row*/
   .dropdown-go {
-    flex: 1;
     display: flex;
     flex-direction: row;
   }
@@ -136,6 +135,7 @@
     border: 1px solid var(--border);
     border-radius: 5px;
     background: var(--bg-card);
+    flex: 5;
   }
 
   /* go button styling */
@@ -150,6 +150,7 @@
     cursor: pointer;
     white-space: nowrap;
     transition: opacity 0.2s;
+    flex: 1;
   }
 
   #community-go-btn:hover {
@@ -774,9 +775,9 @@ fetch("{% static 'dashboard/layers/Chicago.geojson' %}") // load Chicago boundar
       }
     }).addTo(map);
 
-    if (ChicagoBounds && ChicagoBounds.getBounds().isValid()) {
-      map.fitBounds(ChicagoBounds.getBounds());
-    }
+ //   if (ChicagoBounds && ChicagoBounds.getBounds().isValid()) {
+  //    map.fitBounds(ChicagoBounds.getBounds());
+ //   }
   })
   .catch(err => {
     console.error("Chicago boundary load failed:", err);
@@ -799,6 +800,7 @@ fetch("{% static 'dashboard/layers/Chicago.geojson' %}") // load Chicago boundar
 
   const shouldZoom = options.zoom !== false;
   const shouldOpenPopup = options.popup !== false;
+  const shouldRenderGraphs = options.renderGraphs === true;
 
   selectedCommunity = selectedArea;
   dropdownCommunity.value = selectedArea;
@@ -811,7 +813,11 @@ fetch("{% static 'dashboard/layers/Chicago.geojson' %}") // load Chicago boundar
       layer.bringToFront();
 
       if (shouldZoom) {
-        map.fitBounds(layer.getBounds(), { padding: [15, 15] });
+        map.flyToBounds(layer.getBounds(), {
+          padding: [20, 20],
+          duration: 0.6,
+          maxZoom: 12
+        });
       }
 
       if (shouldOpenPopup) {
@@ -823,7 +829,12 @@ fetch("{% static 'dashboard/layers/Chicago.geojson' %}") // load Chicago boundar
       layer.setStyle(defaultStyle);
     }
   });
+
+  if (shouldRenderGraphs) {
+    renderGraphs(selectedArea);
+  }
 }
+
   fetch("{% static 'dashboard/layers/ChicagoCommunityAreas.geojson' %}")
     .then(response => response.json())
     .then(data => {
@@ -843,7 +854,8 @@ fetch("{% static 'dashboard/layers/Chicago.geojson' %}") // load Chicago boundar
               layer.on('click', function(e) {
                 selectCommunityArea(feature.properties.community, {
                   zoom: true,
-                  popup: true
+                  popup: true,
+                  renderGraphs: true
                 });
               });
 
@@ -874,7 +886,8 @@ fetch("{% static 'dashboard/layers/Chicago.geojson' %}") // load Chicago boundar
       dropdownCommunity.addEventListener('change', function(e) {
         selectCommunityArea(e.target.value, {
           zoom: true,
-          popup: true
+          popup: true,
+          renderGraphs: true
         });
       });
     })
@@ -896,14 +909,12 @@ fetch("{% static 'dashboard/layers/Chicago.geojson' %}") // load Chicago boundar
 
     console.log('Go button clicked for:', selectedArea);
 
-    // Highlight the selected community on the map
+    // Highlight selected community and render graphs
     selectCommunityArea(selectedArea, {
       zoom: true,
-      popup: true
+      popup: true,
+      renderGraphs: true
     });
-
-    // Render the three graphs
-    renderGraphs(selectedArea);
   });
 
 
@@ -1331,6 +1342,9 @@ function renderDistributionPlot(communityName, source) {
         legend: { x: 1, y: 1, xanchor: 'right', yanchor: 'top', font: { size: 10 }, bgcolor: 'rgba(255,255,255,0.8)' },
         autosize: true,
         hovermode: 'x unified',
+        hoverlabel: {
+          namelength: -1
+        },
         annotations: [{
           text: `${sourceLabel} NO₂`,
           x: 0.5, y: 1.05, xref: 'paper', yref: 'paper',
@@ -1461,6 +1475,7 @@ function exportCommunityAsPDF() {
     });
   }, 300);
 }
+
 </script>
 
 {% endblock %}
