@@ -897,7 +897,18 @@ fetch("{% static 'dashboard/layers/Chicago.geojson' %}") // load Chicago boundar
               });
       }}).addTo(map)
         
+      // Sort dropdown alphabetically
+      const options = Array.from(dropdownCommunity.options).slice(1); // skip placeholder
 
+      options.sort((a, b) =>
+        a.text.localeCompare(b.text)
+      );
+
+      // Remove existing community options
+      dropdownCommunity.length = 1;
+
+      // Re-add in sorted order
+      options.forEach(option => dropdownCommunity.add(option));
       //choose name from dropdown and zoom in on map
       dropdownCommunity.addEventListener('change', function(e) {
         selectCommunityArea(e.target.value, {
