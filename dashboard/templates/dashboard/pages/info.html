@@ -6,9 +6,14 @@
 {% block content %}
 <style>
 
+    /* Smooth scrolling for anchor links */
+    html {
+        scroll-behavior: smooth;
+    }
+
     /* Background image for about page */
     main.content {
-        background-image: url({% static 'dashboard/images/aboutpage.png' %});
+    background-image: url("{% static 'dashboard/images/esdlogo_white.png' %}");
         background-repeat: no-repeat;
         background-size: cover;
         background-position: right center;

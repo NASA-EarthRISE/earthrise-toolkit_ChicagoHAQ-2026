@@ -76,7 +76,7 @@ function renderFileList(files) {
 
   files.forEach((file, index) => {
     const tr = document.createElement('tr');
-    const extClass = file.ext === 'geojson' ? 'geojson' : 'json';
+    const extClass = file.ext === 'geojson' ? 'geojson' : (file.ext === 'csv' ? 'csv' : 'json');
 
     tr.innerHTML = `
       <td><input type="checkbox" class="file-checkbox" data-index="${index}" data-filename="${file.filename}" onchange="updateSelectionCount()" /></td>
