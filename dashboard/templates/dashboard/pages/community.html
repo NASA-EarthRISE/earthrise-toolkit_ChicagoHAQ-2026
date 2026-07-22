@@ -116,7 +116,6 @@
 }
 
 #community-dropdown,
-#community-go-btn,
 .help-container {
   flex: 0 0 auto;
 }
@@ -145,26 +144,7 @@
     border: 1px solid var(--border);
     border-radius: 5px;
     background: var(--bg-card);
-    flex: 5;
-  }
-
-  /* go button styling */
-  #community-go-btn {
-    padding: 0.5rem 1.2rem;
-    font-size: 1rem;
-    font-weight: 600;
-    border: 1px solid var(--primary);
-    border-radius: 5px;
-    background: var(--primary);
-    color: #fff;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: opacity 0.2s;
     flex: 1;
-  }
-
-  #community-go-btn:hover {
-    opacity: 0.85;
   }
 
   /* Map container for community */
@@ -589,11 +569,9 @@
   <!-- LEFT COLUMN: Dropdown + Map preview + Help -->
   <div class="community-left">
     <div class="dropdown-go">
-      <!-- dropdown element-->
-       <select id="community-dropdown">
+      <select id="community-dropdown">
         <option value="">Select a Community Area...</option>
-       </select>
-       <button id="community-go-btn" type="button">Go</button>
+      </select>
     </div>
 
 
@@ -643,7 +621,7 @@
       <div class="plotly-zoom-notification" id="zoom-notify-percentile">
         <strong>Double-click to reset view.</strong>
       </div>
-      <div class="graph-placeholder">Select a community and press "Go" to view graphs.</div>
+      <div class="graph-placeholder">Select a community to view graphs.</div>
     </div>
 
     <!-- Graph 2: NO2 Weekday Box Plot (toggled by radio) -->
@@ -656,7 +634,7 @@
         <div class="spinner"></div>
         <div class="loading-text">Loading box plot...</div>
       </div>
-      <div class="graph-placeholder">Select a community and press "Go" to view graphs.</div>
+      <div class="graph-placeholder">Select a community to view graphs.</div>
     </div>
 
     <!-- Graph 3: NO2 Distribution Plot (toggled by radio) -->
@@ -669,7 +647,7 @@
         <div class="spinner"></div>
         <div class="loading-text">Loading distribution plot...</div>
       </div>
-      <div class="graph-placeholder">Select a community and press "Go" to view graphs.</div>
+      <div class="graph-placeholder">Select a community to view graphs.</div>
     </div>
   </div>
 
@@ -737,7 +715,7 @@ function initManualStickyCommunityPanel() {
   }
 
   const gap = 16;
-  const searchBarOffset = 56; // dropdown height + gap between dropdown and Go button
+  const searchBarOffset = 0; // dropdown height + gap between dropdown and Go button
   const headerBottom = getHeaderBottom();
 
   const layoutRect = layout.getBoundingClientRect();
@@ -1116,31 +1094,6 @@ fetch("{% static 'dashboard/layers/Chicago.geojson' %}") // load Chicago boundar
         });
       });
     })
-
-
-  // ── GO BUTTON: zoom, highlight, and render graphs (outside fetch callback) ──
-  var goBtn = document.getElementById('community-go-btn');
-  goBtn.addEventListener('click', function() {
-    var selectedArea = dropdownCommunity.value;
-    selectedCommunity = selectedArea;
-    if (!selectedArea) {
-      console.warn('No community selected');
-      return;
-    }
-    if (!CommunityAreasLayer) {
-      console.warn('Community layer not loaded yet');
-      return;
-    }
-
-    console.log('Go button clicked for:', selectedArea);
-
-    // Highlight selected community and render graphs
-    selectCommunityArea(selectedArea, {
-      zoom: true,
-      popup: true,
-      renderGraphs: true
-    });
-  });
 
 
 // ── GRAPH RENDERING ────────────────────────────────────────────────────────────────────────

@@ -117,9 +117,10 @@ nav {
 
 /* NASA logo — larger, no drop shadow */
 .logo-nasa {
-  height: 44px;
+  height: 60px;
   filter: none;
   box-shadow: none;
+  padding-top: 6px;
 }
 
 /* Remove padding from the link wrapping the NASA logo so it fits within the nav */
