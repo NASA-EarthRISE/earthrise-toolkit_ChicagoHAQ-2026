@@ -341,16 +341,17 @@
 
     .scalebar-overlay .scalebar-tick {
         position: absolute;
-        top: 0;
         width: 1px;
         background: #333;
     }
 
     .scalebar-overlay .scalebar-tick.major {
+        top: -14px;
         height: 14px;
     }
 
     .scalebar-overlay .scalebar-tick.minor {
+        top: -8px;
         height: 8px;
     }
 
@@ -358,7 +359,7 @@
         position: relative;
         width: 200px;
         height: 14px;
-        margin-top: 2px;
+        margin-top: -12px;
     }
 
     .scalebar-overlay .scalebar-label {
@@ -621,9 +622,9 @@
     <!-- Sidebar toggle button (chevron) -->
     <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="Toggle sidebar" aria-label="Toggle sidebar">
       <!-- Chevron-left icon (points left when expanded, rotates 180° when retracted) -->
-      <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="4,0 10,5 4,10" />
-      </svg>
+      <svg viewBox="0 0 10 10">
+        <polygon points="6,0 0,5 6,10" />
+    </svg>
     </button>
     <div class="sidebar-content-wrapper">
       {% include 'dashboard/includes/map_sidebar.html' %}
