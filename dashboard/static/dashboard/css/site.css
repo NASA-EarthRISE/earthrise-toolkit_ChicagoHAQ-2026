@@ -115,10 +115,17 @@ nav {
   height: 48px;
 }
 
-/* NASA logo — no drop shadow */
+/* NASA logo — larger, no drop shadow */
 .logo-nasa {
+  height: 44px;
   filter: none;
   box-shadow: none;
+}
+
+/* Remove padding from the link wrapping the NASA logo so it fits within the nav */
+.nav-links a:has(.logo-nasa) {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 /* ── HAMBURGER BUTTON (sidebar toggle in nav) ────────── */
