@@ -1,6 +1,9 @@
 dashboard/data/
 .venvv/
 .vscode/
+.vscode/launch.json
+.vscode/settings.json
 activity_log.json
 config/__pycache__/
 processing-scripts/
+.gitignore
