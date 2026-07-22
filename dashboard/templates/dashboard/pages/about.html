@@ -48,7 +48,7 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   }
 
@@ -65,7 +65,7 @@
     font-size: 0.9rem;
     color: var(--text);
     line-height: 1.7;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.25rem;
   }
 
   /* Portrait grid */
@@ -74,10 +74,6 @@
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 1.25rem;
     justify-items: center;
-  }
-
-  .portrait-grid.three-col {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 
   /* Individual portrait card */
@@ -100,7 +96,7 @@
     background: var(--bg);
     margin-bottom: 0.75rem;
     object-fit: cover;
-    object-position: center top;
+    object-position: center top; /*our faces are slightly off center of the entire image*/
   }
 
   .portrait-card .portrait-name {
@@ -116,16 +112,6 @@
     line-height: 1.4;
   }
 
-  /* Partner portraits (slightly larger) */
-  .portrait-grid.three-col .portrait-card {
-    max-width: 220px;
-  }
-
-  .portrait-grid.three-col .portrait-image {
-    width: 140px;
-    height: 140px;
-  }
-
 </style>
 {% endblock %}
 
@@ -133,8 +119,16 @@
 <!-- ── HERO ──────────────────────────────────────────── -->
 <div class="hero">
   <h1>About the Dashboard</h1>
-  <p class="subtitle">
-    The Regional Ozone Precoursor Dashboard is a visualization tool for TEMPO satellite and Open Air Chicago ground sensor NO₂ data, developed by the EarthRISE Developers Academy.
+</div>
+
+<!-- ── ERDA Overview ─────────────────────────────── -->
+<div class="about-section">
+  <h2>NASA EarthRISE Developers Academy</h2>
+  <p class="section-blurb">
+    NASA EarthRISE Developers Academy builds the next generation of science and technology leaders by immersing student and early career scientists in projects using NASA data to address real-world challenges. EarthRISE Developers Academy hosts 10 to 14-week projects center on developing innovative applied science solutions to help partners make more effective, efficient decisions. Through collaborative projects, professional development, and cooperation with state, local, tribal, territorial, and private sector partners, the Academy equips participants with skills to accelerate innovation and bridge Earth science with the future of space exploration. 
+   </p>
+  <p class="section-blurb">
+    Learn more about Earthrise Developers Academy <a href="https://science.nasa.gov/earth-science/earthrise-developers-academy/" target="_blank">here</a>!
   </p>
 </div>
 
@@ -142,37 +136,47 @@
 <div class="about-section">
   <h2>Project Overview</h2>
   <p class="section-blurb">
-    This project aimed to assess regional air quality concerns from potential sources of NO<sub>2</sub> pollution across Chicago and the broader Cook County, Illinois, region. Utilizing TEMPO satellite data and Open Air Chicago ground sensor data collected from September 4, 2025 to June 1, 2026, the team created this dashboard to visualize spatiotemporal trends of NO<sub>2</sub> pollution across Chicago. This dashboard allows users to see hourly, daily, and monthly trends of NO<sub>2</sub> pollution across Chicago and its community areas. 
+    The research team worked with partners from the Lake Michigan Air Directors Consortium (LADC0) on a project that aimed to assess regional air quality concerns from potential sources of NO<sub>2</sub> pollution across Chicago and the broader Cook County, Illinois, area. Utilizing TEMPO satellite data and Open Air Chicago ground sensor data collected from September 2025 to June 2026, the team created a fused data product that estimates surface-level NO<sub>2</sub> concentrations using TEMPO column retrievals. This dashboard visualizes spatiotemporal trends of NO<sub>2</sub> pollution across Chicago and its community areas. 
   </p>
 </div>
 
-<!-- ── MEET THE DEVELOPERS ──────────────────────────── -->
+<!-- ── Project Team ──────────────────────────── -->
 <div class="about-section">
   <h2>Meet the Developers</h2>
   <p class="section-blurb">
-    Meet the summer 2026 NASA EarthRISE Developer's Academy Chicago Health and Air Quality team!
+    Meet the Summer 2026 NASA EarthRISE Developer's Academy Chicago Health & Air Quality team!
   </p>
 
   <div class="portrait-grid">
     <div class="portrait-card">
       <img class="portrait-image" src="{% static 'dashboard/images/anya_desai.jpg' %}" alt="Picture of Anya" />
       <span class="portrait-name">Anya Desai</span>
+      <span class="portrait-role">Team Member</span>
     </div>
     <div class="portrait-card">
       <img class="portrait-image" src="{% static 'dashboard/images/margot_langenbach.jpg' %}" alt="Picture of Margot" />
       <span class="portrait-name">Margot Langenbach</span>
+      <span class="portrait-role">Team Member</span>
     </div>
     <div class="portrait-card">
       <img class="portrait-image" src="{% static 'dashboard/images/caitlyn_mcclanahan.jpg' %}" alt="Picture of Caitlyn" />
       <span class="portrait-name">Caitlyn McClanahan</span>
+      <span class="portrait-role">Team Member</span>
     </div>
     <div class="portrait-card">
       <img class="portrait-image" src="{% static 'dashboard/images/kathryn_phung.jpg' %}" alt="Picture of Kathryn" />
       <span class="portrait-name">Kathryn Phung</span>
+      <span class="portrait-role">Team Member</span>
     </div>
     <div class="portrait-card">
       <img class="portrait-image" src="{% static 'dashboard/images/noah_ring.jpg' %}" alt="Picture of Noah" />
       <span class="portrait-name">Noah Ring</span>
+      <span class="portrait-role">Team Member</span>
+    </div>
+    <div class="portrait-card">
+      <img class="portrait-image" src="{% static 'dashboard/images/portrait.jpg' %}" alt="Picture of Kristina" />
+      <span class="portrait-name">Kristina Glass</span>
+      <span class="portrait-role">Project Coordinator</span>
     </div>
   </div>
 </div>
@@ -181,7 +185,7 @@
 <div class="about-section">
   <h2>Meet the Partners</h2>
   <p class="section-blurb">
-    The Lake Michigan Air Directors Consortium (LADCO) is a multi-jurisdictional research and planning organization that works with agencies across the Great Lakes Region to improve air quality. We would like to thank Zac Adelman, Angie Dickens, and Grant Coleman from LADCO for their valuable insights regarding the methodology of this project and dashboard. 
+    LADCO is a multi-jurisdictional research and planning organization that works with city, state, and tribal agencies across the Great Lakes Region to improve air quality. We would like to thank Zac Adelman, Angie Dickens, and Grant Coleman from LADCO for their valuable insights over the course of the project. 
   </p>
 </div>
 
