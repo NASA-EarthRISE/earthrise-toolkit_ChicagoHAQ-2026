@@ -6,6 +6,11 @@
 
 {%block extra_css %}
 <style>
+  /* Smooth scrolling for anchor links */
+    html {
+        scroll-behavior: smooth;
+    }
+    
   /* Background image for page */
   main.content {
     background-image: url("{% static 'dashboard/images/orange_blue_gradient.png' %}");
@@ -55,6 +60,70 @@
   font-size: 1.5rem;
 }
 
+.quick-actions-nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.quick-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.75rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.quick-action-btn.primary {
+    background: var(--accent);
+    color: #fff;
+    border: 2px solid var(--accent);
+}
+
+.quick-action-btn.primary:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.25);
+}
+
+.quick-action-btn.secondary {
+    background: var(--bg);
+    color: var(--text);
+    border: 2px solid var(--accent);
+}
+
+.quick-action-btn.secondary:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.15);
+}
+
+.quick-action-btn.tertiary {
+    background: var(--bg);
+    color: var(--text);
+    border: 2px solid var(--accent);
+}
+
+.quick-action-btn.tertiary:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.15);
+}
+
+.quick-action-btn .icon {
+    font-size: 1.2rem;
+}
+
 </style>
 {% endblock %}
 
@@ -66,7 +135,22 @@
   </p>
 </div>
 
-<div class="tutorial-block">
+<div class="quick-actions-nav">
+    <a href="#pollution-map" class="quick-action-btn primary">
+        <span class="icon"></span>
+        Pollution Map
+    </a>
+    <a href="#community-statistics" class="quick-action-btn secondary">
+        <span class="icon"></span>
+        Community Statistics
+    </a>
+    <a href="#export-data" class="quick-action-btn tertiary">
+        <span class="icon"></span>
+        Export Data
+    </a>
+</div>
+
+<div class="tutorial-block" id="pollution-map">
   <div class="tutorial-block-heading"><strong style="color: #96a2bf;">Pollution Map</strong>
   </div>
   <p>
@@ -84,7 +168,7 @@
   <p>Data not displaying? For some data products, there are missing dates and pixels, which is typical and often a sympton of the data cleaning process. [Insert more about missing data points.] [There may be a noitifcation at the top of the map that states there are no data points found within a data range for the selected data product.]</p>
 </div>
 
-<div class="tutorial-block">
+<div class="tutorial-block" id="community-statistics">
   <div class="tutorial-block-heading"><strong style="color: #96a2bf;">Community Statistics</strong>
   </div>
   <p>
@@ -92,7 +176,7 @@
   </p>
 </div>
 
-<div class="tutorial-block">
+<div class="tutorial-block" id="export-data">
   <div class="tutorial-block-heading"><strong style="color: #96a2bf;">Export Data</strong>
   </div>
   <p>

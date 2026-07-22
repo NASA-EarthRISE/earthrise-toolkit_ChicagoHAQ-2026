@@ -41,8 +41,7 @@
     border-radius: 10px;
     padding: 0;
     box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    overflow: hidden;
-    max-height: calc(100vh - var(--nav-height) - 100px);
+    overflow: visible;
     display: flex;
     flex-direction: column;
   }
@@ -83,7 +82,7 @@
   .export-tab-content {
     display: none;
     padding: 1.25rem;
-    overflow-y: auto;
+    overflow: visible;
     flex: 1;
   }
 
@@ -354,8 +353,7 @@
     border-radius: 10px;
     padding: 1.25rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    overflow-y: auto;
-    max-height: calc(100vh - var(--nav-height) - 100px);
+    overflow: hidden;
   }
 
   .data-export-preview h3 {
