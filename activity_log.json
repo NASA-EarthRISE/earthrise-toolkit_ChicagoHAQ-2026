@@ -3,6 +3,7 @@
     "type": "community_analysis",
     "title": "User opened community analysis tool",
     "details": "",
+<<<<<<< HEAD
     "timestamp": "2026-07-22 20:06:49"
   },
   {
@@ -22,17 +23,25 @@
     "title": "User opened export tool",
     "details": "",
     "timestamp": "2026-07-22 20:05:05"
+=======
+    "timestamp": "2026-07-22 20:01:46"
+>>>>>>> 829c8dd8a760b477fc6f31cc417f8aa9866c1f0b
   },
   {
     "type": "community_analysis",
     "title": "User opened community analysis tool",
     "details": "",
+<<<<<<< HEAD
     "timestamp": "2026-07-22 20:05:00"
+=======
+    "timestamp": "2026-07-22 20:01:04"
+>>>>>>> 829c8dd8a760b477fc6f31cc417f8aa9866c1f0b
   },
   {
     "type": "community_analysis",
     "title": "User opened community analysis tool",
     "details": "",
+<<<<<<< HEAD
     "timestamp": "2026-07-22 20:04:47"
   },
   {
@@ -52,17 +61,298 @@
     "title": "User viewed hourly map",
     "details": "",
     "timestamp": "2026-07-22 20:04:32"
+=======
+    "timestamp": "2026-07-22 20:00:40"
+>>>>>>> 829c8dd8a760b477fc6f31cc417f8aa9866c1f0b
   },
   {
     "type": "community_analysis",
     "title": "User opened community analysis tool",
     "details": "",
+<<<<<<< HEAD
     "timestamp": "2026-07-22 20:04:28"
+=======
+    "timestamp": "2026-07-22 20:00:22"
   },
   {
-    "type": "server_start",
-    "title": "Dashboard server started",
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
     "details": "",
+    "timestamp": "2026-07-22 20:00:00"
+>>>>>>> 829c8dd8a760b477fc6f31cc417f8aa9866c1f0b
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+<<<<<<< HEAD
     "timestamp": "2026-07-22 20:04:23"
+=======
+    "timestamp": "2026-07-22 19:58:37"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:57:40"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:55:01"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:54:14"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:52:45"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:50:13"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:49:15"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:47:44"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:47:19"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:45:45"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:43:57"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:43:00"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:42:43"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:41:44"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:37:18"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:34:59"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:34:47"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:33:48"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:33:02"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:32:12"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:31:54"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:31:34"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:30:07"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:27:17"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:26:19"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:25:16"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:24:07"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:22:03"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:20:59"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:18:15"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:17:22"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:16:34"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:14:44"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:12:07"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:11:22"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 19:07:42"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 18:58:59"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 18:58:41"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 18:58:07"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 18:57:54"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 18:57:43"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 18:57:29"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 18:57:18"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 18:38:05"
+  },
+  {
+    "type": "community_analysis",
+    "title": "User opened community analysis tool",
+    "details": "",
+    "timestamp": "2026-07-22 18:37:37"
+>>>>>>> 829c8dd8a760b477fc6f31cc417f8aa9866c1f0b
   }
 ]

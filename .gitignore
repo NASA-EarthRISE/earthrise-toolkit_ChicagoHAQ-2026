@@ -1,4 +1,5 @@
-dashboard/data/
+dashboard/data/*
+!dashboard/data/community_statistics/
 .venvv/
 .venv django/
 .vscode/
