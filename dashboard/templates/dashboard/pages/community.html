@@ -4,11 +4,13 @@
 {% block extra_css %}
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Material Icons for legend toggle icon -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
 
 <style>
   /* Background image for page */
   main.content {
-    background-image: url({% static 'dashboard/images/community.png' %});
+    background-image: url({% static 'dashboard/images/orange_blue_gradient.png' %});
     background-repeat: no-repeat;
     background-size: cover;
     background-position: right center;
@@ -395,6 +397,43 @@
     }
   }
 
+  /* ── Map Legend Overlay ── */
+  .map-legend {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid var(--border, #ccc);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #333;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    line-height: 1.5;
+    min-width: 120px;
+  }
+
+  .map-legend .legend-title {
+    font-weight: 700;
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+    color: #222;
+  }
+
+  .map-legend .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .map-legend .legend-symbol {
+    font-size: 15px;
+    color: #624786;
+    flex: 0 0 auto;
+  }
+
+  .map-legend .legend-label {
+    white-space: nowrap;
+  }
+
   /* ── Share / Export PDF header ── */
   .community-export-header {
     display: flex;
@@ -433,40 +472,116 @@
     cursor: not-allowed;
   }
 
-  /* Extra small screens — tighten up spacing */
-  @media (max-width: 600px) {
-    .community-left {
-      padding: 0.5rem;
-    }
+   /* Extra small screens — tighten up spacing */
+   @media (max-width: 600px) {
+     .community-left {
+       padding: 0.5rem;
+     }
 
-    .community-map-container {
-      min-height: 280px;
-      max-height: 350px;
-    }
+     .community-map-container {
+       min-height: 280px;
+       max-height: 350px;
+     }
 
-    #community-map {
-      min-height: 280px;
-    }
+     #community-map {
+       min-height: 280px;
+     }
 
-    .graph-container {
-      min-height: 250px;
-    }
-  }
+     .graph-container {
+       min-height: 250px;
+     }
+   }
 
-</style>
+   /* ── Scalebar overlay — ruler style, small, bottom right ── */
+   .scalebar-overlay {
+     position: absolute;
+     bottom: 36px;
+     right: 8px;
+     z-index: 1000;
+     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+     pointer-events: none;
+     display: flex;
+     flex-direction: column-reverse;
+   }
+
+   .scalebar-overlay .scalebar-ruler {
+     position: relative;
+     height: 12px;
+     width: 100px;
+   }
+
+   .scalebar-overlay .scalebar-main-line {
+     position: absolute;
+     bottom: 0;
+     left: 0;
+     right: 0;
+     height: 1px;
+     background: #333;
+   }
+
+   .scalebar-overlay .scalebar-ticks {
+     position: absolute;
+     top: 0;
+     left: 0;
+     right: 0;
+     bottom: 0;
+   }
+
+   .scalebar-overlay .scalebar-tick {
+     position: absolute;
+     bottom: 0;
+     width: 1px;
+     background: #333;
+   }
+
+   .scalebar-overlay .scalebar-tick.major {
+     height: 8px;
+   }
+
+   .scalebar-overlay .scalebar-tick.minor {
+     height: 4px;
+   }
+
+   .scalebar-overlay .scalebar-labels {
+     position: relative;
+     width: 100px;
+     height: 10px;
+     margin-bottom: 1px;
+   }
+
+   .scalebar-overlay .scalebar-label {
+     position: absolute;
+     font-size: 7px;
+     font-weight: 600;
+     color: #333;
+     white-space: nowrap;
+     transform: translateX(-50%);
+     text-shadow:
+       1px 1px 0 #fff,
+      -1px -1px 0 #fff,
+       1px -1px 0 #fff,
+      -1px 1px 0 #fff,
+       0 1px 0 #fff,
+       0 -1px 0 #fff,
+       1px 0 0 #fff,
+      -1px 0 0 #fff;
+   }
+
+ </style>
 {% endblock %}
 {% block content %}
-<div class="hero">
-<h1>Statistical Analysis</h1>
-<p class="subtitle">
-  Use the tool below to see detailed information on the spatiotemporal trends of NO<sub>2</sub> pollution for any Chicago Community.
-</p>
-</div>
 
 <!-- Share / Export PDF header -->
 <div class="community-export-header">
   <span class="share-label">Want to share this page?</span>
   <button class="btn-export-pdf" id="export-pdf-btn" onclick="exportCommunityAsPDF()">Save as PDF</button>
+</div>
+
+<div class="hero">
+<h1>Statistical Analysis</h1>
+<p class="subtitle">
+  Use the tool below to see detailed information on the spatiotemporal trends of NO<sub>2</sub> pollution for any Chicago Community.
+</p>
 </div>
 
 <div class="community-layout">
@@ -484,6 +599,14 @@
 
     <div class="community-map-container">
       <div id="community-map"></div>
+      <!-- Scalebar -->
+      <div class="scalebar-overlay" id="scalebar-overlay">
+        <div class="scalebar-ruler" id="scalebar-ruler">
+          <div class="scalebar-main-line"></div>
+          <div class="scalebar-ticks" id="scalebar-ticks"></div>
+        </div>
+        <div class="scalebar-labels" id="scalebar-labels"></div>
+      </div>
     </div>
 
     <!-- Help container -->
@@ -738,7 +861,61 @@ initManualStickyCommunityPanel();
     }
   });
 
-  map.addControl(new HomeButton());
+   map.addControl(new HomeButton());
+
+   // ── LEGEND TOGGLE BUTTON (below home button) ────────────────────────────
+   let legendVisible = true; // track legend state
+
+   var LegendToggleControl = L.Control.extend({
+     options: { position: 'topleft' },
+     onAdd: function (map) {
+       var btn = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+       btn.style.backgroundColor = 'white';
+       btn.style.width = '30px';
+       btn.style.height = '30px';
+       btn.style.cursor = 'pointer';
+       btn.innerHTML = '<span style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; font-size: 16px; font-family: \'Material Icons\', sans-serif; color: #333;">&#xe53b;</span>';
+       btn.title = 'Toggle Legend';
+
+       L.DomEvent.disableClickPropagation(btn);
+       L.DomEvent.disableScrollPropagation(btn);
+
+       L.DomEvent.on(btn, 'click', L.DomEvent.preventDefault);
+       L.DomEvent.on(btn, 'click', function () {
+         if (legendVisible) {
+           map.removeControl(legendControl);
+           legendVisible = false;
+         } else {
+           map.addControl(legendControl);
+           legendVisible = true;
+         }
+       });
+
+       return btn;
+     }
+   });
+
+   map.addControl(new LegendToggleControl());
+
+   // ── MAP LEGEND (sensor symbol) ──────────────────────────────────────────
+   var LegendControl = L.Control.extend({
+     options: { position: 'bottomleft' },
+     onAdd: function (map) {
+       var btn = L.DomUtil.create('div', 'map-legend');
+       btn.innerHTML =
+         '<div class="legend-title">Legend</div>' +
+         '<div class="legend-item">' +
+           '<span class="legend-symbol">&#9673;</span>' +
+           '<span class="legend-label">Clarity Sensor</span>' +
+         '</div>';
+       L.DomEvent.disableClickPropagation(btn);
+       L.DomEvent.disableScrollPropagation(btn);
+       return btn;
+     }
+   });
+
+   var legendControl = new LegendControl();
+   map.addControl(legendControl);
 
   // Basemap
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
@@ -1483,6 +1660,77 @@ function exportCommunityAsPDF() {
     });
   }, 300);
 }
+
+// ── SCALEBAR: update on zoom/pan ──────────────────────────────────────────────
+function updateScaleBar() {
+  const ruler = document.getElementById('scalebar-ruler');
+  const ticksContainer = document.getElementById('scalebar-ticks');
+  const labelsContainer = document.getElementById('scalebar-labels');
+  if (!ruler || !ticksContainer || !labelsContainer) return;
+
+  const center = map.getCenter();
+  const zoom = map.getZoom();
+
+  // meters per pixel at this zoom / latitude (Web Mercator)
+  const metersPerPixel = (2 * Math.PI * 6378137) /
+      (Math.pow(2, zoom) * 256 * Math.cos(center.lat * Math.PI / 180));
+
+  const totalPixels = 100;  // fixed ruler width (small)
+  const distanceMeters = metersPerPixel * totalPixels;
+
+  // Pick a nice round total distance
+  let value, units;
+  if (distanceMeters >= 1000) {
+      const distKm = distanceMeters / 1000;
+      const mag = Math.pow(10, Math.floor(Math.log10(distKm)));
+      const norm = distKm / mag;
+      value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
+      units = 'km';
+  } else {
+      const mag = Math.pow(10, Math.floor(Math.log10(distanceMeters || 1)));
+      const norm = distanceMeters / mag;
+      value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
+      units = 'm';
+  }
+
+  const totalMeters = (units === 'km' ? value * 1000 : value);
+  const majorSegments = 4;   // 5 major ticks
+  const minorPerMajor = 4;   // 4 minor ticks between each major
+  const minorSegmentMeters = totalMeters / (majorSegments * minorPerMajor);
+  const minorSegmentPixels = totalPixels / (majorSegments * minorPerMajor);
+
+  // Build ticks
+  ticksContainer.innerHTML = '';
+  labelsContainer.innerHTML = '';
+  labelsContainer.style.width = totalPixels + 'px';
+
+  const totalMinorTicks = majorSegments * minorPerMajor + 1;
+  for (let i = 0; i < totalMinorTicks; i++) {
+      const isMajor = (i % minorPerMajor === 0);
+      const tick = document.createElement('div');
+      tick.className = 'scalebar-tick ' + (isMajor ? 'major' : 'minor');
+      tick.style.left = (i * minorSegmentPixels) + 'px';
+      ticksContainer.appendChild(tick);
+
+      if (isMajor) {
+          const label = document.createElement('span');
+          label.className = 'scalebar-label';
+          const valMeters = minorSegmentMeters * i;
+          if (units === 'km') {
+              const valKm = valMeters / 1000;
+              label.textContent = valKm.toFixed(valKm < 10 ? 1 : 0) + ' km';
+          } else {
+              label.textContent = Math.round(valMeters) + ' m';
+          }
+          label.style.left = (i * minorSegmentPixels) + 'px';
+          labelsContainer.appendChild(label);
+      }
+  }
+}
+
+// Attach scalebar update to map zoom/pan events
+map.on('zoomend moveend', updateScaleBar);
+setTimeout(updateScaleBar, 500);
 
 </script>
 

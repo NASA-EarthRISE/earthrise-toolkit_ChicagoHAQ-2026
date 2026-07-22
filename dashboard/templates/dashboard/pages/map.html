@@ -19,7 +19,7 @@
     }
     /* Background image for page */
     main.content {
-    background-image: url({% static 'dashboard/images/map.png' %});
+    background-image: url({% static 'dashboard/images/blue_orange_gradient.png' %});
     background-repeat: no-repeat;
     background-size: cover;
     background-position: right center;
@@ -306,7 +306,7 @@
         stroke-width: 1;
     }
 
-    /* Scalebar overlay — ruler style, above time slider bar, left of map */
+    /* Scalebar overlay — ruler style, ticks/labels go UP, above time slider bar, left of map */
     .scalebar-overlay {
         position: absolute;
         bottom: 145px;
@@ -314,6 +314,8 @@
         z-index: 1000;
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         pointer-events: none;
+        display: flex;
+        flex-direction: column-reverse;
     }
 
     .scalebar-overlay .scalebar-ruler {
@@ -324,7 +326,7 @@
 
     .scalebar-overlay .scalebar-main-line {
         position: absolute;
-        top: 0;
+        bottom: 0;
         left: 0;
         right: 0;
         height: 1.5px;
@@ -341,7 +343,7 @@
 
     .scalebar-overlay .scalebar-tick {
         position: absolute;
-        top: 0;
+        bottom: 0;
         width: 1px;
         background: #333;
     }
@@ -358,7 +360,7 @@
         position: relative;
         width: 200px;
         height: 14px;
-        margin-top: 2px;
+        margin-bottom: 2px;
     }
 
     .scalebar-overlay .scalebar-label {
@@ -1600,8 +1602,9 @@ function updateScaleBar() {
       const zoom = map.getZoom();
 
       // meters per pixel at this zoom / latitude (Web Mercator)
+      // corrected: divide by tile size (256) to get proper meters-per-pixel
       const metersPerPixel = (2 * Math.PI * 6378137) /
-          (Math.pow(2, zoom + 1) * Math.cos(center.lat * Math.PI / 180));
+          (Math.pow(2, zoom) * 256 * Math.cos(center.lat * Math.PI / 180));
 
       const totalPixels = 200;  // fixed ruler width
       const distanceMeters = metersPerPixel * totalPixels;
@@ -4606,7 +4609,7 @@ function loadClarityDates() {
          return fallbackDates;
      }
 
-     // ── LOAD FUSION DATES ────────────────────────────────────────────────────
+// ── LOAD FUSION DATES ────────────────────────────────────────────────────
 function loadFusionDates() {
     const load = startNewLoad("fusion");
 

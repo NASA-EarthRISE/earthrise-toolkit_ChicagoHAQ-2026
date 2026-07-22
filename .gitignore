@@ -2,4 +2,5 @@ dashboard/data/
 .venvv/
 .vscode/
 activity_log.json
-dashboard/__pycache__/
+config/__pycache__/
+processing-scripts/
