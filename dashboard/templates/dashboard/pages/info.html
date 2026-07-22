@@ -182,7 +182,7 @@
         gap: 20px; 
     }
 
-    .tempo-sat {
+    .data-image {
         width: 200px; /*image will be 200 pixels wide */
         height: auto; /* automatically adjusts height */
     }
@@ -192,7 +192,7 @@
         margin: 0; 
     }
 
-    .image-credit { 
+    .image-credit { /*this doesnt work*/
         font-size: 6;
     }
 
@@ -208,7 +208,7 @@
 <div class="quick-actions-nav">
     <a href="#chicago-context" class="quick-action-btn primary">
         <span class="icon"></span>
-        Chicago Ozone
+        Chicago
     </a>
     <a href="#data-products" class="quick-action-btn secondary">
         <span class="icon"></span>
@@ -236,6 +236,12 @@
             Image Credit: U.S. EPA Air Data
         </p> 
     </a>
+    <p></p>
+
+    <h2>Chicago Community Areas</h2>
+    <p>
+        This dashboard visualizes spatiotemporal trends of NO<sub>2</sub> pollution in Chicago and its 77 community areas. Chicago's Community Areas were defined by researchers from the Social Science Research Committee at the University of Chicago in the 1920s (Newberry Library, 2005). Communities tend to be larger than neighborhoods and census tracts, but have had relatively stable boundaries since the 1920s (Newberry Library, 2005). The stability of community boundaries allow for the study of change over time on a sub-urban scale in Chicago (Newberry Library, 2005).
+    </p>
     </div>
 
 <!-- Data Products Section -->
@@ -250,9 +256,9 @@
     <div class="product-card" id="tempo-product">
         <h3>NASA TEMPO (Tropospheric Emissions: Monitoring of Pollution)</h3>
         <div class="data-content">
-            <img src = "{% static 'dashboard/images/tempo.png' %}" class = "tempo-sat" alt = "TEMPO Satellite">
+            <img src = "{% static 'dashboard/images/tempo.png' %}" class = "data-image" alt = "TEMPO Satellite">
             <p class="side-paragraph">
-            NASA's Tropospheric Emissions: Monitoring of Pollution (TEMPO) instrument is a revolutionary <strong> geostationary satellite mission</strong> that was launched in April of 2023. TEMPO measures key gases and aerosols that impact air quality, including ozone and NO<sub>2</sub>, across North America. As a geostationary satellite with a fixed position above North America, TEMPO scans the concentrations of air pollutants hourly. This project used the Level 3 Gridded NO<sub>2</sub> Tropospheric and Stratospheric Columns Version 04 product for the analysis, which was released in September of 2025.
+            NASA's Tropospheric Emissions: Monitoring of Pollution (TEMPO) instrument is a revolutionary <strong> geostationary satellite mission</strong> that was launched in April of 2023. TEMPO measures key gases and aerosols that impact air quality, including ozone and NO<sub>2</sub>, across North America. As a geostationary satellite with a fixed position above North America, TEMPO scans the concentrations of air pollutants hourly. This project used the Level 3 Gridded NO<sub>2</sub> <a href="https://www.earthdata.nasa.gov/data/catalog/larc-cloud-tempo-no2-l3-v04" target="_blank">Tropospheric and Stratospheric Columns Version 04</a> product for the analysis, which was released in September of 2025.
         </p>
         </div>
         <a href="https://science.nasa.gov/wp-content/uploads/2023/05/tempo.png" target="_blank" style="color: inherit; text-decoration: none;">
@@ -264,16 +270,16 @@
 
     <!-- OpenAir Chicago Card -->
     <div class="product-card clarity" id="openair-product">
-        <h3>OpenAir Chicago (CLARITY Sensor Network)</h3>
+        <h3>Open Air Chicago (CLARITY Sensor Network)</h3>
         <div class="data-content">
-            <!-- <img src = "{% static 'dashboard/images/????.png' %}" class = "sensor" alt = "Clarity's Node-S Sensor"> --> 
+            <img src = "{% static 'dashboard/images/ClaritySensor.png' %}" class = "data-image" alt = "Clarity's Node-S Sensor">  
             <p class="side-paragraph">
-            OpenAir Chicago, part of the Community Logic for Air Quality (CLARITY) initiative, is a dense, community-based air quality monitoring network that launched in September of 2025 (Green, 2026). With 277 of Clarity's low-cost, Node-S sensors deployed in a grid-based approach across Chicago, Open Air Chicago provides sub-hourly readings of NO<sub>2</sub> and PM2.5 concentrations. All sensors in Chicago are located less than a mile from each other.
+            Open Air Chicago, part of the Community Logic for Air Quality (CLARITY) initiative, is a dense, community-based air quality monitoring network that launched in September of 2025 (Green, 2026). With 277 of Clarity's low-cost, Node-S sensors deployed in a grid-based pattern across Chicago, Open Air Chicago provides sub-hourly readings of NO<sub>2</sub> and PM2.5 concentrations. All sensors in Chicago are located less than a mile from each other, with at least one sensor in each of Chicago's 77 communities. Open Air Chicago is currently the largest community monitoring network in the United States. This project used the <a href="https://data.cityofchicago.org/Health-Human-Services/Open-Air-Chicago-Individual-Measurements/xfya-dxtq/about_data" target="_blank">Individual Measurements</a> data product from the City of Chicago Data Portal for the analysis.
         </p>
-         <!-- <div class="image-credit"> 
-            <p> Image Credit: xx </p>
-         </div> -->
         </div>
+        <p class="image-credit"> 
+            Image Credit: Simon Yellen
+        </p>
     </div>
 
     <!-- Fusion Layer Card -->
@@ -281,7 +287,7 @@
         <h3>Fusion Layer (Satellite + Ground Data Integration)</h3>
         <p>
             The fused data layer provides estimates of ground-level NO<sub>2</sub> concentrations using TEMPO's NO<sub>2</sub> tropospheric column retrievals. With this data layer, users are able to estimate NO<sub>2</sub> concentrations across Chicago and the broader Cook County, even if Open Air Chicago sensors go offline. 
-            </p>
+        </p>
     </div>
 </div>
 
@@ -306,6 +312,10 @@
 
     <p style="padding-left: 36px; text-indent: -36px;">
         Nawaz, M. O., Huber, D., E., Kerr, G. H., Judd, L. M., Acker, S. J., & Goldberg, D. L. (2025). A comparative analysis of TEMPO NO2 remote sensing with surface-level monitoring through diurnal and seasonal trends, meteorology, and monitor characteristics. <i>Journal of Geophysical Research: Atmospheres</i>, <i>130</i>(20), <a href="https://doi.org/10.1029/2025JD043923" target="_blank" style="color: inherit; text-decoration: none;">https://doi.org/10.1029/2025JD043923</a>
+    </p>
+
+    <p style="padding-left: 36px; text-indent: -36px;">
+        Newberry Library. (2005). Chicago's Community Areas. <i>The Electronic Encyclopedia of Chicago</i>. <a href="http://www.encyclopedia.chicagohistory.org/pages/1760.html" target="_blank" style="color: inherit; text-decoration: none;">http://www.encyclopedia.chicagohistory.org/pages/1760.html</a>
     </p>
 </div>
 
