@@ -280,6 +280,24 @@
     text-align: center;
   }
 
+  .graph-title{
+    text-align: center;
+    width: 100%;
+  }
+
+  .graph-caption {
+  text-align: center;
+  width: 100%;
+  line-height: 1.5;
+  margin-bottom: 0.75rem;
+}
+
+.plot-axis-label {
+  text-align: center;
+  font-size: 0.95rem;
+  margin-top: 0.25rem;
+}
+
   /* Percentile toggle */
   .percentile-toggle {
     display: flex;
@@ -618,38 +636,88 @@
     <!-- Graph 1: Percentile Bell Curve -->
     <div class="graph-container" id="graph-percentile">
       <div class="graph-title">Community Percentile Ranking</div>
+
       <div class="plotly-zoom-notification" id="zoom-notify-percentile">
         <strong>Double-click to reset view.</strong>
       </div>
-      <div class="graph-placeholder">Select a community to view graphs.</div>
+
+      <div class="graph-caption" id="graph-percentile-caption">
+        Select a community to view its percentile ranking.
+      </div>
+
+      <div class="graph-placeholder">
+        Select a community to view graphs.
+      </div>
+
+      <div class="plot-axis-label">
+        Percentile
+      </div>
     </div>
 
-    <!-- Graph 2: NO2 Weekday Box Plot (toggled by radio) -->
-    <div class="graph-container" id="graph-ground">
-      <div class="graph-title" id="graph-ground-title">Ground NO₂ by Day of Week (ppb)</div>
-      <div class="plotly-zoom-notification" id="zoom-notify-ground">
-        <strong>Double-click to reset view.</strong>
-      </div>
-      <div class="graph-loading" id="graph-ground-loading">
-        <div class="spinner"></div>
-        <div class="loading-text">Loading box plot...</div>
-      </div>
-      <div class="graph-placeholder">Select a community to view graphs.</div>
+   <!-- Graph 2: Distribution -->
+<div class="graph-container" id="graph-tempo">
+
+  <div class="graph-title" id="graph-tempo-title">
+    Ground NO₂ Distribution (ppb)
+  </div>
+
+  <div class="plotly-zoom-notification" id="zoom-notify-tempo">
+    <strong>Double-click to reset view.</strong>
+  </div>
+
+  <div class="graph-loading" id="graph-tempo-loading">
+    <div class="spinner"></div>
+    <div class="loading-text">
+      Loading distribution plot...
     </div>
 
-    <!-- Graph 3: NO2 Distribution Plot (toggled by radio) -->
-    <div class="graph-container" id="graph-tempo">
-      <div class="graph-title" id="graph-tempo-title">Ground NO₂ Distribution (ppb)</div>
-      <div class="plotly-zoom-notification" id="zoom-notify-tempo">
-        <strong>Double-click to reset view.</strong>
-      </div>
-      <div class="graph-loading" id="graph-tempo-loading">
-        <div class="spinner"></div>
-        <div class="loading-text">Loading distribution plot...</div>
-      </div>
-      <div class="graph-placeholder">Select a community to view graphs.</div>
+  </div>
+
+  <div class="graph-caption" id="graph-distribution-caption">
+    Select a community to view its NO₂ distribution.
+  </div>
+
+  <div class="graph-placeholder">
+    Select a community to view graphs.
+  </div>
+
+  <div class="plot-axis-label">
+    NO₂ (ppb)
+  </div>
+
+</div>
+
+<!-- Graph 3: Boxplot -->
+<div class="graph-container" id="graph-ground">
+
+  <div class="graph-title" id="graph-ground-title">
+    Ground NO₂ by Day of Week (ppb)
+  </div>
+
+  <div class="plotly-zoom-notification" id="zoom-notify-ground">
+    <strong>Double-click to reset view.</strong>
+  </div>
+
+  <div class="graph-loading" id="graph-ground-loading">
+    <div class="spinner"></div>
+    <div class="loading-text">
+      Loading box plot...
     </div>
   </div>
+
+  <div class="graph-caption" id="graph-boxplot-caption">
+    Select a community to view weekday NO₂ patterns.
+  </div>
+
+  <div class="graph-placeholder">
+    Select a community to view graphs.
+  </div>
+
+  <div class="plot-axis-label">
+    Day of Week
+  </div>
+
+</div>
 
 </div>
 
@@ -1177,6 +1245,12 @@ function drawGraphs(communityName) {
   renderDistributionPlot(communityName, source);
 }
 
+function ordinal(n) {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
 // Percentile with Tempo and Clarity selection
 function renderPercentileGraph(communityName) {
   const container = document.getElementById('graph-percentile');
@@ -1189,11 +1263,24 @@ function renderPercentileGraph(communityName) {
   if (placeholder) placeholder.style.display = 'none';
 
   const chartDiv = document.createElement('div');
-  chartDiv.className = 'plotly-chart';
-  container.appendChild(chartDiv);
+    chartDiv.className = 'plotly-chart';
+
+    const axisLabel =
+      container.querySelector('.plot-axis-label');
+
+    container.insertBefore(
+      chartDiv,
+      axisLabel
+    );
+
+      const caption =
+        document.getElementById(
+          'graph-percentile-caption'
+        );
 
   // Calculate available height from container (minus title + padding)
-  const availableHeight = Math.max(200, container.clientHeight - 50);
+  const availableHeight =
+  Math.max(260, container.clientHeight - 50);
 
   // Find the selected community data
   const comm = rankingsData.find(r => r.community === communityName);
@@ -1203,6 +1290,7 @@ function renderPercentileGraph(communityName) {
   }
 
   const metric = getActivePercentileMetric(); // "ground" or "tempo"
+  
   const percentileCol =
   metric === 'ground'
     ? 'ground_percentile'
@@ -1234,6 +1322,24 @@ const label =
    const communityPercentile = comm[percentileCol];
    const communityRank = comm[rankCol];
 
+   const percentileRounded =
+      Math.round(communityPercentile);
+
+    const sourceDescription =
+      metric === 'ground'
+        ? 'Open Air Chicago ground sensor observations'
+        : metric === 'tempo'
+          ? 'TEMPO satellite observations'
+          : 'the fused NO₂ dataset';
+
+    caption.innerHTML = `
+      This community ranks in the
+      <strong>${ordinal(percentileRounded)} percentile</strong>
+      based on ${sourceDescription},
+      meaning its average NO₂ concentration is higher than
+      approximately ${percentileRounded}% of Chicago community areas.
+    `;
+
    // Check if percentile data is available for this community
    if (communityPercentile === null || communityPercentile === undefined) {
     const noDataMsg =
@@ -1245,6 +1351,9 @@ const label =
 
     const oldChart = container.querySelector('.plotly-chart');
     if (oldChart) oldChart.remove();
+
+    caption.innerHTML =
+  'Percentile ranking is unavailable for the selected community.';
 
     let placeholder = container.querySelector('.graph-placeholder');
 
@@ -1317,9 +1426,8 @@ const label =
   traceMarker.y = [markerCoeff * Math.exp(markerExponent)];
 
   const layout = {
-    margin: { t: 10, r: 20, b: 40, l: 60 },
+    margin: { t: 25, r: 20, b: 30, l: 65 },
     xaxis: {
-      title: `${label} Percentile`,
       range: [0, 100],
       gridcolor: 'rgba(0,0,0,0.05)',
     },
@@ -1354,10 +1462,18 @@ function renderWeekdayBoxPlot(communityName, source) {
    if (loadingEl) loadingEl.classList.add('visible');
 
    const chartDiv = document.createElement('div');
-   chartDiv.className = 'plotly-chart';
-   container.appendChild(chartDiv);
+    chartDiv.className = 'plotly-chart';
 
-  const availableHeight = Math.max(200, container.clientHeight - 50);
+    const axisLabel =
+      container.querySelector('.plot-axis-label');
+
+    container.insertBefore(
+      chartDiv,
+      axisLabel
+    );
+
+  const availableHeight =
+  Math.max(340, container.clientHeight - 50);
 
   const sourceKey =
   source === 'ground'
@@ -1398,6 +1514,18 @@ const sourceLabel =
         return;
       }
 
+      const caption =
+        document.getElementById(
+          'graph-boxplot-caption'
+        );
+
+      const sourceDescription =
+        source === 'ground'
+          ? 'Open Air Chicago ground sensor observations'
+          : source === 'tempo'
+            ? 'TEMPO satellite observations'
+            : 'the fused NO₂ dataset';
+
       const weekdayOrder = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
       // Group NO2 values by weekday
@@ -1408,6 +1536,34 @@ const sourceLabel =
           byDay[row.weekday].push(row.NO2);
         }
       }
+
+      const weekdayMeans = Object.entries(byDay)
+        .filter(([day, values]) => values.length)
+        .map(([day, values]) => ({
+          day,
+          mean:
+            values.reduce((a, b) => a + b, 0) /
+            values.length
+        }));
+
+      const highestDay =
+        weekdayMeans.reduce(
+          (a, b) => a.mean > b.mean ? a : b
+        );
+
+      const lowestDay =
+        weekdayMeans.reduce(
+          (a, b) => a.mean < b.mean ? a : b
+        );
+
+      caption.innerHTML = `
+        Based on ${sourceDescription},
+        average NO₂ concentrations are highest on
+        <strong>${highestDay.day}</strong>
+        and lowest on
+        <strong>${lowestDay.day}</strong>
+        within this community.
+      `;
 
       // Build box traces for each weekday
       const traces = weekdayOrder.map(day => ({
@@ -1434,12 +1590,20 @@ const sourceLabel =
         whiskerwidth: 0.8,
       }));
 
+      const leftMargin =
+        source === 'tempo'
+          ? 110
+          : 65;
+
       const layout = {
-        margin: { t: 10, r: 20, b: 82, l: 85 },
+        margin: {
+          t: 10,
+          r: 20,
+          b: 70,
+          l: leftMargin
+        },
         xaxis: {
-          title: 'Day of Week',
-          tickangle: -45,
-          gridcolor: 'rgba(0,0,0,0.05)',
+          tickangle: -45
         },
         yaxis: {
           title: { text: yLabel, standoff: 15 },
@@ -1448,12 +1612,7 @@ const sourceLabel =
         height: availableHeight,
         showlegend: false,
         autosize: true,
-        boxmode: 'group',
-        annotations: [{
-          text: `${sourceLabel} NO₂`,
-          x: 0.5, y: 1.05, xref: 'paper', yref: 'paper',
-          showarrow: false, font: { size: 13, weight: 600 }
-        }],
+        boxmode: 'group'
       };
 
       const config = { displayModeBar: false, responsive: true };
@@ -1484,10 +1643,18 @@ function renderDistributionPlot(communityName, source) {
    if (loadingEl) loadingEl.classList.add('visible');
 
    const chartDiv = document.createElement('div');
-   chartDiv.className = 'plotly-chart';
-   container.appendChild(chartDiv);
+    chartDiv.className = 'plotly-chart';
 
-  const availableHeight = Math.max(200, container.clientHeight - 50);
+    const axisLabel =
+      container.querySelector('.plot-axis-label');
+
+    container.insertBefore(
+      chartDiv,
+      axisLabel
+    );
+
+  const availableHeight =
+  Math.max(260, container.clientHeight -50);
 
   const sourceKey =
   source === 'ground'
@@ -1538,6 +1705,32 @@ const sourceLabel =
       const q3 = values[Math.floor(n * 0.75)];
       const std = Math.sqrt(values.reduce((s, v) => s + (v - mean) ** 2, 0) / n);
       const bandwidth = 1.06 * std * Math.pow(n, -0.2);
+
+      const caption =
+        document.getElementById(
+          'graph-distribution-caption'
+        );
+
+      const sourceDescription =
+        source === 'ground'
+          ? 'Open Air Chicago ground sensor observations'
+          : source === 'tempo'
+            ? 'TEMPO satellite observations'
+            : 'the fused NO₂ dataset';
+
+      const fmtValue =
+        source === 'tempo'
+          ? v => Number(v).toExponential(2)
+          : v => Number(v).toFixed(2);
+
+      caption.innerHTML = `
+        Based on ${sourceDescription},
+        the median NO₂ concentration in this community is
+        <strong>${fmtValue(median)}</strong>,
+        while the middle 50% of observations fall between
+        <strong>${fmtValue(q1)}</strong> and
+        <strong>${fmtValue(q3)}</strong>.
+      `;
 
       const minVal = values[0];
       const maxVal = values[n - 1];
@@ -1595,10 +1788,19 @@ const sourceLabel =
         hoverinfo: 'name', showlegend: true,
       };
 
+      const leftMargin =
+        source === 'tempo'
+          ? 110
+          : 65;
+
       const layout = {
-        margin: { t: 25, r: 20, b: 80, l: 85 },
+        margin: {
+          t: 25,
+          r: 20,
+          b: 30,
+          l: leftMargin
+        },
         xaxis: {
-          title: { text: yLabel, standoff: 15 },
           tickformat: useScientific ? '.1e' : undefined,
           gridcolor: 'rgba(0,0,0,0.05)',
         },
@@ -1613,12 +1815,7 @@ const sourceLabel =
         hovermode: 'x unified',
         hoverlabel: {
           namelength: -1
-        },
-        annotations: [{
-          text: `${sourceLabel} NO₂`,
-          x: 0.5, y: 1.05, xref: 'paper', yref: 'paper',
-          showarrow: false, font: { size: 13, weight: 600 }
-        }],
+        }
       };
 
        const config = { displayModeBar: false, responsive: true };
