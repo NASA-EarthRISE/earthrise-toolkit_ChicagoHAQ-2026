@@ -19,7 +19,7 @@
     }
     /* Background image for page */
     main.content {
-    background-image: url({% static 'dashboard/images/map.png' %});
+    background-image: "{% static 'dashboard/images/map.png' %}";
     background-repeat: no-repeat;
     background-size: cover;
     background-position: right center;
@@ -60,6 +60,19 @@
         font-family: inherit;
     }
 
+    .compass-overlay {
+        position: absolute;
+        bottom: 200px;
+        left: 14px;
+        z-index: 1000;
+        pointer-events: none;
+    }
+
+    .compass-image {
+        display: block;
+        width: 40px;
+        height: 40px;
+    }
     /* Bottom slider bar – positioned over the bottom of the map */
     .bottom-slider-bar {
         position: absolute;
@@ -265,46 +278,7 @@
         cursor: not-allowed;
       }
 
-    /* Compass overlay — above scalebar, left side of map container */
-    .compass-overlay {
-        position: absolute;
-        bottom: 200px;
-        left: 14px;
-        z-index: 1000;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        pointer-events: none;
-        overflow: visible;
-    }
-
-    .compass-overlay svg {
-        display: block;
-        width: 40px;
-        height: 40px;
-        overflow: visible;
-    }
-
-    .compass-overlay .compass-n {
-        font-size: 9px;
-        font-weight: 700;
-        fill: rgb(0, 0, 0);
-    }
-
-    .compass-overlay .compass-dir {
-        font-size: 8px;
-        font-weight: 600;
-        fill: #333;
-    }
-
-    .compass-overlay .compass-needle {
-        stroke: #333;
-        stroke-width: 0.5;
-    }
-
-    .compass-overlay .compass-ring {
-        fill: none;
-        stroke: #333;
-        stroke-width: 1;
-    }
+    
 
     /* Scalebar overlay — ruler style, above time slider bar, left of map */
     .scalebar-overlay {
@@ -647,15 +621,11 @@
   
     <!-- Compass -->
     <div class="compass-overlay" id="compass-overlay">
-      <svg viewBox="-8 -8 66 66" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="25" cy="25" r="20" class="compass-ring"/>
-        <polygon points="25,6 21,25 25,21 29,25" fill="#c00" class="compass-needle"/>
-        <polygon points="25,44 21,25 25,29 29,25" fill="#333" class="compass-needle"/>
-        <text x="25" y="4" text-anchor="middle" class="compass-n">N</text>
-        <text x="25" y="52" text-anchor="middle" class="compass-dir">S</text>
-        <text x="50" y="28" text-anchor="middle" class="compass-dir">E</text>
-        <text x="0" y="28" text-anchor="middle" class="compass-dir">W</text>
-      </svg>
+    <img
+        src="{% static 'dashboard/images/Compass-Arrow.svg' %}"
+        alt="Compass"
+        class="compass-image">
+   
     </div>
 
     <!-- Scalebar -->
