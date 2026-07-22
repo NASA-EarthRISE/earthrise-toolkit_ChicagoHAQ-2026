@@ -141,11 +141,11 @@
         gap: 2px;
     }
 
-    /* Legend overlay — bottom right of map container, above timeslider */
+    /* Legend overlay — bottom left of map container, above timeslider */
     .map-legend-overlay {
         position: absolute;
         bottom: 150px;
-        right: 10px;
+        left: 14px;
         background: white;
         padding: 10px 12px;
         border-radius: 6px;
@@ -265,11 +265,11 @@
         cursor: not-allowed;
       }
 
-    /* Compass overlay — above scalebar, left side of map container */
+    /* Compass overlay — above scalebar, right side of map container */
     .compass-overlay {
         position: absolute;
         bottom: 200px;
-        left: 14px;
+        right: 14px;
         z-index: 1000;
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         pointer-events: none;
@@ -306,11 +306,11 @@
         stroke-width: 1;
     }
 
-    /* Scalebar overlay — ruler style, ticks/labels go UP, above time slider bar, left of map */
+    /* Scalebar overlay — ruler style, ticks/labels go UP, above time slider bar, right of map */
     .scalebar-overlay {
         position: absolute;
         bottom: 145px;
-        left: 14px;
+        right: 14px;
         z-index: 1000;
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         pointer-events: none;
@@ -505,10 +505,51 @@
         position: relative !important;
         overflow: hidden !important;
     }
+.map-warning-notice {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    z-index: 1600;
+
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid #d6d6d6;
+    border-left: 4px solid #d88c00;
+    border-radius: 6px;
+    padding: 8px 12px;
+    max-width: 360px;
+
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 0.82rem;
+    color: #333;
+
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    display: none;
+    pointer-events: none;
+}
+
+.map-warning-notice.visible {
+    display: block;
+}
+
+.map-warning-notice strong {
+    display: block;
+    color: #7a4b00;
+    font-size: 0.82rem;
+    margin-bottom: 2px;
+}
+
+.map-warning-notice span {
+    display: block;
+    font-size: 0.78rem;
+    color: #555;
+    line-height: 1.25;
+}
 
     .map-no-data-notice {
     position: absolute;
-    top: 62px;
+    top: 78px;
     right: 12px;
     z-index: 1600;
     background: rgba(255, 255, 255, 0.92);
@@ -516,13 +557,32 @@
     border-left: 4px solid #d88c00;
     border-radius: 6px;
     padding: 8px 12px;
-    max-width: 280px;
+    max-width: 290px;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     font-size: 0.82rem;
     color: #333;
     box-shadow: 0 2px 8px rgba(0,0,0,0.18);
     display: none;
     pointer-events: none;
+}
+
+.map-no-data-notice .notice-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    margin-right: 4px;
+    margin-top: -1px;
+}
+
+.map-no-data-notice .notice-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.map-no-data-notice strong {
+    display: inline;
+    vertical-align: middle;
 }
 
 .map-no-data-notice.visible {
@@ -679,8 +739,15 @@
 
     <!-- Small non-blocking no-data notice -->
     <div class="map-no-data-notice" id="map-no-data-notice">
+    <span class="notice-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" stroke="#d88c00" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="13" stroke="#d88c00" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1" fill="#d88c00"/></svg></span>
     <strong>No data available</strong>
     <span id="map-no-data-text"></span>
+    </div>
+
+    <!-- Small non-blocking date-adjustment warning -->
+    <div class="map-warning-notice" id="map-warning-notice">
+    <strong>Date adjusted</strong>
+    <span id="map-warning-text"></span>
     </div>
 
     <!-- Centered loading spinner overlay -->
@@ -902,6 +969,8 @@ function updateBottomControlVisibility() {
   let dates = [];
   let allDates = [];       // unfiltered copy — kept in sync by each date loader
   let rangeDates = [];
+  let pendingPreferredDate = null;
+  let pendingPreferredHour = null;
   let invalidClarityHourlyDates = new Set();
 
   // TEMPO-specific date arrays (hourly and daily can differ)
@@ -923,6 +992,9 @@ let isPlaying = false;
   const tempoDailyCache = {};
   const tempoMonthlyCache = {};
   let communityIndexCache = {};
+
+  let fusionCommunityRows = null;
+  let fusionCommunityPromise = null;
 
   const chicagoDateFormatter =
       new Intl.DateTimeFormat(
@@ -1453,6 +1525,184 @@ function toDailyKey(value) {
     return isDailyDate(value) ? value : null;
 }
 
+function getCurrentSelectedDateFromSlider() {
+    const dateSlider = document.getElementById("dateSlider");
+
+    if (!dateSlider || !dates || dates.length === 0) {
+        return null;
+    }
+
+    const index = Number(dateSlider.value);
+    return dates[index] || null;
+}
+
+function captureCurrentDateHourPreference() {
+    pendingPreferredDate = getCurrentSelectedDateFromSlider();
+
+    const timeSlider = document.getElementById("timeSlider");
+
+    if (timeSlider) {
+        pendingPreferredHour = Number(timeSlider.value || selectedHour || 0);
+    } else {
+        pendingPreferredHour = selectedHour || 0;
+    }
+
+    console.log("Captured preferred date/hour:", {
+        pendingPreferredDate,
+        pendingPreferredHour,
+        timeScale: TIME_SCALE,
+        product: currentDataProduct
+    });
+}
+
+function findBestDateIndex(loadedDates, preferredDate) {
+    if (!loadedDates || loadedDates.length === 0) {
+        return {
+            index: 0,
+            adjusted: false,
+            requestedDate: preferredDate,
+            selectedDate: null
+        };
+    }
+
+    if (!preferredDate) {
+        return {
+            index: 0,
+            adjusted: false,
+            requestedDate: preferredDate,
+            selectedDate: loadedDates[0]
+        };
+    }
+
+    const exactIndex = loadedDates.indexOf(preferredDate);
+
+    if (exactIndex !== -1) {
+        return {
+            index: exactIndex,
+            adjusted: false,
+            requestedDate: preferredDate,
+            selectedDate: loadedDates[exactIndex]
+        };
+    }
+
+    if (TIME_SCALE === "monthly") {
+        const preferredMonth = preferredDate.substring(0, 7);
+        const monthIndex = loadedDates.indexOf(preferredMonth);
+
+        if (monthIndex !== -1) {
+            return {
+                index: monthIndex,
+                adjusted: preferredMonth !== preferredDate,
+                requestedDate: preferredDate,
+                selectedDate: loadedDates[monthIndex]
+            };
+        }
+    }
+
+    let bestIndex = 0;
+    let bestDistance = Infinity;
+
+    loadedDates.forEach((dateValue, index) => {
+        let availableTime;
+        let preferredTime;
+
+        if (TIME_SCALE === "monthly") {
+            availableTime = new Date(dateValue + "-01T00:00:00Z").getTime();
+            preferredTime = new Date(preferredDate.substring(0, 7) + "-01T00:00:00Z").getTime();
+        } else {
+            availableTime = new Date(dateValue + "T00:00:00Z").getTime();
+            preferredTime = new Date(preferredDate + "T00:00:00Z").getTime();
+        }
+
+        const distance = Math.abs(availableTime - preferredTime);
+
+        if (!isNaN(distance) && distance < bestDistance) {
+            bestDistance = distance;
+            bestIndex = index;
+        }
+    });
+
+    return {
+        index: bestIndex,
+        adjusted: true,
+        requestedDate: preferredDate,
+        selectedDate: loadedDates[bestIndex]
+    };
+}
+
+function applyPreferredDateAndHourAfterDateLoad(load) {
+    if (!dates || dates.length === 0) {
+        return;
+    }
+
+    const dateSlider = document.getElementById("dateSlider");
+    const timeSlider = document.getElementById("timeSlider");
+
+    const match = findBestDateIndex(
+        dates,
+        pendingPreferredDate
+    );
+
+    const preferredIndex = match.index;
+    const selectedDate = dates[preferredIndex];
+
+    if (dateSlider) {
+        dateSlider.min = 0;
+        dateSlider.max = dates.length - 1;
+        dateSlider.value = preferredIndex;
+    }
+
+    if (TIME_SCALE === "hourly") {
+        selectedHour = pendingPreferredHour !== null
+            ? Number(pendingPreferredHour)
+            : selectedHour;
+
+        selectedHour = Math.max(0, Math.min(23, selectedHour));
+
+        if (timeSlider) {
+            timeSlider.value = selectedHour;
+        }
+    }
+
+    updateDateAndTimeLabels(selectedDate);
+
+    if (match.adjusted && match.requestedDate && match.selectedDate) {
+        const requestedLabel =
+            TIME_SCALE === "monthly"
+                ? formatMonthForDisplay(match.requestedDate.substring(0, 7))
+                : utcDateToCentralPretty(match.requestedDate);
+
+        const selectedLabel =
+            TIME_SCALE === "monthly"
+                ? formatMonthForDisplay(match.selectedDate)
+                : utcDateToCentralPretty(match.selectedDate);
+
+        const hourText =
+            TIME_SCALE === "hourly"
+                ? ` Hour preserved: ${formatHourForDisplay(match.selectedDate, selectedHour)}.`
+                : "";
+
+        showMapWarningNotice(
+            "Selected date unavailable",
+            `This data product does not include ${requestedLabel}. Showing nearest available date: ${selectedLabel}.${hourText}`
+        );
+    }
+
+    console.log("Applying preferred date/hour after product switch:", {
+        selectedDate,
+        selectedHour,
+        preferredIndex,
+        requestedDate: match.requestedDate,
+        adjusted: match.adjusted,
+        product: currentDataProduct
+    });
+
+    pendingPreferredDate = null;
+    pendingPreferredHour = null;
+
+    loadDate(selectedDate, load);
+}
+
   function getPreviousDate(dateStr) {
       let d = new Date(dateStr + "T00:00:00Z");
       d.setUTCDate(d.getUTCDate() - 1);
@@ -1482,6 +1732,36 @@ function hideLoading() {
         overlay.classList.remove("visible");
     }
 }
+
+function showMapWarningNotice(title, detailText, autoHideMs = 6000) {
+    const notice = document.getElementById("map-no-data-notice");
+    const textEl = document.getElementById("map-no-data-text");
+
+    if (!notice) {
+        return;
+    }
+
+    const strongEl = notice.querySelector("strong");
+
+    if (strongEl) {
+        strongEl.textContent = title || "Notice";
+    }
+
+    if (textEl) {
+        textEl.textContent = detailText || "";
+    }
+
+    notice.classList.add("visible");
+
+    if (autoHideMs && autoHideMs > 0) {
+        window.clearTimeout(notice._autoHideTimer);
+
+        notice._autoHideTimer = window.setTimeout(() => {
+            notice.classList.remove("visible");
+        }, autoHideMs);
+    }
+}
+
 function showNoDataNotice(title, detailText) {
     const notice = document.getElementById("map-no-data-notice");
     const textEl = document.getElementById("map-no-data-text");
@@ -1507,6 +1787,44 @@ function hideNoDataNotice() {
     const notice = document.getElementById("map-no-data-notice");
 
     if (notice) {
+        notice.classList.remove("visible");
+    }
+}
+
+function showMapWarningNotice(title, detailText, autoHideMs = 6500) {
+    const notice = document.getElementById("map-warning-notice");
+    const textEl = document.getElementById("map-warning-text");
+
+    if (!notice) {
+        return;
+    }
+
+    const strongEl = notice.querySelector("strong");
+
+    if (strongEl) {
+        strongEl.textContent = title || "Notice";
+    }
+
+    if (textEl) {
+        textEl.textContent = detailText || "";
+    }
+
+    notice.classList.add("visible");
+
+    if (autoHideMs && autoHideMs > 0) {
+        window.clearTimeout(notice._autoHideTimer);
+
+        notice._autoHideTimer = window.setTimeout(() => {
+            notice.classList.remove("visible");
+        }, autoHideMs);
+    }
+}
+
+function hideMapWarningNotice() {
+    const notice = document.getElementById("map-warning-notice");
+
+    if (notice) {
+        window.clearTimeout(notice._autoHideTimer);
         notice.classList.remove("visible");
     }
 }
@@ -1668,11 +1986,20 @@ function resetPlaybackUI() {
       }
 
 function updateIndividualModeLabel() {
-          const label = document.getElementById('individual-mode-label');
-          if (label) {
-              label.textContent = currentDataProduct === "tempo" ? " Individual Pixel" : " Individual Sensor";
+    const label = document.getElementById('individual-mode-label');
+
+    if (!label) {
+        return;
     }
-  }
+
+    if (currentDataProduct === "tempo") {
+        label.textContent = " Individual Pixel";
+    } else if (currentDataProduct === "fusion") {
+        label.textContent = " Individual Grid Cell";
+    } else {
+        label.textContent = " Individual Sensor";
+    }
+}
 
   // ── SCALEBAR: update on zoom/pan ──
   map.on('zoomend moveend', updateScaleBar);
@@ -2057,10 +2384,8 @@ function getFusionChicagoDateHour(properties) {
 }
 
 function showFusionNoDataMessage(date, detailText) {
-    // Stop the spinner first.
     hideLoading();
 
-    // Clear the previous Fusion layer only when the selected date/time has no data.
     if (currentLayer) {
         map.removeLayer(currentLayer);
         currentLayer = null;
@@ -2183,7 +2508,268 @@ function renderFusionFeatures(features, labelText) {
     return true;
 
 }
+function normalizeCommunityName(value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
+}
 
+function getCommunityFeatureName(feature) {
+    const props = feature.properties || {};
+
+    return (
+        props.community ||
+        props.COMMUNITY ||
+        props.community_name ||
+        props.name ||
+        props.NAME ||
+        "Unknown"
+    );
+}
+
+function parseSimpleCSV(text) {
+    const lines = text.trim().split(/\r?\n/);
+
+    if (lines.length < 2) {
+        return [];
+    }
+
+    const headers = lines[0].split(",").map(h => h.trim());
+
+    return lines.slice(1).map(line => {
+        const values = line.split(",");
+        const row = {};
+
+        headers.forEach((header, index) => {
+            row[header] = values[index] !== undefined ? values[index].trim() : "";
+        });
+
+        return row;
+    });
+}
+
+function loadFusionCommunityCSV() {
+    if (fusionCommunityRows) {
+        return Promise.resolve(fusionCommunityRows);
+    }
+
+    if (fusionCommunityPromise) {
+        return fusionCommunityPromise;
+    }
+
+    fusionCommunityPromise = fetch("/data/fused/fused_hourly_by_community.csv")
+        .then(r => {
+            if (!r.ok) {
+                throw new Error("Could not load /data/fused/fused_hourly_by_community.csv");
+            }
+
+            return r.text();
+        })
+        .then(text => {
+            fusionCommunityRows = parseSimpleCSV(text).map(row => ({
+                community_id: row.community_id,
+                community: row.community,
+                time: row.time,
+                date: row.date,
+                hour: Number(row.hour),
+                no2_estimate_mean: Number(row.no2_estimate_mean),
+                no2_estimate_median: Number(row.no2_estimate_median),
+                no2_estimate_min: Number(row.no2_estimate_min),
+                no2_estimate_max: Number(row.no2_estimate_max),
+                grid_cell_count: Number(row.grid_cell_count || 0),
+            })).filter(row =>
+                row.community &&
+                row.date &&
+                !isNaN(row.hour) &&
+                !isNaN(row.no2_estimate_mean)
+            );
+
+            console.log("Loaded Fusion community rows:", fusionCommunityRows.length);
+
+            return fusionCommunityRows;
+        });
+
+    return fusionCommunityPromise;
+}
+
+function renderFusionCommunityAreas(rows, labelText) {
+    rows = rows || [];
+
+    if (currentDataProduct !== "fusion") {
+        return false;
+    }
+
+    if (!communityData || !communityData.features) {
+        console.warn("Community boundary data not loaded yet.");
+        return false;
+    }
+
+    if (rows.length === 0) {
+        console.warn("No Fusion community rows for selected time.");
+        return false;
+    }
+
+    const stats = {};
+
+    rows.forEach(row => {
+        const communityKey = normalizeCommunityName(row.community);
+        const value = Number(row.no2_estimate_mean);
+        const count = Number(row.grid_cell_count || 1);
+
+        if (!communityKey || isNaN(value)) {
+            return;
+        }
+
+        if (!stats[communityKey]) {
+            stats[communityKey] = {
+                displayName: row.community,
+                weightedSum: 0,
+                count: 0,
+                min: Infinity,
+                max: -Infinity,
+            };
+        }
+
+        stats[communityKey].weightedSum += value * count;
+        stats[communityKey].count += count;
+        stats[communityKey].min = Math.min(stats[communityKey].min, value);
+        stats[communityKey].max = Math.max(stats[communityKey].max, value);
+    });
+
+    const hasAnyCommunityData = Object.values(stats).some(s => s.count > 0);
+
+    if (!hasAnyCommunityData) {
+        console.warn("Fusion community stats were empty after grouping.");
+        return false;
+    }
+
+    if (currentLayer) {
+        map.removeLayer(currentLayer);
+        currentLayer = null;
+    }
+
+    if (communityLayer) {
+        map.removeLayer(communityLayer);
+        communityLayer = null;
+    }
+
+    communityLayer = L.geoJSON(communityData, {
+        style: function(feature) {
+            const communityName = getCommunityFeatureName(feature);
+            const communityKey = normalizeCommunityName(communityName);
+            const s = stats[communityKey];
+
+            let avg = null;
+
+            if (s && s.count > 0) {
+                avg = s.weightedSum / s.count;
+            }
+
+            return {
+                color: "#222",
+                weight: 1,
+                fillColor: avg === null ? "transparent" : getColorClarity(avg),
+                fillOpacity: avg === null ? 0 : 0.65,
+            };
+        },
+
+        onEachFeature: function(feature, layer) {
+            const communityName = getCommunityFeatureName(feature);
+            const communityKey = normalizeCommunityName(communityName);
+            const s = stats[communityKey];
+
+            let avg = null;
+            let count = 0;
+
+            if (s && s.count > 0) {
+                avg = s.weightedSum / s.count;
+                count = s.count;
+            }
+
+            layer.bindTooltip(`
+                <b>${communityName}</b><br>
+                ${labelText}<br>
+                Avg Fusion NO₂: ${avg === null ? "No Data" : avg.toFixed(2) + " ppb"}<br>
+                Grid cells: ${count}
+            `);
+        }
+    });
+
+    communityLayer.addTo(map);
+    hideLoading();
+    hideNoDataNotice();
+
+    console.log("Rendered Fusion community layer.", {
+        rowsUsed: rows.length,
+        communitiesWithData: Object.keys(stats).length
+    });
+
+    return true;
+}
+
+function loadFusionCommunities(date, existingLoad) {
+    const load = existingLoad || startNewLoad("fusion");
+
+    if (!isActiveLoad(load)) {
+        return;
+    }
+
+    loadFusionCommunityCSV()
+        .then(rows => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            let filteredRows = [];
+            let labelText = "";
+
+            if (TIME_SCALE === "hourly") {
+                filteredRows = rows.filter(row =>
+                    row.date === date &&
+                    row.hour === selectedHour
+                );
+
+                labelText = `Time: ${formatHourForDisplay(date, selectedHour)}`;
+            }
+
+            else if (TIME_SCALE === "daily") {
+                filteredRows = rows.filter(row =>
+                    row.date === date
+                );
+
+                labelText = "Daily Average";
+            }
+
+            else if (TIME_SCALE === "monthly") {
+                const month = toMonthKey(date);
+
+                filteredRows = rows.filter(row =>
+                    row.date &&
+                    row.date.substring(0, 7) === month
+                );
+
+                labelText = "Monthly Average";
+            }
+
+            const rendered = renderFusionCommunityAreas(
+                filteredRows,
+                labelText
+            );
+
+            if (!rendered) {
+                showFusionNoDataMessage(date, labelText);
+            }
+        })
+        .catch(err => {
+            if (!isActiveLoad(load)) {
+                return;
+            }
+
+            console.error("Could not load Fusion community CSV:", err);
+            showFusionNoDataMessage(date, "Community Area");
+        });
+}
 
 function loadFusionHourly(date, existingLoad) {
     const load = existingLoad || startNewLoad("fusion");
@@ -3448,7 +4034,10 @@ function renderMonthlyTempoData(data, load) {
 
               if (!hasValidData) {
                   console.warn("No valid TEMPO data for", date);
-                  hideLoading();
+                  showNoDataNotice(
+                      "No TEMPO Data Available",
+                      `No data for ${utcDateToCentralPretty(date)}.`
+                  );
                   return;
               }
 
@@ -3464,31 +4053,32 @@ function renderMonthlyTempoData(data, load) {
           return;
       }
 
-            // ── FUSION ROUTING ──
-      if (productAtStart === "fusion") {
-          // For now Fusion is point-based only.
-          // If user selected community mode earlier, force sensor-style rendering.
-          displayMode = "sensor";
+    // ── FUSION ROUTING ──
+    if (productAtStart === "fusion") {
+        if (displayMode === "community") {
+            loadFusionCommunities(date, load);
+            return;
+        }
 
-          if (TIME_SCALE === "hourly") {
-              loadFusionHourly(date, load);
-              return;
-          }
+        if (TIME_SCALE === "hourly") {
+            loadFusionHourly(date, load);
+            return;
+        }
 
-          if (TIME_SCALE === "daily") {
-              loadFusionDaily(date, load);
-              return;
-          }
+        if (TIME_SCALE === "daily") {
+            loadFusionDaily(date, load);
+            return;
+        }
 
-          if (TIME_SCALE === "monthly") {
-              loadFusionMonthly(selectedMonth, load);
-              return;
-          }
+        if (TIME_SCALE === "monthly") {
+            loadFusionMonthly(selectedMonth, load);
+            return;
+        }
 
-          console.warn("Unsupported Fusion TIME_SCALE:", TIME_SCALE);
-          hideLoading();
-          return;
-      }
+        console.warn("Unsupported Fusion TIME_SCALE:", TIME_SCALE);
+        hideLoading();
+        return;
+    }
       // ── CLARITY ROUTING ──
 if (TIME_SCALE === "range") {
     loadDateRange();
@@ -3593,7 +4183,10 @@ if (TIME_SCALE === "monthly") {
                 return;
             }
 
-            hideLoading();
+            showNoDataNotice(
+                "No OpenAir Data Available",
+                `No sensor data for ${utcDateToCentralPretty(date)}.`
+            );
             return;
         }
 
@@ -4211,8 +4804,11 @@ console.log("INITIAL PRODUCT STATE", {
      }
 
      // ── DATA PRODUCT RADIO BUTTONS (sidebar: tempo / openaq / fusion) ──────────
-     document.querySelectorAll('input[name="dataProduct"]').forEach(radio => {
-     radio.addEventListener('change', e => {
+    document.querySelectorAll('input[name="dataProduct"]').forEach(radio => {
+  radio.addEventListener('change', e => {
+    // Capture current date/hour before switching products.
+    captureCurrentDateHourPreference();
+
     const selected = e.target.value;
     const normalizedSelected = normalizeDataProduct(selected);
 
@@ -4281,22 +4877,19 @@ console.log("INITIAL PRODUCT STATE", {
              showToast("Open Air Chicago (Clarity) data product selected");
 
          } else if (currentDataProduct === "fusion") {
-             // Fusion is a separate dataset with its own files and rendering
-             displayMode = "sensor";
+            displayMode =
+                document.querySelector('input[name="displayMode"]:checked')?.value ||
+                displayMode ||
+                "sensor";
 
-             // Sync Spatial Scale radio buttons
-             document.querySelectorAll('input[name="displayMode"]').forEach(r => {
-                 r.checked = (r.value === "sensor");
-             });
+            updateIndividualModeLabel();
 
-             // Update legend for Fusion scale
-             updateLegend();
+            updateLegend();
 
-             // Load Fusion dates and data
-             loadFusionDates();
+            loadFusionDates();
 
-             showToast("Fusion data product selected");
-         }
+            showToast("Fusion data product selected");
+        }
 
 
          // Clear caches when switching data products
@@ -4442,7 +5035,7 @@ console.log("INITIAL PRODUCT STATE", {
 
                 nextCachedDate = null;
                 nextCachedHourBuckets = null;
-                loadDate(dates[0], load);
+                applyPreferredDateAndHourAfterDateLoad(load);
              })
              .catch(err => {
                  console.error("Could not load Clarity dates.json:", err);
@@ -4459,7 +5052,7 @@ console.log("INITIAL PRODUCT STATE", {
                      var dateSlider = document.getElementById("dateSlider");
                      dateSlider.max = dates.length - 1;
                      dateSlider.value = 0;
-                     loadDate(dates[0]);
+                     applyPreferredDateAndHourAfterDateLoad(load);
                  }
              });
      }
@@ -4556,7 +5149,7 @@ function loadClarityDates() {
                 last: dates[dates.length - 1]
             });
 
-            loadDate(dates[0], load);
+            applyPreferredDateAndHourAfterDateLoad(load);
         })
         .catch(err => {
             console.error("Could not load Clarity dates.json:", err);
@@ -4589,8 +5182,7 @@ function loadClarityDates() {
                 document.getElementById("timeSlider")?.value || 0
             );
 
-            updateDateAndTimeLabels(dates[0]);
-            loadDate(dates[0], load);
+            applyPreferredDateAndHourAfterDateLoad(load);
         });
 }
      // ── GENERATE CLARITY DATES FROM AVAILABLE FILES (fallback) ─────────────
@@ -4692,7 +5284,6 @@ function loadFusionDates() {
             if (dateSlider) {
                 dateSlider.min = 0;
                 dateSlider.max = dates.length - 1;
-                dateSlider.value = 0;
             }
 
             if (startDateInput) {
@@ -4732,7 +5323,7 @@ function loadFusionDates() {
                 last: dates[dates.length - 1]
             });
 
-            loadDate(dates[0], load);
+            applyPreferredDateAndHourAfterDateLoad(load);
         })
         .catch(err => {
             if (!isActiveLoad(load)) {
