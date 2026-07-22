@@ -30,14 +30,6 @@
     z-index: 3000;
   }
 
-  /* Background image for page */
-  main.content {
-   /* background-image: url({% static 'dashboard/images/community.png' %}); */
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: right center;
-    background-attachment: fixed;
-  }
     /* Hero (Heading) banner */
     .hero {
     text-align: center;
@@ -275,7 +267,7 @@
   .graph-title {
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--text-muted);
+    color: var(--primary);
     margin-bottom: 0.5rem;
     text-align: center;
   }
@@ -286,6 +278,7 @@
   }
 
   .graph-caption {
+  font-size: 0.95rem;
   text-align: center;
   width: 100%;
   line-height: 1.5;
@@ -635,14 +628,15 @@
 
     <!-- Graph 1: Percentile Bell Curve -->
     <div class="graph-container" id="graph-percentile">
+
+      <div class="graph-caption" id="graph-percentile-caption">
+        Select a community to view its percentile ranking.
+      </div>
+
       <div class="graph-title">Community Percentile Ranking</div>
 
       <div class="plotly-zoom-notification" id="zoom-notify-percentile">
         <strong>Double-click to reset view.</strong>
-      </div>
-
-      <div class="graph-caption" id="graph-percentile-caption">
-        Select a community to view its percentile ranking.
       </div>
 
       <div class="graph-placeholder">
@@ -652,10 +646,15 @@
       <div class="plot-axis-label">
         Percentile
       </div>
+
     </div>
 
    <!-- Graph 2: Distribution -->
 <div class="graph-container" id="graph-tempo">
+
+  <div class="graph-caption" id="graph-distribution-caption">
+    Select a community to view its NO₂ distribution.
+  </div>
 
   <div class="graph-title" id="graph-tempo-title">
     Ground NO₂ Distribution (ppb)
@@ -673,10 +672,6 @@
 
   </div>
 
-  <div class="graph-caption" id="graph-distribution-caption">
-    Select a community to view its NO₂ distribution.
-  </div>
-
   <div class="graph-placeholder">
     Select a community to view graphs.
   </div>
@@ -689,6 +684,10 @@
 
 <!-- Graph 3: Boxplot -->
 <div class="graph-container" id="graph-ground">
+
+  <div class="graph-caption" id="graph-boxplot-caption">
+    Select a community to view weekday NO₂ patterns.
+  </div>
 
   <div class="graph-title" id="graph-ground-title">
     Ground NO₂ by Day of Week (ppb)
@@ -703,10 +702,6 @@
     <div class="loading-text">
       Loading box plot...
     </div>
-  </div>
-
-  <div class="graph-caption" id="graph-boxplot-caption">
-    Select a community to view weekday NO₂ patterns.
   </div>
 
   <div class="graph-placeholder">
