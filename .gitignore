@@ -1,5 +1,7 @@
 dashboard/data/
 .venvv/
+.venv django/
 .vscode/
 activity_log.json
 dashboard/__pycache__/
+.gitignore
