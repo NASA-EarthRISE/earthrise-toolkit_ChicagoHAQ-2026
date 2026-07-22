@@ -112,6 +112,7 @@ nav {
 
 /* Atmosphere logo — slightly larger */
 .logo-atmosphere {
+  padding-top: 6px;
   height: 48px;
 }
 
