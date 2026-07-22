@@ -806,6 +806,10 @@ fetch("{% static 'dashboard/layers/Chicago.geojson' %}") // load Chicago boundar
   var selectedCommunity = null //keep track of clicked community
   let CommunityAreasLayer = null    //keep reference to community layer for dropdown zoom and go button
 
+  let selectedLayer = null;
+  let hoveredLayer = null;
+
+
   //load dropdown
   var dropdownCommunity = document.getElementById('community-dropdown');
 
@@ -814,10 +818,19 @@ fetch("{% static 'dashboard/layers/Chicago.geojson' %}") // load Chicago boundar
     return;
   }
 
+  // Reset all community styles
+  CommunityAreasLayer.eachLayer(function(layer) {
+    layer.setStyle(defaultStyle);
+  });
+
+  // Close any community popup that might still be open
+  map.closePopup();
+
+  selectedLayer = null;
+
   const shouldZoom = options.zoom !== false;
   const shouldOpenPopup = options.popup !== false;
   const shouldRenderGraphs = options.renderGraphs === true;
-
   selectedCommunity = selectedArea;
   dropdownCommunity.value = selectedArea;
 
@@ -825,8 +838,9 @@ fetch("{% static 'dashboard/layers/Chicago.geojson' %}") // load Chicago boundar
     const communityName = layer.feature.properties.community;
 
     if (communityName === selectedArea) {
+      selectedLayer = layer;
       layer.setStyle(highlightStyle);
-      layer.bringToFront();
+      //layer.bringToFront();
 
       if (shouldZoom) {
         map.flyToBounds(layer.getBounds(), {
@@ -880,18 +894,25 @@ fetch("{% static 'dashboard/layers/Chicago.geojson' %}") // load Chicago boundar
             //highlight on hover
               layer.on({
                 mouseover: function(e) {
-                  e.target.setStyle(highlightStyle);
-                  e.target.bringToFront();
+                  const layer = e.target;
+
+                  hoveredLayer = layer;
+
+                  if (layer !== selectedLayer) {
+                    layer.setStyle(highlightStyle);
+                    //layer.bringToFront();
+                  }
                 },
 
                 mouseout: function(e) {
-                  const communityName = e.target.feature.properties.community;
+                  const layer = e.target;
 
-                  if (communityName === selectedCommunity) {
-                    e.target.setStyle(highlightStyle);
-                    e.target.bringToFront();
-                  } else {
-                    e.target.setStyle(defaultStyle);
+                  if (layer !== selectedLayer) {
+                    layer.setStyle(defaultStyle);
+                  }
+
+                  if (hoveredLayer === layer) {
+                    hoveredLayer = null;
                   }
                 }
               });
@@ -1085,16 +1106,32 @@ const label =
 
    // Check if percentile data is available for this community
    if (communityPercentile === null || communityPercentile === undefined) {
-     const noDataMsg = metric === 'ground'
-       ? 'No Ground (OpenAir) sensors available for this community. Percentile ranking cannot be calculated.'
-       : 'No TEMPO data available for this community. Percentile ranking cannot be calculated.';
-     container.innerHTML = `
-       <div class="graph-placeholder">
-         <strong>Percentile data unavailable</strong><br>
-         ${noDataMsg}
-       </div>`;
-     return;
-   }
+    const noDataMsg =
+      metric === 'ground'
+        ? 'No Ground (OpenAir) sensors available for this community. Percentile ranking cannot be calculated.'
+        : metric === 'tempo'
+          ? 'No TEMPO data available for this community. Percentile ranking cannot be calculated.'
+          : 'No Fused data available for this community. Percentile ranking cannot be calculated.';
+
+    const oldChart = container.querySelector('.plotly-chart');
+    if (oldChart) oldChart.remove();
+
+    let placeholder = container.querySelector('.graph-placeholder');
+
+    if (!placeholder) {
+      placeholder = document.createElement('div');
+      placeholder.className = 'graph-placeholder';
+      container.appendChild(placeholder);
+    }
+
+    placeholder.innerHTML = `
+      <strong>Percentile data unavailable</strong><br>
+      ${noDataMsg}
+    `;
+    placeholder.style.display = 'block';
+
+    return;
+  }
 
    // Build normal distribution (bell curve) for percentiles 0-100
    const allPercentiles = rankingsData
@@ -1224,7 +1261,10 @@ const sourceLabel =
 
       if (filteredData.length === 0) {
         if (loadingEl) loadingEl.classList.remove('visible');
-        container.innerHTML = `<div class="graph-placeholder">${sourceLabel} NO₂ data not available.</div>`;
+        showNoData(
+          container,
+          `${sourceLabel} NO₂ data not available.`
+        );
         return;
       }
 
@@ -1353,7 +1393,10 @@ const sourceLabel =
 
       if (filteredData.length === 0) {
         if (loadingEl) loadingEl.classList.remove('visible');
-        container.innerHTML = `<div class="graph-placeholder">${sourceLabel} NO₂ data not available.</div>`;
+        showNoData(
+          container,
+          `${sourceLabel} NO₂ data not available.`
+        );
         return;
       }
 
@@ -1459,6 +1502,22 @@ const sourceLabel =
        if (loadingEl) loadingEl.classList.remove('visible');
        container.innerHTML = '<div class="graph-placeholder">Failed to load data.</div>';
      });
+}
+
+function showNoData(container, message) {
+  const oldChart = container.querySelector('.plotly-chart');
+  if (oldChart) oldChart.remove();
+
+  let placeholder = container.querySelector('.graph-placeholder');
+
+  if (!placeholder) {
+    placeholder = document.createElement('div');
+    placeholder.className = 'graph-placeholder';
+    container.appendChild(placeholder);
+  }
+
+  placeholder.innerHTML = message;
+  placeholder.style.display = 'block';
 }
 
 // ── ZOOM NOTIFICATION ──────────────────────────────────────────────────────────────────────
