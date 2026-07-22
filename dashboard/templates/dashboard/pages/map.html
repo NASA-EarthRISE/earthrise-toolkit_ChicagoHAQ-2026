@@ -578,6 +578,11 @@
         line-height: 1.25;
     }
 
+    /* When explore panel is expanded, push no-data notice downward so it's readable */
+    #explore-panel.expanded ~ .map-no-data-notice {
+        top: 325px;
+    }
+
     #map {
         flex: 1 1 auto !important;
         width: 100% !important;
@@ -636,7 +641,12 @@
       <button id="explore-panel-toggle" class="explore-panel-toggle" title="Toggle explore panel" aria-label="Toggle explore panel">?</button>
       <div id="explore-panel-body">
         <strong>Explore The Map </strong><br/>
-        <span id="explore-panel-content">Click and drag to shift your view</span>
+        <span id="explore-panel-content">Click and drag to shift your view.</span>
+        <p><strong>Display Data </strong><br/>
+        <span id="explore-panel-content">Customize the observation window, data products, and spatial scale with the sidebar to the left. </span></p>
+        <p><strong>Playback </strong><br/>
+        <span id="explore-panel-content">Click the play button or drag the slider below to view the change of data over time.</span></p>
+        <p><br/><span id="explore-panel-content">For an in-depth tutorial on this dashboard, visit the <strong>User Guide</strong> page.</span></p>
       </div>
     </div>
   
