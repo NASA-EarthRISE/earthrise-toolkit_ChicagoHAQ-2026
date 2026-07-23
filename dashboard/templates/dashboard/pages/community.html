@@ -658,7 +658,7 @@
 <div class="graph-container" id="graph-tempo">
 
   <div class="graph-title" id="graph-tempo-title">
-    Ground NO₂ Distribution (ppb)
+    NO₂ Distribution
   </div>
 
   <div class="plotly-zoom-notification" id="zoom-notify-tempo">
@@ -681,9 +681,12 @@
     Select a community to view graphs.
   </div>
 
-  <div class="plot-axis-label">
+  <div
+    class="plot-axis-label"
+    id="graph-distribution-axis-label"
+  >
     NO₂ (ppb)
-  </div>
+</div>
 
 </div>
 
@@ -1184,9 +1187,8 @@ document.querySelectorAll('input[name="percentile-metric"]').forEach(radio => {
   radio.addEventListener('change', function() {
     var selectedArea = dropdownCommunity.value;
     selectedCommunity = selectedArea;
+    updateGraphTitles();
     if (selectedArea) {
-      // Update dynamic titles
-      updateGraphTitles();
       if (rankingsData) {
         drawGraphs(selectedArea);
       }
@@ -1197,8 +1199,19 @@ document.querySelectorAll('input[name="percentile-metric"]').forEach(radio => {
 function updateGraphTitles() {
   const source = getActivePercentileMetric();
 
-  const groundTitle = document.getElementById('graph-ground-title');
-  const tempoTitle = document.getElementById('graph-tempo-title');
+  const groundTitle =
+    document.getElementById('graph-ground-title');
+
+  const tempoTitle =
+    document.getElementById('graph-tempo-title');
+
+  const distributionAxis =
+    document.getElementById('graph-distribution-axis-label');
+
+  const units =
+    source === 'tempo'
+      ? 'molecules/cm²'
+      : 'ppb';
 
   if (source === 'ground') {
     groundTitle.textContent =
@@ -1214,12 +1227,15 @@ function updateGraphTitles() {
       'TEMPO NO₂ Distribution (molecules/cm²)';
   }
 
-  else if (source === 'fused') {
+  else {
     groundTitle.textContent =
       'Fused NO₂ by Day of Week (ppb)';
     tempoTitle.textContent =
       'Fused NO₂ Distribution (ppb)';
   }
+
+  distributionAxis.innerHTML =
+    `NO₂ (${units})`;
 }
 
 function renderGraphs(communityName) {
