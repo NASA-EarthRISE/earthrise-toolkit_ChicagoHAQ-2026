@@ -134,7 +134,7 @@ def check_data_status():
             clarity_latest = sorted(clarity_files)[-1]
 
     status['sources'].append({
-        'name': 'OpenAir Clarity Data',
+        'name': 'Open Air Chicago Data',
         'type': 'clarity',
         'exists': clarity_exists,
         'file_count': clarity_count,
