@@ -1,9 +1,10 @@
-dashboard/data/
+dashboard/data/*
+!dashboard/data/community_statistics/
 .venvv/
+.venv django/
 .vscode/
 .vscode/launch.json
 .vscode/settings.json
 activity_log.json
-config/__pycache__/
-processing-scripts/
+dashboard/__pycache__/
 .gitignore

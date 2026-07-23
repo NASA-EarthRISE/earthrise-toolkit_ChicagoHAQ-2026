@@ -1,5 +1,4 @@
 {% extends "dashboard/layout.html" %}
-
 {% load static %}
 
 {%block title%} Dashboard User Guide {% endblock %}
@@ -172,7 +171,19 @@
   <div class="tutorial-block-heading"><strong style="color: #96a2bf;">Community Statistics</strong>
   </div>
   <p>
-    This page visualizes NO<sub>2</sub> data for each of the data products: TEMPO, Open Air Chicago ground sensors, and the fused data product on a community scale. Select a community from the dropdown on the left to visualize key statistics for that community regarding NO<sub>2</sub> pollution. If you do not know your community, click on "Get Help" below the map. This will take you to an external map created by the City of Chicago where you can press the search magnifying glass in the top left corner and search up an address to identify the community the address is in.  
+    This page visualizes NO<sub>2</sub> statistics on a community level for each of the data products: TEMPO, Open Air Chicago ground sensors, and the fused data product. 
+  </p>
+  <p>
+    1. Select a community area from the dropdown on the left side of the page.
+    <ol type="a"; style="padding-left: 36px">
+      <li>If you do not know the community area a specific address is in, click on the blue “Get Help” button below the map. This will take you to an external site created by the City of Chicago.Once you are on this site, click the search magnifying glass in the top left corner to search up an address and get the name of the community area the address is in.</li>
+    </ol>
+  </p>
+  <p>
+    2. After you have selected a community, graphs will populate on the right side of the page visualizing different statistics. By default, the statistics will be about the Ground Sensors (Open Air Chicago) for that community. Select the “TEMPO” or the “Fused”radio buttons to see data visualizations for a different data product.
+  </p>
+  <p>
+    3. If you would like to save a PDF of the community statisticspage, click on the “Save as PDF” button in the top right corner ofthe page just below the navigation bar.
   </p>
 </div>
 
@@ -180,7 +191,35 @@
   <div class="tutorial-block-heading"><strong style="color: #96a2bf;">Export Data</strong>
   </div>
   <p>
-    This page allows you to export the data both as a pdf of the map and the raw data behind the map. 
+    This page allows you to export the data files used in the dashboard. 
+  </p>
+  <p>
+    1. Under the Export Data Files left sidebar, first choose a Data Source, depending on whether you want to download Open Air Chicago, TEMPO, or Fused data.
+  </p>
+  <p>
+    2. Choose the file type you want to download from one of the following options:
+    <ul style="padding-left: 36px; text-indent: -36px;">
+      <li style="padding-left: 36px; text-indent: -36px;">Hourly: hourly concentrations of NO<sub>2</sub> </li>
+      <li style="padding-left:36px; text-indent: -36px;">Daily Community Average: average daily NO<sub>2</sub> concentrations aggregated to Chicago's community </li>
+      </li>
+      <li style="padding-left: 36px; text-indent: -36px;">Daily Averages: average daily NO<sub>2</sub> concentrations for each pixel (TEMPO and /Fused data) or by sensor (Open Air Chicago) </li>
+      <li style="padding-left:36px; text-indent: -36px;">Monthly Community Average: average monthly NO<sub>2</sub> concentrations aggregated to Chicago's community </li>
+      </li>
+      <li style="padding-left: 36px; text-indent: -36px;">Monthly Averages: average monthly NO<sub>2</sub> concentrations for each pixel (TEMPO and /Fused data) or by sensor (Open Air Chicago) </li>
+    </ul>
+  </p>
+  <p>
+    3. (Optional): Choose a date filter to filter the files to a certain month.
+  </p>
+  <p>
+    4. Choose the export format. Most files in their original format will export as a .geojson. If you want to export the files as a .csv, click the “CSV” button.
+  </p>
+  <p>
+    5. On the right side of the page, you can click the “Select All” checkbox to select all data files for download or choose individual file namesto download.
+  </p>
+  <p>
+    6. Click the "Download Selected” button in the left sidebar to download selected files.
   </p>
 </div>
+
 {% endblock %}
