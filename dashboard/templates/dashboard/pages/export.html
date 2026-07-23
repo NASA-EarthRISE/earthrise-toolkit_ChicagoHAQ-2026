@@ -175,17 +175,25 @@
   }
 
   .map-type-btn {
-    padding: 0.6rem 0.3rem;
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    background: var(--bg);
-    color: var(--text);
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.2s;
-  }
+  padding: 0.6rem 0.4rem;
+  min-height: 30px;
+
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+  white-space: normal;
+}
 
   .map-type-btn:hover {
     border-color: var(--primary-light);
@@ -520,7 +528,7 @@
       <!-- Data Source Selection -->
       <h3>Data Source</h3>
       <div class="map-type-grid">
-        <button class="map-type-btn active" data-source="clarity" onclick="selectDataSource('clarity')">OpenAir</button>
+        <button class="map-type-btn active" data-source="clarity" onclick="selectDataSource('clarity')">Open Air Chicago</button>
         <button class="map-type-btn" data-source="tempo" onclick="selectDataSource('tempo')">TEMPO</button>
         <button class="map-type-btn" data-source="fused" onclick="selectDataSource('fused')">Fused</button>
       </div>
@@ -530,11 +538,11 @@
       <div class="form-group">
         <select id="data-file-type" onchange="loadDataFiles()">
           <option value="">All types</option>
-          <option value="daily">Daily (Raw)</option>
-          <option value="daily_community">Daily — Community Avg</option>
-          <option value="daily_pixel">Daily — Pixel Avg</option>
-          <option value="monthly_community">Monthly — Community Avg</option>
-          <option value="monthly_pixel">Monthly — Pixel Avg</option>
+          <option value="daily">Hourly</option>
+          <option value="daily_community">Daily Community Average</option>
+          <option value="daily_pixel">Daily Average</option>
+          <option value="monthly_community">Monthly Community Average</option>
+          <option value="monthly_pixel">Monthly Average</option>
         </select>
       </div>
 
