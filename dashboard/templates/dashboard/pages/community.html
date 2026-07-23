@@ -631,14 +631,15 @@
     <!-- Percentile toggle -->
     <div class="percentile-toggle">
       <span style="font-weight:600; font-size:0.9rem;">Data Source:</span>
-          <label>
-        <input type="radio" name="percentile-metric" value="ground" checked />
-        Ground (Open Air Chicago)
-      </label>
 
       <label>
         <input type="radio" name="percentile-metric" value="tempo" />
         TEMPO
+      </label>
+
+          <label>
+        <input type="radio" name="percentile-metric" value="ground" checked />
+        Open Air Chicago (Ground)
       </label>
 
       <label>
@@ -678,7 +679,7 @@
   </div>
 
   <div class="graph-title" id="graph-tempo-title">
-    Ground NO₂ Distribution (ppb)
+    NO₂ Distribution
   </div>
 
   <div class="plotly-zoom-notification" id="zoom-notify-tempo">
@@ -697,9 +698,12 @@
     Select a community to view graphs.
   </div>
 
-  <div class="plot-axis-label">
+  <div
+    class="plot-axis-label"
+    id="graph-distribution-axis-label"
+  >
     NO₂ (ppb)
-  </div>
+</div>
 
 </div>
 
@@ -1200,9 +1204,8 @@ document.querySelectorAll('input[name="percentile-metric"]').forEach(radio => {
   radio.addEventListener('change', function() {
     var selectedArea = dropdownCommunity.value;
     selectedCommunity = selectedArea;
+    updateGraphTitles();
     if (selectedArea) {
-      // Update dynamic titles
-      updateGraphTitles();
       if (rankingsData) {
         drawGraphs(selectedArea);
       }
@@ -1213,8 +1216,19 @@ document.querySelectorAll('input[name="percentile-metric"]').forEach(radio => {
 function updateGraphTitles() {
   const source = getActivePercentileMetric();
 
-  const groundTitle = document.getElementById('graph-ground-title');
-  const tempoTitle = document.getElementById('graph-tempo-title');
+  const groundTitle =
+    document.getElementById('graph-ground-title');
+
+  const tempoTitle =
+    document.getElementById('graph-tempo-title');
+
+  const distributionAxis =
+    document.getElementById('graph-distribution-axis-label');
+
+  const units =
+    source === 'tempo'
+      ? 'molecules/cm²'
+      : 'ppb';
 
   if (source === 'ground') {
     groundTitle.textContent =
@@ -1230,12 +1244,15 @@ function updateGraphTitles() {
       'TEMPO NO₂ Distribution (molecules/cm²)';
   }
 
-  else if (source === 'fused') {
+  else {
     groundTitle.textContent =
       'Fused NO₂ by Day of Week (ppb)';
     tempoTitle.textContent =
       'Fused NO₂ Distribution (ppb)';
   }
+
+  distributionAxis.innerHTML =
+    `NO₂ (${units})`;
 }
 
 function renderGraphs(communityName) {
@@ -1312,21 +1329,21 @@ function renderPercentileGraph(communityName) {
     ? 'ground_percentile'
     : metric === 'tempo'
       ? 'tempo_percentile'
-      : 'fused_percentile';
+      : 'fused_percentile_y';
 
 const rankCol =
   metric === 'ground'
     ? 'ground_rank'
     : metric === 'tempo'
       ? 'tempo_rank'
-      : 'fused_rank';
+      : 'fused_rank_y';
 
 const no2Col =
   metric === 'ground'
     ? 'ground_no2_ppb'
     : metric === 'tempo'
       ? 'tempo_no2_molecules_cm2'
-      : 'fused_no2_ppb';
+      : 'fused_no2_ppb_y';
 
 const label =
   metric === 'ground'

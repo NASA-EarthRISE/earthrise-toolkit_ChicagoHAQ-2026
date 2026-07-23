@@ -2,7 +2,7 @@ import pandas as pd
 
 rankings_path = r"C:\Users\kphung\Documents\Temp Folder\2026_Sum_LaRC_Chicago_HAQ\dashboard\data\community_statistics\community_rankings_ground_vs_tempo.csv"
 
-fused_path = r"C:\Users\kphung\Documents\Temp Folder\2026_Sum_LaRC_Chicago_HAQ\dashboard\data\fused\fused_hourly_by_community.csv"
+fused_path = r"C:\Users\kphung\Documents\Temp Folder\fusion_by_community.csv"
 
 # Read files
 rankings_df = pd.read_csv(rankings_path)

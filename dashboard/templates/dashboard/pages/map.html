@@ -387,8 +387,7 @@
         overflow-x: hidden !important;
         max-height: calc(100vh - var(--nav-height, 56px) - var(--map-export-height, 38px)) !important;
         transition: opacity 0.2s ease, max-height 0.3s ease !important;
-        padding: 1.25rem !important;
-        padding-bottom: 3rem !important; /* extra space so last content isn't hidden behind gradient */
+        padding: 1.25rem 2.1rem 3rem 1.25rem !important;
         overscroll-behavior: contain;
         position: relative !important;
     }
@@ -404,6 +403,40 @@
         pointer-events: none !important;
         z-index: 10 !important;
     }
+    /* SIDEBAR CONTENT */
+    .date-panel {
+    background-color: var(--primary-dark);
+    border-radius: 12px;
+    padding: 1.1rem;
+    margin-top: 14px;
+}
+
+.date-panel .hint {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    text-align: center;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: rgba(255,255,255,0.9);
+}
+
+.date-panel label {
+    font-weight: 600;
+}
+
+.load-date-btn {
+    font-weight: 600;
+}
+
+#single-date-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+#single-date-group {
+    margin-bottom: 0 !important;
+}
 
     /* ── SIDEBAR BLUE STRIP ────────────────────────
        Full-height non-interactive visual accent on right edge of sidebar.
@@ -412,12 +445,13 @@
         position: absolute;
         top: 0;
         right: 0;
-        width: 30px;
+        width: 20px;
         height: 100%;
         background: #005a9e;
         pointer-events: none;
         z-index: 100;
         transition: background 0.2s;
+        
     }
 
     /* ── SIDEBAR TOGGLE BUTTON ─────────────────────
@@ -454,6 +488,12 @@
         letter-spacing: 2px !important;
         overflow: visible !important;
         white-space: nowrap !important;
+    }
+    .sidebar-toggle-btn {
+        left: calc(100% - 4px) !important;
+    }
+    .sidebar-toggle-btn {
+        border-radius: 0 8px 8px 0 !important;
     }
 
     .sidebar-toggle-btn:hover {
@@ -675,8 +715,15 @@
           <span id="explore-panel-content">Click the play button or drag the slider below to view the change of data over time.</span>
         </p>
         <p>
-          <span id="explore-panel-content">For an in-depth tutorial on this dashboard, visit the <strong>User Guide</strong> page.</span>
-        </p>
+        <span id="explore-panel-content">
+            For an in-depth tutorial on this dashboard, visit the
+            <a href="{% url 'tutorial' %}" target="_blank"><strong>User Guide</strong></a>
+            page.
+        </span>
+
+
+
+    </p>
       </div>
     </div>
   
