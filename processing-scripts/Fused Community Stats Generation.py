@@ -1,7 +1,7 @@
 import pandas as pd
 
 master_path = r"C:\Users\kphung\Documents\Temp Folder\2026_Sum_LaRC_Chicago_HAQ\dashboard\data\community_statistics\community_no2_master.parquet"
-fused_path = r"C:\Users\kphung\Documents\Temp Folder\2026_Sum_LaRC_Chicago_HAQ\dashboard\data\fused\fused_hourly_by_community.csv"
+fused_path = r"C:\Users\kphung\Documents\Temp Folder\fusion_by_community.csv"
 
 master_df = pd.read_parquet(master_path)
 fused_df = pd.read_csv(fused_path)
