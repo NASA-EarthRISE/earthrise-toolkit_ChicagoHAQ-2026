@@ -1,6 +1,6 @@
 {% extends "dashboard/layout.html" %}
 {% load static %}
-{%block title%} Community Tools {% endblock %}
+{%block title%} Community Statistics {% endblock %}
 {% block extra_css %}
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -483,80 +483,94 @@
      }
    }
 
-   /* ── Scalebar overlay — ruler style, small, bottom right ── */
-   .scalebar-overlay {
-     position: absolute;
-     bottom: 36px;
-     right: 8px;
-     z-index: 1000;
-     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-     pointer-events: none;
-     display: flex;
-     flex-direction: column-reverse;
-   }
+  .compass-overlay {
+      position: absolute;
+      bottom: 60px;
+      right: 8px;
+      z-index: 1000;
+      pointer-events: none;
+  }
 
-   .scalebar-overlay .scalebar-ruler {
-     position: relative;
-     height: 12px;
-     width: 100px;
-   }
+  .compass-image {
+      display: block;
+      width: 40px;
+      height: 40px;
+  }
 
-   .scalebar-overlay .scalebar-main-line {
-     position: absolute;
-     bottom: 0;
-     left: 0;
-     right: 0;
-     height: 1px;
-     background: #333;
-   }
+  /* ── Scalebar overlay — ruler style, small, bottom right ── */
+  .scalebar-overlay {
+    position: absolute;
+    bottom: 36px;
+    right: 8px;
+    z-index: 1000;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column-reverse;
+  }
 
-   .scalebar-overlay .scalebar-ticks {
-     position: absolute;
-     top: 0;
-     left: 0;
-     right: 0;
-     bottom: 0;
-   }
+  .scalebar-overlay .scalebar-ruler {
+    position: relative;
+    height: 12px;
+    width: 100px;
+  }
 
-   .scalebar-overlay .scalebar-tick {
-     position: absolute;
-     bottom: 0;
-     width: 1px;
-     background: #333;
-   }
+  .scalebar-overlay .scalebar-main-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #333;
+  }
 
-   .scalebar-overlay .scalebar-tick.major {
-     height: 8px;
-   }
+  .scalebar-overlay .scalebar-ticks {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
 
-   .scalebar-overlay .scalebar-tick.minor {
-     height: 4px;
-   }
+  .scalebar-overlay .scalebar-tick {
+    position: absolute;
+    bottom: 0;
+    width: 1px;
+    background: #333;
+  }
 
-   .scalebar-overlay .scalebar-labels {
-     position: relative;
-     width: 100px;
-     height: 10px;
-     margin-bottom: 1px;
-   }
+  .scalebar-overlay .scalebar-tick.major {
+    height: 8px;
+  }
 
-   .scalebar-overlay .scalebar-label {
-     position: absolute;
-     font-size: 7px;
-     font-weight: 600;
-     color: #333;
-     white-space: nowrap;
-     transform: translateX(-50%);
-     text-shadow:
-       1px 1px 0 #fff,
-      -1px -1px 0 #fff,
-       1px -1px 0 #fff,
-      -1px 1px 0 #fff,
-       0 1px 0 #fff,
-       0 -1px 0 #fff,
-       1px 0 0 #fff,
-      -1px 0 0 #fff;
-   }
+  .scalebar-overlay .scalebar-tick.minor {
+    height: 4px;
+  }
+
+  .scalebar-overlay .scalebar-labels {
+    position: relative;
+    width: 100px;
+    height: 10px;
+    margin-bottom: 1px;
+  }
+
+  .scalebar-overlay .scalebar-label {
+    position: absolute;
+    font-size: 7px;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    transform: translateX(-50%);
+    text-shadow:
+      1px 1px 0 #fff,
+    -1px -1px 0 #fff,
+      1px -1px 0 #fff,
+    -1px 1px 0 #fff,
+      0 1px 0 #fff,
+      0 -1px 0 #fff,
+      1px 0 0 #fff,
+    -1px 0 0 #fff;
+  }
 
  </style>
 {% endblock %}
@@ -569,7 +583,7 @@
 </div>
 
 <div class="hero">
-<h1>Statistical Analysis</h1>
+<h1>Community Statistics</h1>
 <p class="subtitle">
   Use the tool below to see detailed information on the spatiotemporal trends of NO<sub>2</sub> pollution for any Chicago Community.
 </p>
@@ -588,6 +602,13 @@
 
     <div class="community-map-container">
       <div id="community-map"></div>
+      <!-- Compass -->
+      <div class="compass-overlay" id="compass-overlay">
+      <img
+          src="{% static 'dashboard/images/Compass-Arrow.svg' %}"
+          alt="Compass"
+          class="compass-image">
+      </div>
       <!-- Scalebar -->
       <div class="scalebar-overlay" id="scalebar-overlay">
         <div class="scalebar-ruler" id="scalebar-ruler">
