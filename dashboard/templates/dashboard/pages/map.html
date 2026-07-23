@@ -154,6 +154,7 @@
         gap: 2px;
     }
 
+
     /* Legend overlay — bottom left of map container, above timeslider */
     .map-legend-overlay {
         position: absolute;
@@ -387,49 +388,76 @@
         max-height: calc(100vh - var(--nav-height, 56px) - var(--map-export-height, 38px)) !important;
         transition: opacity 0.2s ease, max-height 0.3s ease !important;
         padding: 1.25rem !important;
+        padding-bottom: 3rem !important; /* extra space so last content isn't hidden behind gradient */
         overscroll-behavior: contain;
+        position: relative !important;
     }
 
-    /* Toggle button — a tall tab on the right edge of the sidebar,
-       positioned near the top (below nav bar), hugging the boundary
-       between sidebar and map container like a drawer pull handle */
+    /* Gradient fade overlay — child element positioned fixed at bottom of sidebar */
+    .sidebar-scroll-fade {
+        position: absolute !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 60px !important;
+        background: linear-gradient(to bottom, rgba(0,90,158,0), rgba(0,90,158,0.95)) !important;
+        pointer-events: none !important;
+        z-index: 10 !important;
+    }
+
+    /* ── SIDEBAR BLUE STRIP ────────────────────────
+       Full-height non-interactive visual accent on right edge of sidebar.
+       Moves with sidebar as it opens/closes. Does NOT block map. */
+    .sidebar-blue-strip {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 30px;
+        height: 100%;
+        background: #005a9e;
+        pointer-events: none;
+        z-index: 100;
+        transition: background 0.2s;
+    }
+
+    /* ── SIDEBAR TOGGLE BUTTON ─────────────────────
+        "Parameters" label on the blue strip.
+        Seamlessly combined with the blue strip (same color).
+        Left edge of button is flush with right edge of sidebar/blue strip. */
     .sidebar-toggle-btn {
         position: absolute !important;
         top: 147px !important;
-        right: -16px !important;
-        left: auto !important;
+        right: auto !important;
+        left: 100% !important;
         transform: none !important;
         z-index: 1100 !important;
-        width: 16px !important;
-        height: 80px !important;
-        background: #ffffff !important;
-        border: 1px solid #d1d1d1 !important;
-        border-left: none !important;
-        border-radius: 0 6px 6px 0 !important;
+        width: 36px !important;
+        min-height: 160px !important;
+        background: #005a9e !important;
+        border: none !important;
+        border-radius: 0 !important;
         cursor: pointer !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
-        transition: background 0.2s, color 0.2s, box-shadow 0.2s !important;
-        color: #77777a !important;
-        font-size: 10px !important;
-        line-height: 1 !important;
-        padding: 0 !important;
+        color: #ffffff !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+        line-height: 1.4 !important;
+        padding: 16px 6px !important;
         margin: 0 !important;
+        box-shadow: none !important;
+        transition: background 0.2s ease !important;
+        writing-mode: vertical-rl !important;
+        text-orientation: mixed !important;
+        letter-spacing: 2px !important;
+        overflow: visible !important;
+        white-space: nowrap !important;
     }
 
     .sidebar-toggle-btn:hover {
-        background: #f0f0f0 !important;
-        color: #005a9e !important;
-        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.3) !important;
-    }
-
-    .sidebar-toggle-btn svg {
-        width: 12px !important;
-        height: 12px !important;
-        transition: transform 0.3s ease !important;
-        fill: currentColor !important;
+        background: #004475 !important;
     }
 
     /* ── Retracted state ────────────────────────────── */
@@ -447,17 +475,11 @@
         pointer-events: none !important;
     }
 
-    /* When retracted, button stays at the right edge of the 0-width sidebar,
-       which is the left boundary of the map area — the thin tab remains
-       visible as a pull handle */
+    /* When retracted, button stays centered on the blue strip (at left edge of map) */
     .map-layout .sidebar.retracted .sidebar-toggle-btn {
-        right: -16px !important;
+        right: 0 !important;
     }
 
-    /* Flip chevron when retracted */
-    .map-layout .sidebar.retracted .sidebar-toggle-btn svg {
-        transform: rotate(180deg) !important;
-    }
 
     /* Make sure .map-layout fills the content area properly */
     .map-layout {
@@ -619,16 +641,16 @@
 
   <!-- Map sidebar (draws from map_sidebar.html)-->
   <aside class="sidebar" id="map-controls">
-    <!-- Sidebar toggle button (chevron) -->
+    <!-- Blue accent strip on right edge of sidebar -->
+    <div class="sidebar-blue-strip"></div>
+    <!-- Sidebar toggle button -->
     <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="Toggle sidebar" aria-label="Toggle sidebar">
-      <!-- Chevron-left icon (points left when expanded, rotates 180° when retracted) -->
-      <svg viewBox="0 0 10 10">
-        <polygon points="6,0 0,5 6,10" />
-    </svg>
+      Parameters
     </button>
     <div class="sidebar-content-wrapper">
       {% include 'dashboard/includes/map_sidebar.html' %}
     </div>
+    <div class="sidebar-scroll-fade"></div>
   </aside>
  
 
@@ -640,13 +662,21 @@
     <div id="explore-panel" class="retracted">
       <button id="explore-panel-toggle" class="explore-panel-toggle" title="Toggle explore panel" aria-label="Toggle explore panel">?</button>
       <div id="explore-panel-body">
-        <strong>Explore The Map </strong><br/>
-        <span id="explore-panel-content">Click and drag to shift your view.</span>
-        <p><strong>Display Data </strong><br/>
-        <span id="explore-panel-content">Customize the observation window, data products, and spatial scale with the sidebar to the left. </span></p>
-        <p><strong>Playback </strong><br/>
-        <span id="explore-panel-content">Click the play button or drag the slider below to view the change of data over time.</span></p>
-        <p><br/><span id="explore-panel-content">For an in-depth tutorial on this dashboard, visit the <strong>User Guide</strong> page.</span></p>
+        <p>
+          <strong>Explore The Map</strong><br/>
+          <span id="explore-panel-content">Click and drag to shift your view.</span>
+        </p>
+        <p>
+          <strong>Display Data</strong><br/>
+          <span id="explore-panel-content">Customize the observation window, data products, and spatial scale with the Parameters sidebar to the left.</span>
+        </p>
+        <p>
+          <strong>Playback</strong><br/>
+          <span id="explore-panel-content">Click the play button or drag the slider below to view the change of data over time.</span>
+        </p>
+        <p>
+          <span id="explore-panel-content">For an in-depth tutorial on this dashboard, visit the <strong>User Guide</strong> page.</span>
+        </p>
       </div>
     </div>
   

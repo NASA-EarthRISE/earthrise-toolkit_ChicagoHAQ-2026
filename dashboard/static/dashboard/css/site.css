@@ -609,14 +609,15 @@ nav {
 }
 
 #explore-panel-body {
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.92);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: .75rem 1rem;
   font-size: .8rem;
   color: var(--text);
-  min-width: 180px;
-  max-width: 220px;
+  width: 220px;
+  max-height: 320px;
+  overflow-y: auto;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   margin-right: .5rem;
   transition: opacity 0.3s ease, transform 0.3s ease, max-width 0.3s ease, padding 0.3s ease;
@@ -624,6 +625,16 @@ nav {
 
 #explore-panel-body strong {
   color: var(--primary);
+}
+
+/* Spacing between sections in the explore panel */
+#explore-panel-body p {
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+#explore-panel-body p:last-child {
+  margin-bottom: 0;
 }
 
 /* Retracted state — only show the circle button */
@@ -1004,6 +1015,29 @@ footer {
 }
 
 @media (max-width: 768px) {
+
+  /* Keep nav and its dropdown above the disclaimer */
+  nav {
+    z-index: 10000;
+  }
+
+
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .basemap-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero h1 {
+  font-size: 1.4rem;
+  }
+}
+
+
+
+@media (max-width: 600px) {
   /* Show mobile disclaimer overlay on small screens */
   .mobile-disclaimer {
     display: flex;
@@ -1017,10 +1051,12 @@ footer {
     align-items: center;
     justify-content: center;
   }
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
 
-  /* Keep nav and its dropdown above the disclaimer */
-  nav {
-    z-index: 10000;
+  .nav-brand {
+    font-size: 0.95rem;
   }
 
   .sidebar {
@@ -1040,42 +1076,5 @@ footer {
   .sidebar.collapsed {
     transform: translateX(-100%);
   }
-
-  .dashboard-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .basemap-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .hero h1 {
-  font-size: 1.4rem;
-  }
-
-  /* Export page: disclaimer overlay inside the map container */
-  .export-map-container .mobile-disclaimer {
-    display: flex;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 10000;
-    background: var(--bg-card);
-    align-items: center;
-    justify-content: center;
-  }
-}
-
-
-
-@media (max-width: 480px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .nav-brand {
-    font-size: 0.95rem;
-  }
+  
 }
