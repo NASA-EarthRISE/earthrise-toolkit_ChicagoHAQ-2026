@@ -15,9 +15,9 @@
 <div class="sidebar-section">
     <h3>Observation Window</h3>
     <div class="map-type-grid">
-        <button class="map-type-btn {% if time_scale == 'hourly' %}active{% endif %}" style = "background-color: var(--warning)" data-type="hourly" data-url="{% url 'map_hourly' %}" onclick="handleMapTypeClick(event, 'hourly');">Hourly</button>
-        <button class="map-type-btn {% if time_scale == 'daily' %}active{% endif %}" style = "background-color: var(--success)" data-type="daily" data-url="{% url 'map_daily' %}" onclick="handleMapTypeClick(event, 'daily');">Daily</button>
-        <button class="map-type-btn {% if time_scale == 'monthly' %}active{% endif %}" style = "background-color: var(--primary-light)" data-type="monthly" data-url="{% url 'map_monthly' %}" onclick="handleMapTypeClick(event, 'monthly');">Monthly</button>
+        <button class="map-type-btn {% if time_scale == 'hourly' %}active{% endif %}" data-type="hourly" data-url="{% url 'map_hourly' %}" onclick="handleMapTypeClick(event, 'hourly');">Hourly</button>
+        <button class="map-type-btn {% if time_scale == 'daily' %}active{% endif %}" data-type="daily" data-url="{% url 'map_daily' %}" onclick="handleMapTypeClick(event, 'daily');">Daily</button>
+        <button class="map-type-btn {% if time_scale == 'monthly' %}active{% endif %}" data-type="monthly" data-url="{% url 'map_monthly' %}" onclick="handleMapTypeClick(event, 'monthly');">Monthly</button>
     </div>
 </div>
 
@@ -70,9 +70,8 @@
 
 <!-- NO₂ Data Products -->
 <div class="sidebar-section">
-    <h3>Data Products</h3>
+    <h3>NO<sub>2</sub> Data Products</h3>
     <div style="margin-bottom:.75rem;">
-        <strong style="font-size:.82rem; color:var(--text-muted);">NO₂ Concentration</strong>
         <label class="layer-item" style="display:block; margin-bottom:.4rem;">
             <input type="radio" name="dataProduct" value="tempo" /> TEMPO
         </label>
