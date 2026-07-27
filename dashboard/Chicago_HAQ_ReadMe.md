@@ -127,7 +127,7 @@ The project is built with Django and uses a file-based data architecture — dat
 | Layer | Technology |
 |---|---|
 | Backend framework | Django 6.0 |
-| Language | Python 3.14 |
+| Language | Python 3.14.6 |
 | Frontend | Django Templates + JavaScript (ES6) |
 | Map library | Leaflet 1.9.4 (CDN) |
 | Map drawing | Leaflet Draw 1.0.4 (CDN) |
