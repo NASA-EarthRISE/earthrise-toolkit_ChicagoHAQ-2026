@@ -110,13 +110,13 @@ nav {
   margin-left: 0.75rem;
 }
 
-/* Atmosphere logo — slightly larger */
+/* Atmosphere logo */
 .logo-atmosphere {
   padding-top: 6px;
   height: 48px;
 }
 
-/* NASA logo — larger, no drop shadow */
+/* NASA logo */
 .logo-nasa {
   height: 60px;
   filter: none;
@@ -124,7 +124,6 @@ nav {
   padding-top: 6px;
 }
 
-/* Remove padding from the link wrapping the NASA logo so it fits within the nav */
 .nav-links a:has(.logo-nasa) {
   padding-top: 0;
   padding-bottom: 0;

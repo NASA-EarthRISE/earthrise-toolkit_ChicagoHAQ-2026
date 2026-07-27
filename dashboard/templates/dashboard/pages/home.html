@@ -83,6 +83,20 @@
 <div class="dashboard-section">
     <h2>Quick Actions</h2>
     <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+        <a href="{% url 'tutorial' %}" style="
+            display:inline-block;
+            padding:0.75rem 1.5rem;
+            background:var(--bg-card);
+            color:var(--text);
+            text-decoration:none;
+            border:2px solid var(--border);
+            border-radius:8px;
+            font-weight:600;
+            font-size:0.9rem;
+            transition:all .2s;
+        " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+            Dashboard Tutorial
+        </a>
         <a href="{% url 'map_daily' %}" style="
             display:inline-block;
             padding:0.75rem 1.5rem;
@@ -110,20 +124,6 @@
             transition:all .2s;
         " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
             Community Analysis
-        </a>
-        <a href="{% url 'tutorial' %}" style="
-            display:inline-block;
-            padding:0.75rem 1.5rem;
-            background:var(--bg-card);
-            color:var(--text);
-            text-decoration:none;
-            border:2px solid var(--border);
-            border-radius:8px;
-            font-weight:600;
-            font-size:0.9rem;
-            transition:all .2s;
-        " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
-            Tutorial
         </a>
         <a href="{% url 'export' %}" style="
             display:inline-block;
@@ -156,7 +156,7 @@
         <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--success);">
             <strong style="color:var(--success);">Open Air Chicago</strong>
             <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
-                Ground-based air quality monitoring network. Surface NO₂ and PM 2.5 concentrations from air quality sensors around the Cook County, Chicago region.
+                Ground-based air quality monitoring network. Surface NO₂ and PM<sub>2.5</sub> concentrations from air quality sensors around the Cook County, Chicago region.
             </p>
             <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted);">Learn More</a>
         </div>
