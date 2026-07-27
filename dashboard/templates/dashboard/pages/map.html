@@ -432,9 +432,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-}
-
-#single-date-group {
     margin-bottom: 0 !important;
 }
 
@@ -462,14 +459,14 @@
         position: absolute !important;
         top: 147px !important;
         right: auto !important;
-        left: 100% !important;
+        left: calc(100% - 4px) !important;
         transform: none !important;
         z-index: 1100 !important;
         width: 36px !important;
         min-height: 160px !important;
         background: #005a9e !important;
         border: none !important;
-        border-radius: 0 !important;
+        border-radius: 0 8px 8px 0 !important;
         cursor: pointer !important;
         display: flex !important;
         align-items: center !important;
@@ -488,12 +485,7 @@
         letter-spacing: 2px !important;
         overflow: visible !important;
         white-space: nowrap !important;
-    }
-    .sidebar-toggle-btn {
-        left: calc(100% - 4px) !important;
-    }
-    .sidebar-toggle-btn {
-        border-radius: 0 8px 8px 0 !important;
+        
     }
 
     .sidebar-toggle-btn:hover {
@@ -835,6 +827,8 @@
   <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
   <!-- html2canvas for PNG export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Time Utilities Module -->
+  <script src="{% static 'dashboard/js/leaflet/time_utils.js' %}"></script>
 
   <script>
 
@@ -962,7 +956,7 @@ function startNewLoad(product) {
 }
 
 function isMonthlyDate(value) {
-    return /^\d{4}-\d{2}$/.test(value);
+    return TimeUtils.isMonthlyDate(value);
 }
 
 function isActiveLoad(load) {
@@ -1020,7 +1014,7 @@ function updateBottomControlVisibility() {
     }
 }
 
-   let rangeStartDate = null;
+  let rangeStartDate = null;
   let rangeEndDate = null;
   let rangeCurrentEndDate = null;
 
@@ -1035,8 +1029,10 @@ function updateBottomControlVisibility() {
   let tempoHourlyDates = [];
   let tempoDailyDates = [];
   let communityHourLookup = null;   // TEMPO community hourly lookup
-
   let communityLayer = null;      // colored data layer
+
+  let fusionCommunityRows = null;
+  let fusionCommunityPromise = null;
   
   let cachedDate = null;
   let cachedFeatures = null;
@@ -1046,34 +1042,14 @@ function updateBottomControlVisibility() {
   let nextCachedHourBuckets = null;
 
   let timeInterval = null;
-let isPlaying = false;
+  let isPlaying = false;
   const tempoDailyCache = {};
   const tempoMonthlyCache = {};
   let communityIndexCache = {};
 
-  let fusionCommunityRows = null;
-  let fusionCommunityPromise = null;
-
-  const chicagoDateFormatter =
-      new Intl.DateTimeFormat(
-          "en-US",
-          {
-              timeZone: "America/Chicago",
-              year: "numeric",
-              month: "numeric",
-              day: "numeric"
-          }
-      );
-
-  const chicagoHourFormatter =
-      new Intl.DateTimeFormat(
-          "en-US",
-          {
-              timeZone: "America/Chicago",
-              hour: "numeric",
-              hour12: false
-          }
-      );
+function parseUTCStringToDate(s) {
+    return TimeUtils.parseUTCString(s);
+}
 
 function removeInvalidHourlyDate(date, reason) {
     if (!date || TIME_SCALE !== "hourly" || currentDataProduct !== "clarity") {
@@ -1278,72 +1254,54 @@ function removeInvalidHourlyDate(date, reason) {
       let afterNextDate = currentIndex < dates.length - 2 ? dates[currentIndex + 2] : null;
 
       let requests = [];
+      if (prevDate) {
+          requests.push(
+              fetch(`/data/clarity/${prevDate}.geojson`)
+                  .then(r => r.ok ? r.json() : null)
+          );
+      }
+      requests.push(
+          fetch(`/data/clarity/${nextDate}.geojson`)
+              .then(r => r.ok ? r.json() : null)
+      );
+      if (afterNextDate) {
+          requests.push(
+              fetch(`/data/clarity/${afterNextDate}.geojson`)
+                  .then(r => r.ok ? r.json() : null)
+          );
+      }
 
-        if (prevDate) {
-            requests.push(
-                fetch(`/data/clarity/${prevDate}.geojson`)
-                    .then(r => r.ok ? r.json() : null)
-            );
+      Promise.all(requests)
+      .then(files => {
+        if (currentDataProduct !== "clarity" || TIME_SCALE !== "hourly") {
+            return;
         }
 
-        requests.push(
-            fetch(`/data/clarity/${nextDate}.geojson`)
-                .then(r => r.ok ? r.json() : null)
-        );
-
-        if (afterNextDate) {
-            requests.push(
-                fetch(`/data/clarity/${afterNextDate}.geojson`)
-                    .then(r => r.ok ? r.json() : null)
-            );
-        }
-
-        Promise.all(requests)
-        .then(files => {
-            if (currentDataProduct !== "clarity" || TIME_SCALE !== "hourly") {
-                return;
+        let combinedFeatures = [];
+        
+        files.forEach(data => {
+            if (data) {
+                combinedFeatures.push(...data.features);
             }
+        });
 
-            let combinedFeatures = [];
+        let filteredFeatures = combinedFeatures.filter(f => {
+            const dateHour = TimeUtils.extractChicagoDateHour(f.properties);
+            if (!dateHour) return false;
             
-            files.forEach(data => {
-                if (data) {
-                    combinedFeatures.push(...data.features);
-                }
-            });
+            f._chicagoHour = dateHour.hour;
+            return dateHour.date === nextDate;
+        });
 
-          let filteredFeatures = combinedFeatures.filter(f => {
-              let utcDate = new Date(f.properties.time + "Z");
-              let chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
-              let y = chicagoParts.find(p => p.type === "year").value;
-              let m = chicagoParts.find(p => p.type === "month").value.padStart(2,"0");
-              let d = chicagoParts.find(p => p.type === "day").value.padStart(2,"0");
-              let chicagoDateStr = `${y}-${m}-${d}`;
-
-              f._chicagoHour = Number(
-                  chicagoHourFormatter.formatToParts(utcDate)
-                      .find(x => x.type === "hour").value
-              );
-
-              return chicagoDateStr === nextDate;
-          });
-
-          nextCachedDate = nextDate;
-          nextCachedHourBuckets = buildHourBuckets(filteredFeatures);
-          console.log("Prefetched:", nextDate);
-      });
+        nextCachedDate = nextDate;
+        nextCachedHourBuckets = buildHourBuckets(filteredFeatures);
+        console.log("Prefetched:", nextDate);
+    });
   }
 
   function formatCentralTime(utcString) {
-      let d = new Date(utcString + "Z");
-      return d.toLocaleString("en-US", {
-          timeZone: "America/Chicago",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          timeZoneName: "short"
-      });
-  }
+    return TimeUtils.formatCentralTime(utcString);
+}
 
   function updateDateAndTimeLabels(date) {
     const dateLabel = document.getElementById("dateLabel");
@@ -1369,23 +1327,7 @@ function removeInvalidHourlyDate(date, reason) {
 }
 
 function getChicagoDateStringFromUTC(utcString) {
-    if (!utcString) {
-        return null;
-    }
-
-    const normalizedUTC = utcString.endsWith("Z")
-        ? utcString
-        : utcString + "Z";
-
-    const utcDate = new Date(normalizedUTC);
-
-    const chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
-
-    const y = chicagoParts.find(p => p.type === "year").value;
-    const m = chicagoParts.find(p => p.type === "month").value.padStart(2, "0");
-    const d = chicagoParts.find(p => p.type === "day").value.padStart(2, "0");
-
-    return `${y}-${m}-${d}`;
+    return TimeUtils.getChicagoDateString(utcString);
 }
 function deriveClarityCentralDatesFromFiles(utcFileDates) {
     return Promise.all(
@@ -1435,152 +1377,36 @@ function deriveClarityCentralDatesFromFiles(utcFileDates) {
     });
 }
 
- function getChicagoParts(date) {
-    const parts = new Intl.DateTimeFormat("en-US", {
-        timeZone: "America/Chicago",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        hour12: false,
-        timeZoneName: "short"
-    }).formatToParts(date);
-
-    const lookup = {};
-
-    parts.forEach(part => {
-        lookup[part.type] = part.value;
-    });
-
-    return {
-        year: lookup.year,
-        month: lookup.month,
-        day: lookup.day,
-        hour: lookup.hour === "24" ? "00" : lookup.hour,
-        timeZoneName: lookup.timeZoneName
-    };
+function getChicagoParts(date) {
+    return TimeUtils.getChicagoParts(date);
 }
 
 function formatHourForDisplay(dateStr, selectedHour) {
-    if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-        return "";
-    }
-
-    // Simple DST fallback patch for Chicago on Nov 2, 2025.
-    // At 2 AM CDT, clocks fell back to 1 AM CST.
-    // Since our slider only has one "1 AM", show both labels.
-    if (dateStr === "2025-11-02") {
-        if (selectedHour === 0) {
-            return "12 AM CDT";
-        }
-
-        if (selectedHour === 1) {
-            return "1 AM CDT / 1 AM CST";
-        }
-
-        if (selectedHour === 2) {
-            return "2 AM CST";
-        }
-
-        const displayHour = selectedHour % 12 === 0
-            ? 12
-            : selectedHour % 12;
-
-        const suffix = selectedHour < 12 ? "AM" : "PM";
-
-        return `${displayHour} ${suffix} CST`;
-    }
-
-    const parts = dateStr.split("-");
-    const targetYear = parts[0];
-    const targetMonth = parts[1];
-    const targetDay = parts[2];
-    const targetHour = String(selectedHour).padStart(2, "0");
-
-    const searchStart = new Date(`${dateStr}T00:00:00Z`);
-    searchStart.setUTCHours(searchStart.getUTCHours() - 12);
-
-    for (let i = 0; i < 48; i++) {
-        const candidate = new Date(searchStart);
-        candidate.setUTCHours(searchStart.getUTCHours() + i);
-
-        const chicago = getChicagoParts(candidate);
-
-        if (
-            chicago.year === targetYear &&
-            chicago.month === targetMonth &&
-            chicago.day === targetDay &&
-            chicago.hour === targetHour
-        ) {
-            return candidate.toLocaleTimeString("en-US", {
-                timeZone: "America/Chicago",
-                hour: "numeric",
-                hour12: true,
-                timeZoneName: "short"
-            });
-        }
-    }
-
-    return `${selectedHour}:00 CT`;
+    return TimeUtils.formatHourForDisplay(dateStr, selectedHour);
 }
 
   function formatMonthForDisplay(dateStr) {
-      if (!dateStr || typeof dateStr !== 'string') {
-          console.warn("formatMonthForDisplay received invalid date:", dateStr);
-          return "Unknown Month";
-      }
-      const [year, month] = dateStr.split("-");
-      return new Date(
-          Number(year),
-          Number(month) - 1,
-          1
-      ).toLocaleDateString(
-          "en-US",
-          {
-              month: "long",
-              year: "numeric"
-          }
-      );
-  }
+    return TimeUtils.formatMonthForDisplay(dateStr);
+}
 
 function utcDateToCentralPretty(dateStr) {
-
-    if (/^\d{4}-\d{2}$/.test(dateStr)) {
-        return formatMonthForDisplay(dateStr);
-    }
-
-    const [year, month, day] = dateStr.split("-").map(Number);
-
-    return new Date(year, month - 1, day)
-        .toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric"
-        });
+    return TimeUtils.formatDateForDisplay(dateStr);
 }
 
 function isDailyDate(value) {
-    return /^\d{4}-\d{2}-\d{2}$/.test(value);
+    return TimeUtils.isDailyDate(value);
 }
 
 function isMonthKey(value) {
-    return /^\d{4}-\d{2}$/.test(value);
+    return TimeUtils.isMonthlyDate(value);
 }
 
 function toMonthKey(value) {
-    if (!value || typeof value !== "string") {
-        return null;
-    }
-
-    return value.substring(0, 7);
+    return TimeUtils.toMonthKey(value);
 }
 
 function toDailyKey(value) {
-    if (!value || typeof value !== "string") {
-        return null;
-    }
-
-    return isDailyDate(value) ? value : null;
+    return TimeUtils.toDailyKey(value);
 }
 
 function getCurrentSelectedDateFromSlider() {
@@ -1761,11 +1587,9 @@ function applyPreferredDateAndHourAfterDateLoad(load) {
     loadDate(selectedDate, load);
 }
 
-  function getPreviousDate(dateStr) {
-      let d = new Date(dateStr + "T00:00:00Z");
-      d.setUTCDate(d.getUTCDate() - 1);
-      return d.toISOString().split("T")[0];
-  }
+function getPreviousDate(dateStr) {
+    return TimeUtils.getPreviousDay(dateStr);
+}
 
 function showLoading(message) {
     hideNoDataNotice();
@@ -1788,35 +1612,6 @@ function hideLoading() {
     const overlay = document.getElementById("map-loading-overlay");
     if (overlay) {
         overlay.classList.remove("visible");
-    }
-}
-
-function showMapWarningNotice(title, detailText, autoHideMs = 6000) {
-    const notice = document.getElementById("map-no-data-notice");
-    const textEl = document.getElementById("map-no-data-text");
-
-    if (!notice) {
-        return;
-    }
-
-    const strongEl = notice.querySelector("strong");
-
-    if (strongEl) {
-        strongEl.textContent = title || "Notice";
-    }
-
-    if (textEl) {
-        textEl.textContent = detailText || "";
-    }
-
-    notice.classList.add("visible");
-
-    if (autoHideMs && autoHideMs > 0) {
-        window.clearTimeout(notice._autoHideTimer);
-
-        notice._autoHideTimer = window.setTimeout(() => {
-            notice.classList.remove("visible");
-        }, autoHideMs);
     }
 }
 
@@ -2036,12 +1831,19 @@ function updateScaleBar() {
   }
 
 function resetPlaybackUI() {
-          playBtn.classList.remove('playing');
-          playBtn.disabled = false;
-          pauseBtn.disabled = true;
-          dateSlider.disabled = false;
-          timeSlider.disabled = false;
-      }
+    const playBtn = document.getElementById("playBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const dateSlider = document.getElementById("dateSlider");
+    const timeSlider = document.getElementById("timeSlider");
+    
+    if (playBtn) {
+        playBtn.classList.remove('playing');
+        playBtn.disabled = false;
+    }
+    if (pauseBtn) pauseBtn.disabled = true;
+    if (dateSlider) dateSlider.disabled = false;
+    if (timeSlider) timeSlider.disabled = false;
+}
 
 function updateIndividualModeLabel() {
     const label = document.getElementById('individual-mode-label');
@@ -2404,41 +2206,7 @@ function getFusionTimeString(properties) {
 }
 
 function getFusionChicagoDateHour(properties) {
-    const rawTime = getFusionTimeString(properties);
-
-    if (!rawTime) {
-        return null;
-    }
-
-    const normalized = rawTime.includes("T")
-        ? rawTime
-        : rawTime.replace(" ", "T");
-
-    const utcDate = new Date(
-        normalized.endsWith("Z")
-            ? normalized
-            : normalized + "Z"
-    );
-
-    if (isNaN(utcDate.getTime())) {
-        return null;
-    }
-
-    const chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
-    const chicagoHourParts = chicagoHourFormatter.formatToParts(utcDate);
-
-    const y = chicagoParts.find(p => p.type === "year").value;
-    const m = chicagoParts.find(p => p.type === "month").value.padStart(2, "0");
-    const d = chicagoParts.find(p => p.type === "day").value.padStart(2, "0");
-
-    const hour = Number(
-        chicagoHourParts.find(p => p.type === "hour").value
-    );
-
-    return {
-        date: `${y}-${m}-${d}`,
-        hour: hour
-    };
+    return TimeUtils.extractChicagoDateHour(properties);
 }
 
 function showFusionNoDataMessage(date, detailText) {
@@ -2851,15 +2619,29 @@ function loadFusionHourly(date, existingLoad) {
             const features = data && data.features ? data.features : [];
 
             const filteredFeatures = features.filter(f => {
-                const parts = getFusionChicagoDateHour(f.properties || {});
-
-                if (!parts) {
+                const p = f.properties || {};
+                const timeString = p.time || p.datetime || p.datetime_local || p.timestamp || "";
+                
+                if (!timeString) {
                     return false;
                 }
 
+                // Parse the UTC time to extract UTC date and hour
+                const utcDate = TimeUtils.parseUTCString(timeString);
+                if (!utcDate) {
+                    return false;
+                }
+
+                // Get UTC date in YYYY-MM-DD format
+                const utcDateStr = utcDate.toISOString().split('T')[0];
+                
+                // Get Chicago hour for filtering
+                const chicagoParts = TimeUtils.getChicagoParts(utcDate);
+                const hour = Number(chicagoParts.hour);
+
                 return (
-                    parts.date === date &&
-                    parts.hour === selectedHour
+                    utcDateStr === date &&
+                    hour === selectedHour
                 );
             });
 
@@ -2997,13 +2779,7 @@ function loadFusionMonthly(month, existingLoad) {
   // ── TEMPO DATA LOADING FUNCTIONS ──────────────────────────────────────────────────
 
   function formatCentralTimePretty(utcString) {
-      let d = new Date(utcString + "Z");
-      return d.toLocaleTimeString("en-US", {
-          timeZone: "America/Chicago",
-          hour: "numeric",
-          hour12: true,
-          timeZoneName: "short"
-      });
+      return TimeUtils.formatCentralTime(utcString);
   }
 
 function renderDailyTempoData(data) {
@@ -3531,18 +3307,11 @@ function renderMonthlyTempoData(data, load) {
           });
 
           let filteredFeatures = combinedFeatures.filter(f => {
-              let utcDate = new Date(f.properties.time + "Z");
-              let chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
-              let y = chicagoParts.find(p => p.type === "year").value;
-              let m = chicagoParts.find(p => p.type === "month").value.padStart(2, "0");
-              let d = chicagoParts.find(p => p.type === "day").value.padStart(2, "0");
-              let chicagoDateStr = `${y}-${m}-${d}`;
-
-              f._chicagoHour = Number(
-                  chicagoHourFormatter.formatToParts(utcDate)
-                      .find(x => x.type === "hour").value
-              );
-              return chicagoDateStr === nextDate;
+              const dateHour = TimeUtils.extractChicagoDateHour(f.properties);
+              if (!dateHour) return false;
+              
+              f._chicagoHour = dateHour.hour;
+              return dateHour.date === nextDate;
           });
 
           nextCachedDate = nextDate;
@@ -4066,18 +3835,11 @@ function renderMonthlyTempoData(data, load) {
               });
 
               let filteredFeatures = combinedFeatures.filter(f => {
-                  let utcDate = new Date(f.properties.time + "Z");
-                  let chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
-                  let y = chicagoParts.find(p => p.type === "year").value;
-                  let m = chicagoParts.find(p => p.type === "month").value.padStart(2, '0');
-                  let d = chicagoParts.find(p => p.type === "day").value.padStart(2, '0');
-                  let chicagoDateStr = `${y}-${m}-${d}`;
-
-                  f._chicagoHour = Number(
-                      chicagoHourFormatter.formatToParts(utcDate)
-                          .find(x => x.type === "hour").value
-                  );
-                  return chicagoDateStr === date;
+                  const dateHour = TimeUtils.extractChicagoDateHour(f.properties);
+                  if (!dateHour) return false;
+                  
+                  f._chicagoHour = dateHour.hour;
+                  return dateHour.date === date;
               });
 
               cachedDate = date;
@@ -4208,19 +3970,11 @@ if (TIME_SCALE === "monthly") {
           });
 
           let filteredFeatures = combinedFeatures.filter(f => {
-              let utcDate = new Date(f.properties.time + "Z");
-              let chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
-              let y = chicagoParts.find(p => p.type === "year").value;
-              let m = chicagoParts.find(p => p.type === "month").value.padStart(2, '0');
-              let d = chicagoParts.find(p => p.type === "day").value.padStart(2, '0');
-              let chicagoDateStr = `${y}-${m}-${d}`;
-
-              f._chicagoHour = Number(
-                  chicagoHourFormatter.formatToParts(utcDate)
-                      .find(x => x.type === "hour").value
-              );
-
-              return chicagoDateStr === date;
+              const dateHour = TimeUtils.extractChicagoDateHour(f.properties);
+              if (!dateHour) return false;
+              
+              f._chicagoHour = dateHour.hour;
+              return dateHour.date === date;
           });
 
           cachedDate = date;
@@ -4599,8 +4353,6 @@ if (TIME_SCALE === "monthly") {
       // On page load we must read the checked radio for dataProduct and set displayMode accordingly
       // so that the JS state matches what the user sees in the sidebar.
      // Restore previously selected data product
-const urlProduct =
-    new URLSearchParams(window.location.search).get("product");
 
 const savedDataProduct =
     urlProduct ||
@@ -5179,12 +4931,12 @@ function loadClarityDates() {
                 dateSlider.value = 0;
             }
 
-            if (TIME_SCALE === "monthly") {
-                if (startDateInput) startDateInput.value = "";
-                if (endDateInput) endDateInput.value = "";
-            } else {
-                if (startDateInput) startDateInput.value = rangeStartDate;
-                if (endDateInput) endDateInput.value = rangeEndDate;
+            if (startDateInput) {
+                startDateInput.value = TIME_SCALE === "monthly" ? "" : rangeStartDate;
+            }
+
+            if (endDateInput) {
+                endDateInput.value = TIME_SCALE === "monthly" ? "" : rangeEndDate;
             }
 
             selectedHour = Number(
@@ -5270,7 +5022,7 @@ function loadFusionDates() {
     fetch("/data/fused/dates.json")
         .then(r => {
             if (!r.ok) {
-                throw new Error("Could not load /data/fused/fused_dates.json");
+                throw new Error("Could not load /data/fused/dates.json");
             }
             return r.json();
         })
@@ -5285,7 +5037,7 @@ function loadFusionDates() {
                 : (response.dates || []);
 
             if (!loadedDates || loadedDates.length === 0) {
-                console.warn("No Fusion dates found in fused_dates.json.");
+                console.warn("No Fusion dates found in dates.json.");
 
                 showToast(
                     "Fusion data product has no dates or data points available yet.",
@@ -5361,7 +5113,7 @@ function loadFusionDates() {
             }
 
             if (timeLabel && TIME_SCALE === "hourly") {
-                timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], selectedHour)}`;
+                timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
             } else if (timeLabel) {
                 timeLabel.innerHTML = "";
             }
