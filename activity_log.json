@@ -1,5 +1,47 @@
 [
   {
+    "type": "map_view",
+    "title": "User viewed hourly map",
+    "details": "",
+    "timestamp": "2026-07-27 13:45:20"
+  },
+  {
+    "type": "page_refresh",
+    "title": "Dashboard home page refreshed",
+    "details": "",
+    "timestamp": "2026-07-27 13:45:17"
+  },
+  {
+    "type": "page_refresh",
+    "title": "Dashboard home page refreshed",
+    "details": "",
+    "timestamp": "2026-07-27 13:45:15"
+  },
+  {
+    "type": "server_start",
+    "title": "Dashboard server started",
+    "details": "",
+    "timestamp": "2026-07-27 13:45:14"
+  },
+  {
+    "type": "page_refresh",
+    "title": "Dashboard home page refreshed",
+    "details": "",
+    "timestamp": "2026-07-27 13:39:11"
+  },
+  {
+    "type": "map_view",
+    "title": "User viewed hourly map",
+    "details": "",
+    "timestamp": "2026-07-27 13:38:44"
+  },
+  {
+    "type": "page_refresh",
+    "title": "Dashboard home page refreshed",
+    "details": "",
+    "timestamp": "2026-07-27 13:38:38"
+  },
+  {
     "type": "server_start",
     "title": "Dashboard server started",
     "details": "",
