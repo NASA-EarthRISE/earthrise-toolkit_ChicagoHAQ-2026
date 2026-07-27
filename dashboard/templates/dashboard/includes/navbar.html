@@ -1,18 +1,21 @@
 {% load static %}
-<!--ESD Atmospheric Logo-->
+
+<!-- Earth Science Directorate Atmospheric Logo-->
 <a target="_blank">
-        <img class="logo logo-atmosphere" src="{% static 'dashboard/images/atmosphere.png' %}" alt="Regional Ozone Precursor Map"/>
+    <img class="logo logo-atmosphere" src="{% static 'dashboard/images/atmosphere.png' %}" alt="Regional Ozone Precursor Map"/>
 </a>
 
+<!-- Dashboard Title-->
 <span class="nav-brand">
     <a href="/">Regional Ozone Precursor Map</a>
 </span>
 
-<!-- Mobile menu button -->
+<!-- Menu Arrow (Shows when page is less than a 600 pixel width) -->
 <div class="mobile-menu-container" id="mobile-menu-container" onclick="MenuToggle(this)" style="display:none;">
     <span class="mobile-menu-arrow">&#11167;</span>
 </div>
 
+<!-- Navigation Links -->
 <div class="nav-links" id="nav-links">
     <a href="{% url 'map_hourly' %}">Pollution Map</a>
     <a href="/community/">Community Statistics</a>

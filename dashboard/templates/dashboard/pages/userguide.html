@@ -5,11 +5,6 @@
 
 {%block extra_css %}
 <style>
-  /* Smooth scrolling for anchor links */
-    html {
-        scroll-behavior: smooth;
-    }
-    
   /* Background image for page */
   main.content {
     background-image: url("{% static 'dashboard/images/orange_blue_gradient.png' %}");
@@ -19,114 +14,12 @@
     background-attachment: fixed;
   }
 
-/* Hero (Heading) banner */
-  .hero {
-    text-align: center;
-    padding: 2rem 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .hero h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--primary);
-    margin-bottom: 0.5rem;
-  }
-
-  .hero .subtitle {
-    font-size: 1rem;
-    color: var(--text-muted);
-    max-width: 75vw;
-    margin: 0 auto;
-    line-height: 1.6;
-  }
-
-/*user manual blocks of text*/
-.tutorial-block {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-}
-
-.tutorial-block-heading {
-  text-align: center;
-  font-size: 1.5rem;
-}
-
-.quick-actions-nav {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-}
-
-.quick-action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.85rem 1.75rem;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    text-decoration: none;
-    transition: all 0.2s;
-    cursor: pointer;
-}
-
-.quick-action-btn.primary {
-    background: var(--accent);
-    color: #fff;
-    border: 2px solid var(--accent);
-}
-
-.quick-action-btn.primary:hover {
-    background: var(--primary);
-    border-color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.25);
-}
-
-.quick-action-btn.secondary {
-    background: var(--bg);
-    color: var(--text);
-    border: 2px solid var(--accent);
-}
-
-.quick-action-btn.secondary:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.15);
-}
-
-.quick-action-btn.tertiary {
-    background: var(--bg);
-    color: var(--text);
-    border: 2px solid var(--accent);
-}
-
-.quick-action-btn.tertiary:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.15);
-}
-
-.quick-action-btn .icon {
-    font-size: 1.2rem;
-}
-
 </style>
 {% endblock %}
 
 {% block content %}
+
+<!-- Heading -->
 <div class="hero">
   <h1>User Guide</h1>
   <p class="subtitle">
@@ -134,28 +27,29 @@
   </p>
 </div>
 
+<!-- Quick Actions -->
 <div class="quick-actions-nav">
   <a href="#home-page" class="quick-action-btn primary">
-        <span class="icon"></span>
-        Home (Server Stats)
-    </a>
-    <a href="#pollution-map" class="quick-action-btn secondary">
-        <span class="icon"></span>
-        Pollution Map
-    </a>
-    <a href="#community-statistics" class="quick-action-btn tertiary">
-        <span class="icon"></span>
-        Community Statistics
-    </a>
-    <a href="#export-data" class="quick-action-btn tertiary">
-        <span class="icon"></span>
-        Export Data
-    </a>
+    <span class="icon"></span>
+    Home (Server Stats)
+  </a>
+  <a href="#pollution-map" class="quick-action-btn secondary">
+    <span class="icon"></span>
+    Pollution Map
+  </a>
+  <a href="#community-statistics" class="quick-action-btn tertiary">
+    <span class="icon"></span>
+    Community Statistics
+  </a>
+  <a href="#export-data" class="quick-action-btn tertiary">
+    <span class="icon"></span>
+    Export Data
+  </a>
 </div>
 
-<div class="tutorial-block" id="home-page">
-  <div class="tutorial-block-heading"><strong style="color: #96a2bf;">Home</strong>
-  </div>
+<!-- 'Home' Guide -->
+<div class="content-section" id="home-page">
+  <h2>Home</h2>
   <p>
     The Regional Ozone Precoursur Dashboard homepage consists of general server information, quick actions, introduction to data products, and system status. 
   </p>
@@ -180,9 +74,9 @@
   </p>
 </div>
 
-<div class="tutorial-block" id="pollution-map">
-  <div class="tutorial-block-heading"><strong style="color: #96a2bf;">Pollution Map</strong>
-  </div>
+<!-- 'Pollution Map' Guide -->
+<div class="content-section" id="pollution-map">
+  <h2>Pollution Map</h2>
   <p>
     The Pollution Map homepage visualizes NO<sub>2</sub> data for each of the data products: TEMPO satellite measurements, Open Air Chicago ground sensors, and the fused data product. Use the <b>+</b> and <b>-</b> symbols in the top left to zoom in and out of the map. In the left sidebar, choose a Time Scale, Observation Window, Data Product, and Spatial Scale to see the corresponding data layer appear on the map to the right. 
   </p>
@@ -198,9 +92,9 @@
   <p>Data not displaying? For some data products, there are missing dates and pixels, which is typical and often a sympton of the data cleaning process. [Insert more about missing data points.] [There may be a noitifcation at the top of the map that states there are no data points found within a data range for the selected data product.]</p>
 </div>
 
-<div class="tutorial-block" id="community-statistics">
-  <div class="tutorial-block-heading"><strong style="color: #96a2bf;">Community Statistics</strong>
-  </div>
+<!-- 'Community Statistics' Guide -->
+<div class="content-section" id="community-statistics">
+  <h2>Community Statistics</h2>
   <p>
     This page visualizes NO<sub>2</sub> statistics on a community level for each of the data products: TEMPO satellite measurements, Open Air Chicago ground sensors, and the fused data product. 
   </p>
@@ -218,9 +112,9 @@
   </p>
 </div>
 
-<div class="tutorial-block" id="export-data">
-  <div class="tutorial-block-heading"><strong style="color: #96a2bf;">Export Data</strong>
-  </div>
+<!-- 'Export Files' Guide -->
+<div class="content-section" id="export-data">
+  <h2>Export Data</h2>
   <p>
     This page allows you to export the data files used in the dashboard. 
   </p>

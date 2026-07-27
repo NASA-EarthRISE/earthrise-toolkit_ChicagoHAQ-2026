@@ -4,9 +4,11 @@
 {% block title %}About{% endblock %}
 
 {% block extra_css %}
+
+
 <style>
 
-  /* Background image for about page */
+  /* Background image for page */
   main.content {
     background-image: url("{% static 'dashboard/images/esdlogo_white.png' %}");
     background-repeat: no-repeat;
@@ -15,135 +17,39 @@
     background-attachment: fixed;
   }
 
-  /* Hero (Heading) banner */
-  .hero {
-    text-align: center;
-    padding: 2rem 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .hero h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--primary);
-    margin-bottom: 0.5rem;
-  }
-
-  .hero .subtitle {
-    font-size: 1rem;
-    color: var(--text-muted);
-    max-width: 640px;
-    margin: 0 auto;
-    line-height: 1.6;
-  }
-
-  @media (max-width: 600px) {
-    .hero h1 {
-      font-size: 1.4rem;
-    }
-  }
-  /* Section cards */
-  .about-section {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  }
-
-  .about-section h2 {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--border);
-  }
-
-  .about-section .section-blurb {
-    font-size: 0.9rem;
-    color: var(--text);
-    line-height: 1.7;
-    margin-bottom: 0.25rem;
-  }
-
-  /* Portrait grid */
-  .portrait-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1.25rem;
-    justify-items: center;
-  }
-
-  /* Individual portrait card */
-  .portrait-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    width: 100%;
-    max-width: 180px;
-  }
-
-  .portrait-card .portrait-image {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--border);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    background: var(--bg);
-    margin-bottom: 0.75rem;
-    object-fit: cover;
-    object-position: center top; /*our faces are slightly off center of the entire image*/
-  }
-
-  .portrait-card .portrait-name {
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.15rem;
-  }
-
-  .portrait-card .portrait-role {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    line-height: 1.4;
-  }
-
 </style>
+
 {% endblock %}
 
 {% block content %}
-<!-- ── HERO ──────────────────────────────────────────── -->
+<!-- Heading -->
 <div class="hero">
   <h1>About the Dashboard</h1>
 </div>
 
-<!-- ── ERDA Overview ─────────────────────────────── -->
-<div class="about-section">
+<!-- EarthRISE Developers Academy Overview -->
+<div class="content-section">
   <h2>NASA EarthRISE Developers Academy</h2>
-  <p class="section-blurb">
+  <p>
     NASA EarthRISE Developers Academy builds the next generation of science and technology leaders by immersing student and early career scientists in projects using NASA data to address real-world challenges. EarthRISE Developers Academy hosts 10 to 14-week projects center on developing innovative applied science solutions to help partners make more effective, efficient decisions. Through collaborative projects, professional development, and cooperation with state, local, tribal, territorial, and private sector partners, the Academy equips participants with skills to accelerate innovation and bridge Earth science with the future of space exploration. 
    </p>
-  <p class="section-blurb">
+  <p>
     Learn more about EarthRISE Developers Academy <a href="https://science.nasa.gov/earth-science/earthrise-developers-academy/" target="_blank">here</a>!
   </p>
 </div>
 
-<!-- ── PROJECT OVERVIEW ─────────────────────────────── -->
-<div class="about-section">
+<!-- Project Overview -->
+<div class="content-section">
   <h2>Project Overview</h2>
-  <p class="section-blurb">
+  <p>
     The research team worked with partners from the Lake Michigan Air Directors Consortium (LADC0) on a project that aimed to assess regional air quality concerns from potential sources of NO<sub>2</sub> pollution across Chicago and the broader Cook County, Illinois, area. Utilizing TEMPO satellite data and Open Air Chicago ground sensor data collected from September 2025 to June 2026, the team created a fused data product that estimates surface-level NO<sub>2</sub> concentrations using TEMPO column retrievals. This dashboard visualizes spatiotemporal trends of NO<sub>2</sub> pollution across Chicago and its community areas. 
   </p>
 </div>
 
-<!-- ── Project Team ──────────────────────────── -->
-<div class="about-section">
+<!-- Chicago Health & Air Quality Team Overview -->
+<div class="content-section">
   <h2>Meet the Developers</h2>
-  <p class="section-blurb">
+  <p>
     Meet the Summer 2026 NASA EarthRISE Developer's Academy Chicago Health & Air Quality team!
   </p>
 
@@ -181,13 +87,12 @@
   </div>
 </div>
 
-<!-- ── MEET THE PARTNERS ────────────────────────────── -->
-<div class="about-section">
+<!-- Partner (LADCO) Overview -->
+<div class="content-section">
   <h2>Meet the Partners</h2>
-  <p class="section-blurb">
+  <p>
     LADCO is a multi-jurisdictional research and planning organization that works with city, state, and tribal agencies across the Great Lakes Region to improve air quality. We would like to thank Zac Adelman, Angie Dickens, and Grant Coleman from LADCO for their valuable insights over the course of the project. 
   </p>
 </div>
 
-</div>
 {% endblock %}

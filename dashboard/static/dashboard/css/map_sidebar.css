@@ -1,0 +1,352 @@
+/* ── RETRACTABLE MAP SIDEBAR ─────────────────────── */
+
+.sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  overflow-y: auto;
+  max-height: calc(100vh - var(--nav-height) - 100px);
+}
+
+.sidebar a {
+  display: block;
+  padding: 12px 20px;
+  text-decoration: none;
+  color: var(--primary);
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+  border-left: 3px solid transparent;
+}
+
+.sidebar a:hover {
+  background-color: var(--bg);
+  color: var(--primary-dark);
+  border-left-color: var(--primary-light);
+}
+
+.sidebar-section {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-section h3 {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+}
+
+/* ── SIDEBAR TOGGLE BUTTON ─────────────────────
+  "Parameters" label on the blue strip.
+  Seamlessly combined with the blue strip (same color).
+  Left edge of button is flush with right edge of sidebar/blue strip. */
+.sidebar-toggle-btn {
+  position: absolute !important;
+  top: 147px !important;
+  right: auto !important;
+  left: 100% !important;
+  transform: none !important;
+  z-index: 1100 !important;
+  width: 36px !important;
+  min-height: 160px !important;
+  background: #005a9e !important;
+  border: none !important;
+  border-radius: 0 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #ffffff !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+  line-height: 1.4 !important;
+  padding: 16px 6px !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  transition: background 0.2s ease !important;
+  writing-mode: vertical-rl !important;
+  text-orientation: mixed !important;
+  letter-spacing: 2px !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
+}
+.sidebar-toggle-btn {
+  left: calc(100% - 4px) !important;
+}
+.sidebar-toggle-btn {
+  border-radius: 0 8px 8px 0 !important;
+}
+
+.sidebar-toggle-btn:hover {
+  background: #004475 !important;
+}
+
+
+/* Override ALL site.css .sidebar rules for the map page.
+    site.css sets overflow-y:auto and max-height on .sidebar which
+    clips our toggle button. We reset those here on the outer shell
+    and delegate scroll to the inner wrapper. */
+.map-layout .sidebar {
+    position: relative !important;
+    width: 320px !important;
+    min-width: 320px !important;
+    max-height: none !important;
+    flex-shrink: 0 !important;
+    overflow: visible !important;
+    overflow-y: visible !important;
+    overflow-x: visible !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    transition: width 0.3s ease, min-width 0.3s ease !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Inner wrapper — handles SCROLLING */
+.sidebar-content-wrapper {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    max-height: calc(100vh - var(--nav-height, 56px) - var(--map-export-height, 38px)) !important;
+    transition: opacity 0.2s ease, max-height 0.3s ease !important;
+    padding: 1.25rem 2.1rem 3rem 1.25rem !important;
+    overscroll-behavior: contain;
+    position: relative !important;
+}
+
+/* Gradient fade overlay — child element positioned fixed at bottom of sidebar */
+.sidebar-scroll-fade {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 60px !important;
+    background: linear-gradient(to bottom, rgba(0,90,158,0), rgba(0,90,158,0.95)) !important;
+    pointer-events: none !important;
+    z-index: 10 !important;
+}
+
+  /* SIDEBAR CONTENT */
+  .date-panel {
+  background-color: var(--primary-dark);
+  border-radius: 12px;
+  padding: 1.1rem;
+  margin-top: 14px;
+}
+
+.date-panel .hint {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    text-align: center;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: rgba(255,255,255,0.9);
+}
+
+.date-panel label {
+    font-weight: 600;
+}
+
+/* ── Sidebar Retracted state ────────────────────────────── */
+.map-layout .sidebar.retracted {
+  width: 0 !important;
+  min-width: 0 !important;
+}
+
+/* Hide inner content when retracted */
+.map-layout .sidebar.retracted .sidebar-content-wrapper {
+  opacity: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  pointer-events: none !important;
+}
+
+/* When retracted, button stays centered on the blue strip (at left edge of map) */
+.map-layout .sidebar.retracted .sidebar-toggle-btn {
+  right: 0 !important;
+}
+
+/* ── SIDEBAR BLUE STRIP ────────────────────────
+Full-height non-interactive visual accent on right edge of sidebar.
+Moves with sidebar as it opens/closes. Does NOT block map. */
+.sidebar-blue-strip {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 100%;
+    background: #005a9e;
+    pointer-events: none;
+    z-index: 100;
+    transition: background 0.2s;
+}
+
+/* ── DATA PRODUCT GROUPS ────────── */
+
+.data-product-group {
+  margin-bottom: 1rem;
+}
+
+.data-product-group:last-child {
+  margin-bottom: 0;
+}
+
+.data-product-group h4 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+}
+
+
+/* Map type selector buttons */
+.map-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+
+/* Map Sidebar */
+.map-type-link {
+  text-decoration: none;
+  display: block;
+  padding: 0;
+  border-left: none;
+  background: transparent;
+  color: inherit;
+}
+
+.map-type-link:hover {
+  background: transparent;
+  color: inherit;
+  border-left-color: transparent;
+}
+
+.map-type-btn {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.25rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-type-btn:hover {
+  border-color: var(--primary-light);
+  background: var(--bg-card);
+}
+
+.map-type-btn.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.load-date-btn {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.25rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.load-date-btn:hover {
+  border-color: var(--primary-light);
+  background: var(--bg-card);
+}
+
+/* ── FORM GROUPS (Pollution) ─────────────────── */
+
+  .form-group {
+    margin-bottom: 0.75rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+
+  .form-group input[type="date"],
+  .form-group input[type="month"],
+  .form-group input[type="number"],
+  .form-group input[type="text"],
+  .form-group select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
+  }
+
+  .hint,
+  .form-group .hint{
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+  }
+
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .form-row .form-group {
+    flex: 1;
+  }
+
+  .load-date-btn {
+    font-weight: 600;
+  }
+
+  #single-date-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+  }
+
+  #single-date-group {
+      margin-bottom: 0 !important;
+  }

@@ -5,7 +5,8 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>{% block title %}Regional Ozone Precursor Dashboard{% endblock %}</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'dashboard/css/site.css' %}"/>
+    <!-- Base Layout Styling CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'dashboard/css/layout.css' %}"/>
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -15,9 +16,8 @@
         {% include 'dashboard/includes/navbar.html' %}
     </nav>
 
-    <!-- App Body  -->
+    <!-- App Body -->
     <div class="app-body">
-
         <!-- Main Content Area -->
         <main class="content" id="main-content">
             {% block content %}{% endblock %}
@@ -27,14 +27,13 @@
     <!-- Footer -->
     <hr/>
     <footer>
-        <p>&copy; 2026 Regional Ozone Precursor Map — NASA LaRC / EarthRISE Developers Academy</p>
+        {% include 'dashboard/includes/footer.html' %}
     </footer>
 
     <!-- Toast Notification  -->
     <div id="toast"></div>
 
-    <!-- Base Layout JS (INCLUDED NAV BAR BELOW)-->
-    <!--Line 62 works for drawing javascript!!-->
+    <!-- Navigation Bar JS -->
     <script src = "{% static 'dashboard/js/navbar.js' %}"></script>
     <script>
         // Toast notification

@@ -6,11 +6,6 @@
 {% block content %}
 <style>
 
-    /* Smooth scrolling for anchor links */
-    html {
-        scroll-behavior: smooth;
-    }
-
     /* Background image for about page */
     main.content {
     background-image: url("{% static 'dashboard/images/esdlogo_white.png' %}");
@@ -19,197 +14,16 @@
         background-position: right center;
         background-attachment: fixed;
     }
-    
-    .info-header {
-        text-align: center;
-        padding: 2rem 1rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .info-header h1 {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 0.5rem;
-    }
-
-    .info-header p {
-        font-size: 1rem;
-        color: var(--text-muted);
-    }
-
-    /* Quick Actions Navigation */
-    .quick-actions-nav {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-bottom: 2rem;
-        flex-wrap: wrap;
-    }
-
-    .quick-action-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.85rem 1.75rem;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        text-decoration: none;
-        transition: all 0.2s;
-        cursor: pointer;
-    }
-
-    .quick-action-btn.primary {
-        background: var(--accent);
-        color: #fff;
-        border: 2px solid var(--accent);
-    }
-
-    .quick-action-btn.primary:hover {
-        background: var(--primary);
-        border-color: var(--primary);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(49, 130, 206, 0.25);
-    }
-
-    .quick-action-btn.secondary {
-        background: var(--bg);
-        color: var(--text);
-        border: 2px solid var(--accent);
-    }
-
-    .quick-action-btn.secondary:hover {
-        border-color: var(--primary);
-        color: var(--primary);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(49, 130, 206, 0.15);
-    }
-
-    .quick-action-btn.tertiary {
-        background: var(--bg);
-        color: var(--text);
-        border: 2px solid var(--accent);
-    }
-
-    .quick-action-btn.tertiary:hover {
-        border-color: var(--primary);
-        color: var(--primary);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(49, 130, 206, 0.15);
-    }
-
-    .quick-action-btn .icon {
-        font-size: 1.2rem;
-    }
-
-    /* Info Sections */
-    .info-section {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-
-    .info-section h2 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid var(--border);
-    }
-
-    .info-section h3 {
-        font-size: 1.05rem;
-        font-weight: 600;
-        color: var(--text);
-        margin-top: 1.25rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .info-section p {
-        font-size: 0.92rem;
-        line-height: 1.7;
-        color: var(--text);
-        margin-bottom: 0.75rem;
-    }
-
-    .info-section .highlight-box {
-        background: var(--bg);
-        border-left: 4px solid var(--accent);
-        border-radius: 6px;
-        padding: 1rem 1.25rem;
-        margin: 1rem 0;
-    }
-
-    .info-section .highlight-box p {
-        margin-bottom: 0;
-        font-size: 0.88rem;
-        color: var(--text-muted);
-    }
-
-    .product-card { /*card for tempo*/
-        background: var(--bg);
-        border-radius: 8px;
-        padding: 1.25rem;
-        margin-bottom: 1rem;
-        border-left: 4px solid;
-        color: #4cbdb2;
-    }
-
-    .product-card.clarity { /*card for ground sensors*/
-        border-left-color: #81a24f;
-    }
-
-    .product-card.fused { /*card for fused data*/
-        border-left-color: #baa7d5;
-    }
-
-    .product-card h3 {
-        margin-top: 0;
-    } 
-
-    .product-card p {
-        font-size: 0.88rem;
-    }
-
-    .EPA-ozone-graph {
-        width: auto;
-        height: 300px;
-    }
-
-    .data-content {
-        display: flex;
-        align-items: center; /* aligns text and image vertically */
-        gap: 20px; 
-    }
-
-    .data-image {
-        width: 200px; /*image will be 200 pixels wide */
-        height: auto; /* automatically adjusts height */
-    }
-
-    .side-paragraph {
-        flex: 1; /* Tells the paragraph to fill up the rest of the empty space */
-        margin: 0; 
-    }
-
-    .image-credit { /*this doesnt work*/
-        font-size: 6;
-    }
 
 </style>
 
-<!-- Page Header -->
-<div class="info-header">
+<!-- Header -->
+<div class="hero">
     <h1>Dashboard Information</h1>
     <p>Learn about the Chicago ozone environment and the data products powering this dashboard</p>
 </div>
 
-<!-- Quick Actions Navigation -->
+<!-- Quick Actions -->
 <div class="quick-actions-nav">
     <a href="#chicago-context" class="quick-action-btn primary">
         <span class="icon"></span>
@@ -226,7 +40,7 @@
 </div>
 
 <!-- Chicago & Ozone Characteristics Section -->
-<div class="info-section" id="chicago-context">
+<div class="content-section" id="chicago-context">
     <h2>Ozone Pollution in Chicago</h2>
     
     <p>
@@ -247,10 +61,10 @@
     <p>
         This dashboard visualizes spatiotemporal trends of NO<sub>2</sub> pollution in Chicago and its 77 community areas. Chicago's Community Areas were defined by researchers from the Social Science Research Committee at the University of Chicago in the 1920s (Newberry Library, 2005). Communities tend to be larger than neighborhoods and census tracts but have had relatively stable boundaries since their creation (Newberry Library, 2005). This stability of community boundaries allows for the study of change over time on a sub-urban scale in Chicago (Newberry Library, 2005).
     </p>
-    </div>
+</div>
 
 <!-- Data Products Section -->
-<div class="info-section" id="data-products">
+<div class="content-section" id="data-products">
     <h2>Data Products</h2>
 
     <p>
@@ -296,7 +110,8 @@
     </div>
 </div>
 
-<div class ="info-section" id="citations">
+<!-- Citations Section -->
+<div class ="content-section" id="citations">
     <h2>References</h2>
 
     <p style="padding-left: 36px; text-indent: -36px;">

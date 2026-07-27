@@ -4,183 +4,158 @@
 {% block title %}Home{% endblock %}
 
 {% block extra_css %}
-<style>
-    
-    /* Background image for page */
-    main.content {
+<style> 
+  /* Background image for page */
+  main.content {
     background-image: url("{% static 'dashboard/images/esdlogo_white.png' %}");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: right center;
     background-attachment: fixed;
   }
-    
-    /* Hero (Heading) banner */
-    .hero {
-    text-align: center;
-    padding: 2rem 1rem;
-    margin-bottom: 1.5rem;
-    }
-
-    .hero h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--primary);
-    margin-bottom: 0.5rem;
-    }
-
-    .hero .subtitle {
-    font-size: 1rem;
-    color: var(--text-muted);
-    max-width: 640px;
-    margin: 0 auto;
-    line-height: 1.6;
-    }
-
-    @media (max-width: 600px) {
-    .hero h1 {
-        font-size: 1.4rem;
-    }
-    }
 </style>
 
 {% endblock %}
 
 {% block content %}
 
+<!-- Heading -->
 <div class="hero">
     <h1>Welcome to the Regional Ozone Precursor Dashboard</h1>
     <p class="subtitle">
       The Regional Ozone Precoursor Dashboard is a visualization tool for TEMPO satellite, Open Air Chicago ground sensor, and a fused product NO₂ data, developed by the Summer 2026 EarthRISE Developers Academy's Chicago Health & Air Quality Team.
     </p>
+</div>
+
+<!-- Stat Cards -->
+<div class="dashboard-grid">
+  <!-- Data Load Status -->
+  <div class="stat-card">
+      <div class="stat-label">Data Load Status</div>
+      <div class="stat-value" id="data-status-value" style="color: var(--text-muted);">Checking...</div>
+      <div class="stat-sub" id="data-status-sub">Static Files Loaded: ...</div>
   </div>
 
-<!--Stats-->
-<div class="dashboard-grid">
-    <!-- Stat Card 1 -->
-    <div class="stat-card">
-        <div class="stat-label">Data Load Status</div>
-        <div class="stat-value" id="data-status-value" style="color: var(--text-muted);">Checking...</div>
-        <div class="stat-sub" id="data-status-sub">Static Files Loaded: ...</div>
-    </div>
+  <!-- Ground Sensor Network -->
+  <div class="stat-card">
+      <div class="stat-label">Ground Sensor Network</div>
+      <div class="stat-value" style="color:#b7791f;">270+</div>
+      <div class="stat-sub">Open Air Chicago</div>
+  </div>
 
-    <!-- Stat Card 2 -->
-    <div class="stat-card">
-        <div class="stat-label">Ground Sensor Network</div>
-        <div class="stat-value" style="color:#b7791f;">270+</div>
-        <div class="stat-sub">Open Air Chicago</div>
-    </div>
-
-    <!-- Stat Card 3 -->
-    <div class="stat-card">
-        <div class="stat-label">Last Server Update</div>
-        <div class="stat-value" style="font-size:1.25rem;">{{ server_start_time|time:"H:i" }} CDT</div>
-        <div class="stat-sub">{{ server_start_time|date:"M d, Y" }}</div>
-    </div>
+  <!-- Last Server Update -->
+  <div class="stat-card">
+      <div class="stat-label">Last Server Update</div>
+      <div class="stat-value" style="font-size:1.25rem;">{{ server_start_time|time:"H:i" }} CDT</div>
+      <div class="stat-sub">{{ server_start_time|date:"M d, Y" }}</div>
+  </div>
 </div>
 
 <!-- Quick Actions -->
 <div class="dashboard-section">
-    <h2>Quick Actions</h2>
-    <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-        <a href="{% url 'map_daily' %}" style="
-            display:inline-block;
-            padding:0.75rem 1.5rem;
-            background:var(--bg-card);
-            color:var(--text);
-            text-decoration:none;
-            border:2px solid var(--border);
-            border-radius:8px;
-            font-weight:600;
-            font-size:0.9rem;
-            transition:all .2s;
-        " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
-            Explore Daily Averages
-        </a>
-        <a href="{% url 'community' %}" style="
-            display:inline-block;
-            padding:0.75rem 1.5rem;
-            background:var(--bg-card);
-            color:var(--text);
-            text-decoration:none;
-            border:2px solid var(--border);
-            border-radius:8px;
-            font-weight:600;
-            font-size:0.9rem;
-            transition:all .2s;
-        " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
-            Community Analysis
-        </a>
-        <a href="{% url 'tutorial' %}" style="
-            display:inline-block;
-            padding:0.75rem 1.5rem;
-            background:var(--bg-card);
-            color:var(--text);
-            text-decoration:none;
-            border:2px solid var(--border);
-            border-radius:8px;
-            font-weight:600;
-            font-size:0.9rem;
-            transition:all .2s;
-        " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
-            Tutorial
-        </a>
-        <a href="{% url 'export' %}" style="
-            display:inline-block;
-            padding:0.75rem 1.5rem;
-            background:var(--bg-card);
-            color:var(--text);
-            text-decoration:none;
-            border:2px solid var(--border);
-            border-radius:8px;
-            font-weight:600;
-            font-size:0.9rem;
-            transition:all .2s;
-        " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
-            Get Data Files
-        </a>
-    </div>
+  <h2>Quick Actions</h2>
+  <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+    <a href="{% url 'map_daily' %}" style="
+        display:inline-block;
+        padding:0.75rem 1.5rem;
+        background:var(--bg-card);
+        color:var(--text);
+        text-decoration:none;
+        border:2px solid var(--border);
+        border-radius:8px;
+        font-weight:600;
+        font-size:0.9rem;
+        transition:all .2s;
+    " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+        Explore Daily Averages
+    </a>
+    <a href="{% url 'community' %}" style="
+        display:inline-block;
+        padding:0.75rem 1.5rem;
+        background:var(--bg-card);
+        color:var(--text);
+        text-decoration:none;
+        border:2px solid var(--border);
+        border-radius:8px;
+        font-weight:600;
+        font-size:0.9rem;
+        transition:all .2s;
+    " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+        Community Analysis
+    </a>
+    <a href="{% url 'tutorial' %}" style="
+        display:inline-block;
+        padding:0.75rem 1.5rem;
+        background:var(--bg-card);
+        color:var(--text);
+        text-decoration:none;
+        border:2px solid var(--border);
+        border-radius:8px;
+        font-weight:600;
+        font-size:0.9rem;
+        transition:all .2s;
+    " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+        Tutorial
+    </a>
+    <a href="{% url 'export' %}" style="
+        display:inline-block;
+        padding:0.75rem 1.5rem;
+        background:var(--bg-card);
+        color:var(--text);
+        text-decoration:none;
+        border:2px solid var(--border);
+        border-radius:8px;
+        font-weight:600;
+        font-size:0.9rem;
+        transition:all .2s;
+    " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+        Get Data Files
+    </a>
+  </div>
 </div>
 
 <!-- Data Sources -->
 <div class="dashboard-section">
-    <h2>Data Sources</h2>
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
-        <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--accent);">
-            <strong style="color:var(--primary);">NASA TEMPO</strong>
-            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
-                Tropospheric Emissions: Monitoring of Pollution (TEMPO). Geostationary satellite providing hourly NO₂, O₃, and AOD measurements over North America.
-            </p>
-            <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted);">Learn More</a>
-        </div>
-        <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--success);">
-            <strong style="color:var(--success);">Open Air Chicago</strong>
-            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
-                Ground-based air quality monitoring network. Surface NO₂ and PM 2.5 concentrations from air quality sensors around the Cook County, Chicago region.
-            </p>
-            <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted);">Learn More</a>
-        </div>
-        <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--warning);">
-            <strong style="color:#b7791f;">Fusion Layer</strong>
-            <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
-                Combined TEMPO satellite + Open Air Chicago ground sensor data for higher resolution air quality estimates.
-            </p>
-            <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted);">Learn More</a>
-        </div>
+  <h2>Data Sources</h2>
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
+    <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--accent);">
+        <strong style="color:var(--primary);">NASA TEMPO</strong>
+        <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
+            Tropospheric Emissions: Monitoring of Pollution (TEMPO). Geostationary satellite providing hourly NO₂, O₃, and AOD measurements over North America.
+        </p>
+        <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted);">Learn More</a>
     </div>
+    <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--success);">
+        <strong style="color:var(--success);">Open Air Chicago</strong>
+        <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
+            Ground-based air quality monitoring network. Surface NO₂ and PM 2.5 concentrations from air quality sensors around the Cook County, Chicago region.
+        </p>
+        <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted);">Learn More</a>
+    </div>
+    <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--warning);">
+        <strong style="color:#b7791f;">Fusion Layer</strong>
+        <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
+            Combined TEMPO satellite + Open Air Chicago ground sensor data for higher resolution air quality estimates.
+        </p>
+        <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted);">Learn More</a>
+    </div>
+  </div>
 </div>
 
 <!-- System Status -->
 <div class="dashboard-section">
-    <h2>System Status</h2>
-    <div id="status-feed">
-        <div style="padding:0.5rem 0; font-size:0.85rem; color:var(--text-muted);">Loading...</div>
-    </div>
+  <h2>System Status</h2>
+  <div id="status-feed">
+    <div style="padding:0.5rem 0; font-size:0.85rem; color:var(--text-muted);">Loading...</div>
+  </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-// ── HELPERS ──────────────────────────────────────────────────────────────
+// HOME PAGE HELPERS 
 
+// System Status Timestamps
 function formatTimeAgo(timestamp) {
   const date = new Date(timestamp + 'Z');
   const now = new Date();
@@ -192,8 +167,7 @@ function formatTimeAgo(timestamp) {
   return Math.floor(diffHr / 24) + 'd ago';
 }
 
-// ── RENDER STATUS FEED ──
-
+// Render System Status
 function renderStatusFeed(data) {
   const feed = document.getElementById('status-feed');
   let html = '';
@@ -239,8 +213,7 @@ function renderStatusFeed(data) {
   feed.innerHTML = html;
 }
 
-// ── LOAD DATA STATUS FOR STAT CARD ─────────────────────────────────────
-
+// Render Load Data Status (Stat Card)
 function loadDataStatus(data) {
   const valueEl = document.getElementById('data-status-value');
   const subEl = document.getElementById('data-status-sub');
@@ -270,8 +243,7 @@ function loadDataStatus(data) {
   subEl.textContent = `Static Files Loaded: ${totalFiles}`;
 }
 
-// ── FETCH DATA ───────────────────────────────────────────────────────────
-
+// Fetch Data Status from "api/data-status/""
 function fetchData() {
   fetch('{% url "data_status_api" %}')
     .then(res => res.json())
@@ -286,10 +258,11 @@ function fetchData() {
     });
 }
 
-// Initial load
 fetchData();
 
-// Auto-refresh every 60 seconds
+// Auto-refresh data status fetch every 60 seconds
 setInterval(fetchData, 60000);
 </script>
+
 {% endblock %}
+
