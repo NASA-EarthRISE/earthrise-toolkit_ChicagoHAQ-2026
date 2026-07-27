@@ -409,9 +409,10 @@ nav {
   display: block;
   width: 100%;
   padding: 0.5rem 0.25rem;
-  border: 2px solid var(--border);
+  border: 2px solid var(--primary-dark);
   border-radius: 8px;
   background: var(--bg);
+  background-color: var(--accent);
   color: var(--text);
   font-size: 0.78rem;
   font-weight: 600;
@@ -424,12 +425,12 @@ nav {
 }
 
 .map-type-btn:hover {
-  border-color: var(--primary-light);
-  background: var(--bg-card);
+  border-color: var(--primary-dark);
+  background: var(--primary);
 }
 
 .map-type-btn.active {
-  border-color: var(--accent);
+  border-color: var(--primary-dark);
   background: var(--accent);
   color: #ffffff;
 }

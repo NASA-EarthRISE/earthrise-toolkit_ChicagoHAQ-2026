@@ -69,6 +69,7 @@
         <div class="stat-label">Ground Sensor Network</div>
         <div class="stat-value" style="color:#b7791f;">270+</div>
         <div class="stat-sub">Open Air Chicago</div>
+        <!--The Open Air Chicago data has 286 unique sensor IDs,even though there are only supposed to be 277 sensors in the network. This discrepancy may be due to some of the sensors being EPA regulatory monitors instead of Clarity Node-S sensors, but there is no metadata on which sensors these are. Instead of saying 277 or 286, we opted for caution and said 270+ as our static value for the number of sensors.-->
     </div>
 
     <!-- Stat Card 3 -->
@@ -83,20 +84,6 @@
 <div class="dashboard-section">
     <h2>Quick Actions</h2>
     <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-        <a href="{% url 'tutorial' %}" style="
-            display:inline-block;
-            padding:0.75rem 1.5rem;
-            background:var(--bg-card);
-            color:var(--text);
-            text-decoration:none;
-            border:2px solid var(--border);
-            border-radius:8px;
-            font-weight:600;
-            font-size:0.9rem;
-            transition:all .2s;
-        " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
-            Dashboard Tutorial
-        </a>
         <a href="{% url 'map_daily' %}" style="
             display:inline-block;
             padding:0.75rem 1.5rem;
@@ -109,7 +96,7 @@
             font-size:0.9rem;
             transition:all .2s;
         " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
-            Explore Daily Averages
+            Explore Daily NO<sub>2</sub> Pollution
         </a>
         <a href="{% url 'community' %}" style="
             display:inline-block;
@@ -123,7 +110,21 @@
             font-size:0.9rem;
             transition:all .2s;
         " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
-            Community Analysis
+            Explore Community Statistics
+        </a>
+        <a href="{% url 'tutorial' %}" style="
+            display:inline-block;
+            padding:0.75rem 1.5rem;
+            background:var(--bg-card);
+            color:var(--text);
+            text-decoration:none;
+            border:2px solid var(--border);
+            border-radius:8px;
+            font-weight:600;
+            font-size:0.9rem;
+            transition:all .2s;
+        " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">
+            Dashboard User Guide
         </a>
         <a href="{% url 'export' %}" style="
             display:inline-block;
@@ -146,22 +147,22 @@
 <div class="dashboard-section">
     <h2>Data Sources</h2>
     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
-        <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--accent);">
-            <strong style="color:var(--primary);">NASA TEMPO</strong>
+        <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid; border-left-color: #4cbdb2;">
+            <strong style="color: var(--text);">NASA TEMPO</strong>
             <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
-                Tropospheric Emissions: Monitoring of Pollution (TEMPO). Geostationary satellite providing hourly NO₂, O₃, and AOD measurements over North America.
+                Tropospheric Emissions: Monitoring of Pollution (TEMPO). Geostationary satellite providing hourly NO<sub>2</sub>, O<sub>3</sub>, and formaldehyde (HCHO) measurements over North America.
             </p>
             <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted);">Learn More</a>
         </div>
-        <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--success);">
-            <strong style="color:var(--success);">Open Air Chicago</strong>
+        <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid; border-left-color: #81a24f;">
+            <strong style="color: var(--text);">Open Air Chicago</strong>
             <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
-                Ground-based air quality monitoring network. Surface NO₂ and PM<sub>2.5</sub> concentrations from air quality sensors around the Cook County, Chicago region.
+                Ground-based air quality monitoring network providing hourly surface NO<sub>2</sub> and PM<sub>2.5</sub> concentrations across Chicago.
             </p>
             <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted);">Learn More</a>
         </div>
-        <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid var(--warning);">
-            <strong style="color:#b7791f;">Fusion Layer</strong>
+        <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid; border-left-color: #baa7d5;">
+            <strong style="color: var(--text);">Fusion Layer</strong>
             <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
                 Combined TEMPO satellite + Open Air Chicago ground sensor data for higher resolution air quality estimates.
             </p>
