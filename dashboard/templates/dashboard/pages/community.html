@@ -501,7 +501,7 @@
   .scalebar-overlay {
     position: absolute;
     bottom: 36px;
-    right: 8px;
+    right: 15px;
     z-index: 1000;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     pointer-events: none;
@@ -1008,11 +1008,11 @@ initManualStickyCommunityPanel();
       iconAnchor: [10, 10]
     });
 
-      var Sensors = L.geoJSON(data, {
-         pointToLayer: function (feature, latlng) {
-          return L.marker(latlng, {icon: sensorMarker});
-        }
-        }).addTo(map);
+       var Sensors = L.geoJSON(data, {
+          pointToLayer: function (feature, latlng) {
+           return L.marker(latlng, {icon: sensorMarker, interactive: false});
+         }
+         }).addTo(map);
     })
 
 

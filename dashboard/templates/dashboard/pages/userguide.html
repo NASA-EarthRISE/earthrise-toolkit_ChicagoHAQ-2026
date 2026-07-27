@@ -130,16 +130,20 @@
 <div class="hero">
   <h1>User Guide</h1>
   <p class="subtitle">
-    Welcome to the Regional Ozone Precursor Dashboard! This user-friendly tool is designed to allow users to visualize spatiotemporal trends of NO<sub>2</sub> pollution across Chicago and its community areas. This manual will guide you through interacting with the different pages of this dashboard. 
+    Welcome to the Regional Ozone Precursor Dashboard! This user-friendly tool is designed to allow users to visualize spatiotemporal trends of NO<sub>2</sub> pollution across Chicago and its community areas. This manual will guide you through interacting with the different pages and features of this dashboard. 
   </p>
 </div>
 
 <div class="quick-actions-nav">
-    <a href="#pollution-map" class="quick-action-btn primary">
+  <a href="#home-page" class="quick-action-btn primary">
+        <span class="icon"></span>
+        Home (Server Stats)
+    </a>
+    <a href="#pollution-map" class="quick-action-btn secondary">
         <span class="icon"></span>
         Pollution Map
     </a>
-    <a href="#community-statistics" class="quick-action-btn secondary">
+    <a href="#community-statistics" class="quick-action-btn tertiary">
         <span class="icon"></span>
         Community Statistics
     </a>
@@ -149,11 +153,38 @@
     </a>
 </div>
 
+<div class="tutorial-block" id="home-page">
+  <div class="tutorial-block-heading"><strong style="color: #96a2bf;">Home</strong>
+  </div>
+  <p>
+    The Regional Ozone Precoursur Dashboard homepage consists of general server information, quick actions, introduction to data products, and system status. 
+  </p>
+  <p>
+    Stat Cards: 
+    <ul style="padding-left: 36px; text-indent: -36px;">
+      <li style="padding-left: 36px; text-indent: -36px;"> The "Data Load Status" stat card tracks the availablity of all three data sources (TEMPO, Open Air Clairty, and Fused) within the server. If this message displays "Complete", all three data products have been properly loaded and sourced within the server. If this message displays "Incomplete", one or more data sources is missing or not found by the server. If this message displays "Failed", no data sources have been found within the server. To remedy data loading issues, refer to the Chicago_HAQ_ReadME file found in the source Github. </li>
+      <li style="padding-left: 36px; text-indent: -36px;"> The "Last Server Update" stat card tracks the last time the server source code was re-run o re-loaded. This card indicates when the last update or change was made to the dashboard UI. </li>
+    </ul>
+  </p>
+  <p>
+    System Status: 
+  </p>
+  <p>
+    The system status section of the homepage tracks the most recent server updates. These updates may include:
+    <ul style="padding-left: 36px; text-indent: -36px;">
+      <li style="padding-left: 36px; text-indent: -36px;"> Server Start — The last time the server was re-run or re-loaded.</li>
+      <li style="padding-left: 36px; text-indent: -36px;"> Dashboard Reloaded — The last time the dashboard webpage was reloaded.</li>
+      <li style="padding-left: 36px; text-indent: -36px;"> TEMPO Data, Open Air Chicago Data, Fused Data — The amount of files available for each data product within the server. If the disclaimer displays "No files loaded", there were no data entries found for that data product.</li>
+      <li style="padding-left: 36px; text-indent: -36px;"> Dashboard reloaded — The last time the dashboard webpage was reloaded.</li>
+    </ul>
+  </p>
+</div>
+
 <div class="tutorial-block" id="pollution-map">
   <div class="tutorial-block-heading"><strong style="color: #96a2bf;">Pollution Map</strong>
   </div>
   <p>
-    The Pollution Map homepage visualizes NO<sub>2</sub> data for each of the data products: TEMPO, Open Air Chicago ground sensors, and the fused data product. Use the <b>+</b> and <b>-</b> symbols in the top left to zoom in and out of the map. In the left sidebar, choose a Time Scale, Observation Window, Data Product, and Spatial Scale to see the corresponding data layer appear on the map to the right. 
+    The Pollution Map homepage visualizes NO<sub>2</sub> data for each of the data products: TEMPO satellite measurements, Open Air Chicago ground sensors, and the fused data product. Use the <b>+</b> and <b>-</b> symbols in the top left to zoom in and out of the map. In the left sidebar, choose a Time Scale, Observation Window, Data Product, and Spatial Scale to see the corresponding data layer appear on the map to the right. 
   </p>
   <p>
     Choosing the <i>Hourly</i> time scale will prompt you to enter a single date in the Observation Window. For both the <i>Daily</i> and <i>Monthly</i> time scales, you will need to enter a start and end date in the Observation Window. Please note that the study period for this project was September 2025 to June 2026, and data is available only for this timeframe. Valid observation dates for each data product are listed below: 
@@ -171,19 +202,19 @@
   <div class="tutorial-block-heading"><strong style="color: #96a2bf;">Community Statistics</strong>
   </div>
   <p>
-    This page visualizes NO<sub>2</sub> statistics on a community level for each of the data products: TEMPO, Open Air Chicago ground sensors, and the fused data product. 
+    This page visualizes NO<sub>2</sub> statistics on a community level for each of the data products: TEMPO satellite measurements, Open Air Chicago ground sensors, and the fused data product. 
   </p>
   <p>
     1. Select a community area from the dropdown on the left side of the page.
     <ol type="a"; style="padding-left: 36px">
-      <li>If you do not know the community area a specific address is in, click on the blue “Get Help” button below the map. This will take you to an external site created by the City of Chicago.Once you are on this site, click the search magnifying glass in the top left corner to search up an address and get the name of the community area the address is in.</li>
+      <li>If you do not know the community area a specific address is in, click on the blue “Get Help” button below the map. This will take you to an external site created by the City of Chicago. Once you are on this site, click the search magnifying glass in the top left corner to search up an address and get the name of the community area the address is in.</li>
     </ol>
   </p>
   <p>
-    2. After you have selected a community, graphs will populate on the right side of the page visualizing different statistics. By default, the statistics will be about the Ground Sensors (Open Air Chicago) for that community. Select the “TEMPO” or the “Fused”radio buttons to see data visualizations for a different data product.
+    2. After you have selected a community, graphs will populate on the right side of the page visualizing different statistics. By default, the selected statistics percentile is the Ground Sensors (Open Air Chicago) for that community. Select the “TEMPO” or the “Fused”radio buttons to see data visualizations for a different data product.
   </p>
   <p>
-    3. If you would like to save a PDF of the community statisticspage, click on the “Save as PDF” button in the top right corner ofthe page just below the navigation bar.
+    3. If you would like to save a PDF of the community statistics page, click on the “Save as PDF” button in the top right corner of the page just below the navigation bar.
   </p>
 </div>
 
@@ -194,31 +225,34 @@
     This page allows you to export the data files used in the dashboard. 
   </p>
   <p>
-    1. Under the Export Data Files left sidebar, first choose a Data Source, depending on whether you want to download Open Air Chicago, TEMPO, or Fused data.
+    1. Under the Export Data Files left sidebar, first choose a Data Source, depending on whether you want to download TEMPO, Open Air Chicago, or Fused data.
   </p>
   <p>
     2. Choose the file type you want to download from one of the following options:
     <ul style="padding-left: 36px; text-indent: -36px;">
-      <li style="padding-left: 36px; text-indent: -36px;">Hourly: hourly concentrations of NO<sub>2</sub> </li>
-      <li style="padding-left:36px; text-indent: -36px;">Daily Community Average: average daily NO<sub>2</sub> concentrations aggregated to Chicago's community </li>
+      <li style="padding-left: 36px; text-indent: -36px;">Hourly: Hourly concentrations of NO<sub>2</sub> </li>
+      <li style="padding-left:36px; text-indent: -36px;">Daily Community Average: Average daily NO<sub>2</sub> concentrations aggregated to Chicago's communities </li>
       </li>
-      <li style="padding-left: 36px; text-indent: -36px;">Daily Averages: average daily NO<sub>2</sub> concentrations for each pixel (TEMPO and /Fused data) or by sensor (Open Air Chicago) </li>
-      <li style="padding-left:36px; text-indent: -36px;">Monthly Community Average: average monthly NO<sub>2</sub> concentrations aggregated to Chicago's community </li>
+      <li style="padding-left: 36px; text-indent: -36px;">Daily Averages: Average daily NO<sub>2</sub> concentrations for each pixel (TEMPO and Fused data) or by sensor (Open Air Chicago) </li>
+      <li style="padding-left:36px; text-indent: -36px;">Monthly Community Average: Average monthly NO<sub>2</sub> concentrations aggregated to Chicago's communities </li>
       </li>
-      <li style="padding-left: 36px; text-indent: -36px;">Monthly Averages: average monthly NO<sub>2</sub> concentrations for each pixel (TEMPO and /Fused data) or by sensor (Open Air Chicago) </li>
+      <li style="padding-left: 36px; text-indent: -36px;">Monthly Average: Average monthly NO<sub>2</sub> concentrations for each pixel (TEMPO and Fused data) or by sensor (Open Air Chicago) </li>
     </ul>
   </p>
   <p>
     3. (Optional): Choose a date filter to filter the files to a certain month.
   </p>
   <p>
-    4. Choose the export format. Most files in their original format will export as a .geojson. If you want to export the files as a .csv, click the “CSV” button.
+    4. Choose the export format. Most files in their original format will export as a .geojson or .json if "Original" is selected as the export format. If you want to export <strong> all selected files </strong> as a .csv, click the “CSV” button for the export format.
   </p>
   <p>
-    5. On the right side of the page, you can click the “Select All” checkbox to select all data files for download or choose individual file namesto download.
+    5. On the right side of the page, you can click the “Select All” checkbox to select all data files for download or instead choose individual file names to download.
   </p>
   <p>
-    6. Click the "Download Selected” button in the left sidebar to download selected files.
+    6. Click the "Download Selected” button in the left sidebar to download selected files. If all files have been downloaded successfully, there will be a confirmation under this button.
+  </p>
+  <p>
+    7. If there is trouble viewing newly added data files as a downloadable option, click the "Refresh List" to keep the list the file list up to date.
   </p>
 </div>
 

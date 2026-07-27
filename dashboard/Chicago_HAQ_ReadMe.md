@@ -10,7 +10,7 @@ EarthRISE Developers Academy in collaboration with NASA LaRC and community partn
 1. [This Project](#this-project)
 2. [Tech Stack](#tech-stack)
 3. [Prerequisites](#prerequisites)
-   - [1. Python 3.12](#1-python-312)
+   - [1. Python 3.14](#1-python-312)
    - [2. Git](#2-git)
    - [3. A terminal](#3-a-terminal)
    - [4. A code editor (recommended)](#4-a-code-editor-recommended)
@@ -127,7 +127,7 @@ The project is built with Django and uses a file-based data architecture — dat
 | Layer | Technology |
 |---|---|
 | Backend framework | Django 6.0 |
-| Language | Python 3.12 |
+| Language | Python 3.14 |
 | Frontend | Django Templates + JavaScript (ES6) |
 | Map library | Leaflet 1.9.4 (CDN) |
 | Map drawing | Leaflet Draw 1.0.4 (CDN) |
