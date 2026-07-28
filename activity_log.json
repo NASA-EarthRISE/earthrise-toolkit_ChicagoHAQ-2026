@@ -3,6 +3,18 @@
     "type": "map_view",
     "title": "User viewed monthly map",
     "details": "",
+    "timestamp": "2026-07-28 12:56:35"
+  },
+  {
+    "type": "server_start",
+    "title": "Dashboard server started",
+    "details": "",
+    "timestamp": "2026-07-28 12:54:29"
+  },
+  {
+    "type": "map_view",
+    "title": "User viewed monthly map",
+    "details": "",
     "timestamp": "2026-07-28 12:52:44"
   },
   {
@@ -286,17 +298,5 @@
     "title": "User viewed monthly map",
     "details": "",
     "timestamp": "2026-07-27 15:04:54"
-  },
-  {
-    "type": "map_view",
-    "title": "User viewed daily map",
-    "details": "",
-    "timestamp": "2026-07-27 15:04:53"
-  },
-  {
-    "type": "map_view",
-    "title": "User viewed hourly map",
-    "details": "",
-    "timestamp": "2026-07-27 15:04:24"
   }
 ]

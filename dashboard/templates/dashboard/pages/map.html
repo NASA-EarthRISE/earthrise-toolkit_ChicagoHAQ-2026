@@ -1043,10 +1043,6 @@ function updateBottomControlVisibility() {
   const tempoMonthlyCache = {};
   let communityIndexCache = {};
 
-function parseUTCStringToDate(s) {
-    return TimeUtils.parseUTCString(s);
-}
-
 function removeInvalidHourlyDate(date, reason) {
     if (!date || TIME_SCALE !== "hourly" || currentDataProduct !== "clarity") {
         return;
@@ -1325,57 +1321,6 @@ function removeInvalidHourlyDate(date, reason) {
 function getChicagoDateStringFromUTC(utcString) {
     return TimeUtils.getChicagoDateString(utcString);
 }
-function deriveClarityCentralDatesFromFiles(utcFileDates) {
-    return Promise.all(
-        utcFileDates.map(date => {
-            return fetch(`/data/clarity/${date}.geojson`)
-                .then(r => {
-                    if (!r.ok) {
-                        console.warn("Missing Clarity hourly file while deriving Central dates:", date);
-                        return null;
-                    }
-                    return r.json();
-                })
-                .catch(err => {
-                    console.warn("Could not inspect Clarity file:", date, err);
-                    return null;
-                });
-        })
-    ).then(files => {
-        const centralDates = new Set();
-
-        files.forEach(data => {
-            if (!data || !data.features) {
-                return;
-            }
-
-            data.features.forEach(feature => {
-                const p = feature.properties || {};
-
-                if (!p.time) {
-                    return;
-                }
-
-                const value = Number(p.no2concindividual_value);
-
-                if (isNaN(value)) {
-                    return;
-                }
-
-                const centralDate = getChicagoDateStringFromUTC(p.time);
-                    if (centralDate) {
-                        centralDates.add(centralDate);
-                    }
-            });
-        });
-
-        return Array.from(centralDates).sort();
-    });
-}
-
-function getChicagoParts(date) {
-    return TimeUtils.getChicagoParts(date);
-}
 
 function formatHourForDisplay(dateStr, selectedHour) {
     return TimeUtils.formatHourForDisplay(dateStr, selectedHour);
@@ -1387,14 +1332,6 @@ function formatHourForDisplay(dateStr, selectedHour) {
 
 function utcDateToCentralPretty(dateStr) {
     return TimeUtils.formatDateForDisplay(dateStr);
-}
-
-function isDailyDate(value) {
-    return TimeUtils.isDailyDate(value);
-}
-
-function isMonthKey(value) {
-    return TimeUtils.isMonthlyDate(value);
 }
 
 function toMonthKey(value) {
@@ -1581,10 +1518,6 @@ function applyPreferredDateAndHourAfterDateLoad(load) {
     pendingPreferredHour = null;
 
     loadDate(selectedDate, load);
-}
-
-function getPreviousDate(dateStr) {
-    return TimeUtils.getPreviousDay(dateStr);
 }
 
 function showLoading(message) {
@@ -2185,24 +2118,6 @@ function getFusionValue(properties) {
     }
 
     return Number(properties.no2_estimate);
-}
-
-function getFusionTimeString(properties) {
-    if (!properties) {
-        return "";
-    }
-
-    return (
-        properties.datetime ||
-        properties.datetime_local ||
-        properties.time ||
-        properties.timestamp ||
-        ""
-    );
-}
-
-function getFusionChicagoDateHour(properties) {
-    return TimeUtils.extractChicagoDateHour(properties);
 }
 
 function showFusionNoDataMessage(date, detailText) {
@@ -5202,46 +5117,6 @@ function loadFusionDates() {
             hideLoading();
         });
 }
-
-     // Helper: load Clarity dates and return a promise with the dates array
-     function loadClarityDatesAndReturn() {
-         return fetch("/data/clarity/dates.json")
-             .then(r => r.json())
-             .then(response => {
-                 let loadedDates = Array.isArray(response) ? response : (response.dates || []);
-                 dates = loadedDates;
-                 rangeStartDate = dates[0];
-                 rangeEndDate = dates[dates.length - 1];
-                 rangeCurrentEndDate = rangeEndDate;
-
-                 var dateSlider = document.getElementById("dateSlider");
-                 var dateLabel = document.getElementById("dateLabel");
-                 var startDateInput = document.getElementById("startDate");
-                 var endDateInput = document.getElementById("endDate");
-
-                 if (startDateInput) startDateInput.value = rangeStartDate;
-                 if (endDateInput) endDateInput.value = rangeEndDate;
-
-                 dateSlider.max = dates.length - 1;
-                 dateSlider.value = 0;
-
-                 if (TIME_SCALE === "monthly") {
-                     if (dateLabel) dateLabel.innerHTML = formatMonthForDisplay(dates[0]);
-                 } else {
-                     if (dateLabel) dateLabel.innerHTML = utcDateToCentralPretty(dates[0]);
-                 }
-
-                 var timeLabel = document.getElementById("timeLabel");
-                 if (timeLabel) timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
-
-                 loadDate(dates[0]);
-                 return dates;
-             })
-             .catch(err => {
-                 console.error("Fallback Clarity dates also failed:", err);
-                 return [];
-             });
-     }
 
     // ── TIME SLIDER (original sidebar slider) ────────────────────────────────────
     const origTimeSlider = document.getElementById('time-slider');
