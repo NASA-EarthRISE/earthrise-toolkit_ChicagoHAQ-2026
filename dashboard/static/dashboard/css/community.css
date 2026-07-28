@@ -1,13 +1,6 @@
-  header,
-  .navbar,
-  .site-header {
-    position: sticky;
-    top: 0;
-    z-index: 3000;
-  }
 
-  /* Main two-column layout */
-  .community-layout {
+/* Main two-column layout */
+.community-layout {
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;
@@ -17,7 +10,7 @@
   position: relative;
 }
 
-  /* Left column: map + help */
+/* Left column: map + help */
 .community-left {
   flex: 1;
   display: flex;
@@ -26,10 +19,9 @@
   padding: 1rem;
   border-radius: 5px;
   flex-shrink: 0;
-
+  box-sizing: border-box;
   position: relative;
   z-index: 20;
-
   max-height: calc(100vh - 96px);
   overflow: hidden;
   min-height: 0;
@@ -43,189 +35,170 @@
   position: absolute;
 }
 
-.community-left,
-.community-left-placeholder {
-  box-sizing: border-box;
-}
-
 .community-left-placeholder {
   display: none;
   flex: 0 0 auto;
+  box-sizing: border-box;
   pointer-events: none;
   visibility: hidden;
 }
 
-#community-dropdown,
-.help-container {
+/* Dropdown styling */
+#community-dropdown {
+  overflow: auto;
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--bg-card);
   flex: 0 0 auto;
 }
 
-  /* right column: graphs */
-  .community-right {
-    flex: 2;
-    display: flex;
-    flex-direction: column;
-    min-height: 1000px;
-    gap: 1rem;
-  }
+/* Right column: graphs */
+.community-right {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 1000px;
+  gap: 1rem;
+}
 
-  /*container to hold dropdown and go in same row*/
-  .dropdown-go {
-    display: flex;
-    flex-direction: row;
-  }
+/* Container to hold dropdown and go in same row */
+.dropdown-go {
+  display: flex;
+  flex-direction: row;
+}
 
-  /* dropdown styling */
-  #community-dropdown {
-    overflow: auto;
-    width: 100%;
-    padding: 0.5rem;
-    font-size: 1rem;
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    background: var(--bg-card);
-    flex: 1;
-  }
-
-  /* Map container for community */
- .community-map-container {
+/* Map container for community */
+.community-map-container {
   overflow: hidden;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 20px;
   position: relative;
-
   flex: 1 1 auto;
   min-height: 0;
   max-height: none;
-
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   z-index: 1;
 }
 
-  #community-map {
+#community-map {
   width: 100%;
   height: 100%;
   min-height: 340px;
   z-index: 0;
 }
 
-  /* Help container */
-  .help-container {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 1rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    text-align: center;
-  }
+/* Help container */
+.help-container {
+  flex: 0 0 auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  text-align: center;
+}
 
-  .help-container p {
-    margin: 0 0 0.75rem 0;
-    font-size: 0.95rem;
-    color: var(--text-muted);
-  }
+.help-container p {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
 
-  .help-container a {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background: var(--primary);
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    font-size: 0.9rem;
-  }
+.help-container a {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: var(--primary);
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
 
-  .help-container a:hover {
-    opacity: 0.9;
-  }
+.help-container a:hover {
+  opacity: 0.9;
+}
 
-   /* Graph placeholder container */
-   .graph-container {
-     background: var(--bg-card);
-     border: 1px solid var(--border);
-     border-radius: 5px;
-     flex: 1;
-     min-height: 310px;
-     box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-     display: flex;
-     flex-direction: column;
-     padding: 1rem;
-     position: relative;
-   }
+/* Graph container */
+.graph-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  flex: 1;
+  min-height: 310px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  position: relative;
+}
 
-   /* Loading spinner overlay */
-   .graph-loading {
-     position: absolute;
-     top: 0;
-     left: 0;
-     width: 100%;
-     height: 100%;
-     display: flex;
-     flex-direction: column;
-     align-items: center;
-     justify-content: center;
-     background: rgba(255, 255, 255, 0.85);
-     z-index: 10;
-     border-radius: 5px;
-     pointer-events: none;
-     opacity: 0;
-     transition: opacity 0.2s ease;
-   }
+/* Loading spinner overlay */
+.graph-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.85);
+  z-index: 10;
+  border-radius: 5px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
 
-   .graph-loading.visible {
-     opacity: 1;
-     pointer-events: auto;
-   }
+.graph-loading.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
 
-   .graph-loading .spinner {
-     width: 40px;
-     height: 40px;
-     border: 4px solid var(--border);
-     border-top-color: var(--primary);
-     border-radius: 50%;
-     animation: graph-spin 0.7s linear infinite;
-   }
+.graph-loading .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: graph-spin 0.7s linear infinite;
+}
 
-   .graph-loading .loading-text {
-     margin-top: 0.75rem;
-     font-size: 0.85rem;
-     color: var(--text-muted);
-     font-style: italic;
-   }
+.graph-loading .loading-text {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
 
-   @keyframes graph-spin {
-     to { transform: rotate(360deg); }
-   }
+@keyframes graph-spin {
+  to { transform: rotate(360deg); }
+}
 
-  .graph-container img {
-    max-width: 50%;
-    height: auto;
-  }
+.graph-placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.9rem;
+  text-align: center;
+  margin: auto;
+}
 
-  .graph-placeholder {
-    color: var(--text-muted);
-    font-style: italic;
-    font-size: 0.9rem;
-    text-align: center;
-    margin: auto;
-  }
+/* Graph title */
+.graph-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  text-align: center;
+  width: 100%;
+}
 
-  /* Graph title */
-  .graph-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--primary);
-    margin-bottom: 0.5rem;
-    text-align: center;
-  }
-
-  .graph-title{
-    text-align: center;
-    width: 100%;
-  }
-
-  .graph-caption {
+.graph-caption {
   font-size: 0.95rem;
   text-align: center;
   width: 100%;
@@ -239,283 +212,283 @@
   margin-top: 0.25rem;
 }
 
-  /* Percentile toggle */
-  .percentile-toggle {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem 0;
-    margin-bottom: 0.25rem;
+/* Percentile toggle */
+.percentile-toggle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  margin-bottom: 0.25rem;
+}
+
+.percentile-toggle label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.percentile-toggle input[type="radio"] {
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+/* Plotly chart container */
+.plotly-chart {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Plotly zoom notification */
+.plotly-zoom-notification {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .75rem 1rem;
+  font-size: .8rem;
+  color: var(--text);
+  min-width: 180px;
+  max-width: 220px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-5px);
+}
+
+.plotly-zoom-notification.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.plotly-zoom-notification strong {
+  color: var(--primary);
+}
+
+/* Responsive: stack columns on small screens */
+@media (max-width: 900px) {
+  .community-layout {
+    flex-direction: column;
   }
 
-  .percentile-toggle label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-muted);
-    cursor: pointer;
-  }
-
-  .percentile-toggle input[type="radio"] {
-    accent-color: var(--primary);
-    cursor: pointer;
-  }
-
-  /* Plotly chart container */
-  .plotly-chart {
+  .community-left {
+    position: static;
     width: 100%;
-    flex: 1;
-    min-height: 0;
+    flex: none;
+    padding: 0.75rem;
   }
 
-  /* Plotly zoom notification — styled like explore-panel-body */
-  .plotly-zoom-notification {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    z-index: 10;
-    background: rgba(255, 255, 255, 0.75);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: .75rem 1rem;
-    font-size: .8rem;
-    color: var(--text);
-    min-width: 180px;
-    max-width: 220px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    pointer-events: none;
-    opacity: 0;
-    transform: translateY(-5px);
+  .community-right {
+    width: 100%;
+    flex: none;
   }
 
-  .plotly-zoom-notification.visible {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
+  .community-map-container {
+    min-height: 350px;
+    max-height: 450px;
   }
 
-  .plotly-zoom-notification strong {
-    color: var(--primary);
+  #community-map {
+    min-height: 350px;
   }
 
-  /* Responsive: stack columns on small screens */
-  @media (max-width: 900px) {
-    .community-layout {
-      flex-direction: column;
-    }
+  .graph-container {
+    width: 100%;
+    min-height: 280px;
+  }
+}
 
-    /* Make left column full width and remove sticky positioning */
-    .community-left {
-      position: static;
-      width: 100%;
-      flex: none;
-      padding: 0.75rem;
-    }
+/* ── Map Legend Overlay ── */
+.map-legend {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--border, #ccc);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #333;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  line-height: 1.5;
+  min-width: 120px;
+}
 
-    /* Make right column full width */
-    .community-right {
-      width: 100%;
-      flex: none;
-    }
+.map-legend .legend-title {
+  font-weight: 700;
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+  color: #222;
+}
 
-    /* Map container — full width with comfortable height on mobile */
-    .community-map-container {
-      min-height: 350px;
-      max-height: 450px;
-    }
+.map-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
-    #community-map {
-      min-height: 350px;
-    }
+.map-legend .legend-symbol {
+  font-size: 15px;
+  color: #624786;
+  flex: 0 0 auto;
+}
 
-    /* Graph containers — full width with adequate height */
-    .graph-container {
-      width: 100%;
-      min-height: 280px;
-    }
+.map-legend .legend-label {
+  white-space: nowrap;
+}
+
+/* ── Share / Export PDF header ── */
+.community-export-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: right;
+  gap: 10px;
+  padding: 8px 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+.community-export-header .share-label {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: #888;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.community-export-header .btn-export-pdf {
+  padding: 4px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: transparent;
+  color: #666;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.community-export-header .btn-export-pdf:hover {
+  background: #f0f0f0;
+  border-color: #999;
+  color: #333;
+}
+
+.community-export-header .btn-export-pdf:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Extra small screens — tighten up spacing */
+@media (max-width: 600px) {
+  .community-left {
+    padding: 0.5rem;
   }
 
-  /* ── Map Legend Overlay ── */
-  .map-legend {
-    background: rgba(255, 255, 255, 0.92);
-    border: 1px solid var(--border, #ccc);
-    border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 0.78rem;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    color: #333;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
-    line-height: 1.5;
-    min-width: 120px;
+  .community-map-container {
+    min-height: 280px;
+    max-height: 350px;
   }
 
-  .map-legend .legend-title {
-    font-weight: 700;
-    font-size: 0.8rem;
-    margin-bottom: 4px;
-    color: #222;
+  #community-map {
+    min-height: 280px;
   }
 
-  .map-legend .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  .graph-container {
+    min-height: 250px;
   }
+}
 
-  .map-legend .legend-symbol {
-    font-size: 15px;
-    color: #624786;
-    flex: 0 0 auto;
-  }
+.compass-overlay {
+  position: absolute;
+  bottom: 60px;
+  right: 8px;
+  z-index: 1000;
+  pointer-events: none;
+}
 
-  .map-legend .legend-label {
-    white-space: nowrap;
-  }
+.compass-image {
+  display: block;
+  width: 40px;
+  height: 40px;
+}
 
-  /* ── Share / Export PDF header ── */
-  .community-export-header {
-    display: flex;
-    justify-content: flex-end;
-    align-items: right;
-    gap: 10px;
-    padding: 8px 0;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  }
-  .community-export-header .share-label {
-    font-size: 0.78rem;
-    font-weight: 400;
-    color: #888;
-    white-space: nowrap;
-    user-select: none;
-  }
-  .community-export-header .btn-export-pdf {
-    padding: 4px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background: transparent;
-    color: #666;
-    font-size: 0.78rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .community-export-header .btn-export-pdf:hover {
-    background: #f0f0f0;
-    border-color: #999;
-    color: #333;
-  }
-  .community-export-header .btn-export-pdf:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
+/* ── Scalebar overlay — ruler style, small, bottom right ── */
+.scalebar-overlay {
+  position: absolute;
+  bottom: 36px;
+  right: 15px;
+  z-index: 1000;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column-reverse;
+}
 
-   /* Extra small screens — tighten up spacing */
-   @media (max-width: 600px) {
-     .community-left {
-       padding: 0.5rem;
-     }
+.scalebar-overlay .scalebar-ruler {
+  position: relative;
+  height: 12px;
+  width: 100px;
+}
 
-     .community-map-container {
-       min-height: 280px;
-       max-height: 350px;
-     }
+.scalebar-overlay .scalebar-main-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #333;
+}
 
-     #community-map {
-       min-height: 280px;
-     }
+.scalebar-overlay .scalebar-ticks {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
 
-     .graph-container {
-       min-height: 250px;
-     }
-   }
+.scalebar-overlay .scalebar-tick {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  background: #333;
+}
 
-  .compass-overlay {
-      position: absolute;
-      bottom: 60px;
-      right: 8px;
-      z-index: 1000;
-      pointer-events: none;
-  }
+.scalebar-overlay .scalebar-tick.major {
+  height: 8px;
+}
 
-  .compass-image {
-      display: block;
-      width: 40px;
-      height: 40px;
-  }
+.scalebar-overlay .scalebar-tick.minor {
+  height: 4px;
+}
 
-  /* ── Scalebar overlay — ruler style, small, bottom right ── */
-  .scalebar-overlay {
-    position: absolute;
-    bottom: 36px;
-    right: 15px;
-    z-index: 1000;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    pointer-events: none;
-    display: flex;
-    flex-direction: column-reverse;
-  }
+.scalebar-overlay .scalebar-labels {
+  position: relative;
+  width: 100px;
+  height: 10px;
+  margin-bottom: 1px;
+}
 
-  .scalebar-overlay .scalebar-ruler {
-    position: relative;
-    height: 12px;
-    width: 100px;
-  }
-
-  .scalebar-overlay .scalebar-main-line {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: #333;
-  }
-
-  .scalebar-overlay .scalebar-ticks {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-  }
-
-  .scalebar-overlay .scalebar-tick {
-    position: absolute;
-    bottom: 0;
-    width: 1px;
-    background: #333;
-  }
-
-  .scalebar-overlay .scalebar-tick.major {
-    height: 8px;
-  }
-
-  .scalebar-overlay .scalebar-tick.minor {
-    height: 4px;
-  }
-
-  .scalebar-overlay .scalebar-labels {
-    position: relative;
-    width: 100px;
-    height: 10px;
-    margin-bottom: 1px;
-  }
-
-  .scalebar-overlay .scalebar-label {
-    position: absolute;
-    font-size: 7px;
-    font-weight: 600;
-    color: #333;
-    white-space: nowrap;
-    transform: translateX(-50%);
-    text-shadow:
-      1px 1px 0 #fff,
+.scalebar-overlay .scalebar-label {
+  position: absolute;
+  font-size: 7px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  text-shadow:
+    1px 1px 0 #fff,
     -1px -1px 0 #fff,
-      1px -1px 0 #fff,
+    1px -1px 0 #fff,
     -1px 1px 0 #fff,
-      0 1px 0 #fff,
-      0 -1px 0 #fff,
-      1px 0 0 #fff,
+    0 1px 0 #fff,
+    0 -1px 0 #fff,
+    1px 0 0 #fff,
     -1px 0 0 #fff;
-  }
+}

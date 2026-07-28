@@ -56,15 +56,15 @@
     The Regional Ozone Precursor Dashboard homepage consists of general server information, quick actions, introduction to data products, and system status.
   </p>
   <p>
-    Status Cards: 
+    <strong>Status Cards:</strong> 
     <ul style="padding-left: 36px;">
       <li> The "Data Load Status" stat card tracks the availablity of all three data sources (TEMPO, Open Air Clairty, and Fused) within the server. If this message displays "Complete", all three data products have been properly loaded and sourced within the server. If this message displays "Incomplete", one or more data sources is missing or not found by the server. If this message displays "Failed", no data sources have been found within the server. To remedy data loading issues, refer to the Chicago_HAQ_ReadME file found in the source Github. </li>
-      <li>The "Ground Sensor Network" status card displays a static value of the number of active sensors in the Open Air Chicago network. </li>
+      <li> The "Ground Sensor Network" status card displays a static value of the number of active sensors in the Open Air Chicago network. </li>
       <li> The "Last Server Update" stat card tracks the last time the server source code was re-run or re-loaded. This card indicates when the last update or change was made to the dashboard UI. </li>
     </ul>
   </p>
   <p>
-    Quick Actions: These buttons link to the main pages of this dashboard. 
+    <strong>Quick Actions:</strong> These buttons link to the main pages of this dashboard. 
     <ul style="padding-left: 36px;">
       <li>Explore NO<sub>2</sub> Pollution: This link will take you to the Daily Pollution Map.</li>
       <li>Explore Community Statistics: This link will take you to the Community Statistics page.</li>
@@ -73,17 +73,15 @@
     </ul>
   </p>
   <p>
-    Data Sources: Clicking "Learn More" under each of the data products links to a description of that data product on the Info page. 
+    <strong>Data Sources:</strong> Clicking "Learn More" under each of the data products links to a description of that data product on the Info page. 
   </p>
   <p>
-    System Status: The system status section of the homepage tracks the most recent server updates. These updates may include:
+    <strong>System Status:</strong> The system status section of the homepage tracks the most recent server updates. These updates may include:
     <ul style="padding-left: 36px;">
       <li> Server Start: The last time the server was re-run or re-loaded.</li>
       <li> Dashboard Reloaded: The last time the dashboard webpage was reloaded.</li>
-      <li>TEMPO Data: The number of available TEMPO data files within the server. If the disclaimer displays "No files loaded", there were no data entries found for TEMPO.
-      </li>
-      <li>Open Air Chicago Data: The number of available Open Air Chicago data files within the server. If the disclaimer displays "No files loaded", there were no data entries found for Open Air Chicago.
-      </li>
+      <li> TEMPO Data: The number of available TEMPO data files within the server. If the disclaimer displays "No files loaded", there were no data entries found for TEMPO.</li>
+      <li>Open Air Chicago Data: The number of available Open Air Chicago data files within the server. If the disclaimer displays "No files loaded", there were no data entries found for Open Air Chicago.</li>
       <li> Fused Data: The number of available Fused data files within the server. If the disclaimer displays "No files loaded", there were no data entries found for the Fused data product.</li>
     </ul>
   </p>
@@ -99,7 +97,7 @@
     To start visualizing data, use the left "Parameters" sidebar to choose an Observation Window, Data Product, and Spatial Scale and see the corresponding data appear on the map to the right. 
   </p>
   <p>
-    1. Choose <i>Hourly</i>, <i>Daily</i>, or <i>Monthly</i> as your Observation Window and then select a date or date range. 
+    <strong>1.</strong> Choose <i>Hourly</i>, <i>Daily</i>, or <i>Monthly</i> as your Observation Window and then select a date or date range. 
     <ol type="a"; style="padding-left: 36px;">
       <li>
         Hourly: Select one date to see how NO<sub>2</sub> changes on an hourly basis during that day. Keep in mind the general date and time ranges that are available for each product:
@@ -126,17 +124,19 @@
         </ul>
       </li>
     </ol>
-    2. After choosing a valid Observation Window and Date Selection, choose the Data Product you want to visualize: TEMPO, Open Air Chicago, or Fused (TEMPO + Open Air Chicago).
   </p>
   <p>
-    3. Select the Spatial Scale you want to visualize the data on. TEMPO and the Fused data are available on an Individual Grid Cell (pixel) level and aggregated to Chicago's Community Areas. Open Air Chicago is available on an Individual Sensor level and aggregated to Chicago's Community Areas. 
+    <strong>2.</strong> After choosing a valid Observation Window and Date Selection, choose the Data Product you want to visualize: TEMPO, Open Air Chicago, or Fused (TEMPO + Open Air Chicago).
   </p>
   <p>
-    4. Click the "Load" button in the navy date selection box to load your data on the map. Click "Play" on the bottom of the map to see how NO<sub>2</sub> changes over time.
-    Hover over or click on any individual sensor, pixel, or community area to see a pop-up with the location, time, and NO<sub>2</sub> value. You may need to pause the playback to read the pop-ups. 
+   <strong>3.</strong> Select the Spatial Scale you want to visualize the data on. TEMPO and the Fused data are available on an Individual Grid Cell (pixel) level and aggregated to Chicago's Community Areas. Open Air Chicago is available on an Individual Sensor level and aggregated to Chicago's Community Areas. 
   </p>
   <p>
-    <br> Data not displaying? Some data products are missing dates and pixels, which is normal and often a symptom of the data cleaning process. If a date has no data available for the selected data product, a warning symbol will pop up on the map to let you know that there is no data available for that specific date. If you are trying to visualize TEMPO or Fused data on the Hourly Map, use the time slider at the bottom of the map to change the Hour to daylight hours (typically 6am to 6pm in spring and fall, and 7am to 5pm in winter) to make sure that the missing data is not due to the time you are looking at. 
+    <strong>4.</strong> Click the "Load" button in the navy date selection box to load your data on the map. Click "Play" on the bottom of the map to see how NO<sub>2</sub> changes over time.
+    Hover over or click on any individual sensor, pixel, or community area to see a pop-up with the location, time, number of measurements, and average NO<sub>2</sub> value. You may need to pause the playback to read the pop-ups. 
+  </p>
+  <p>
+    <br style="color: var(--primary)"> Data not displaying? Some data products are missing dates and pixels, which is normal and often a symptom of the data cleaning process. If a date has no data available for the selected data product, a warning symbol will pop up on the map to let you know that there is no data available for that specific date. If you are trying to visualize TEMPO or Fused data on the Hourly Map, use the time slider at the bottom of the map to change the Hour to daylight hours (typically 6am to 6pm in spring and fall, and 7am to 5pm in winter) to make sure that the missing data is not due to the time you are looking at. 
   </p>
 </div>
 

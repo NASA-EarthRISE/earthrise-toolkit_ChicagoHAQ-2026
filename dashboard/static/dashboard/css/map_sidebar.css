@@ -12,22 +12,6 @@
   max-height: calc(100vh - var(--nav-height) - 100px);
 }
 
-.sidebar a {
-  display: block;
-  padding: 12px 20px;
-  text-decoration: none;
-  color: var(--primary);
-  font-weight: 500;
-  transition: background 0.2s, color 0.2s;
-  border-left: 3px solid transparent;
-}
-
-.sidebar a:hover {
-  background-color: var(--bg);
-  color: var(--primary-dark);
-  border-left-color: var(--primary-light);
-}
-
 .sidebar-section {
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border);
@@ -51,14 +35,14 @@
   position: absolute !important;
   top: 147px !important;
   right: auto !important;
-  left: 100% !important;
+  left: calc(100% - 4px) !important;
   transform: none !important;
   z-index: 1100 !important;
   width: 36px !important;
   min-height: 160px !important;
   background: #005a9e !important;
   border: none !important;
-  border-radius: 0 !important;
+  border-radius: 0 8px 8px 0 !important;
   cursor: pointer !important;
   display: flex !important;
   align-items: center !important;
@@ -78,17 +62,10 @@
   overflow: visible !important;
   white-space: nowrap !important;
 }
-.sidebar-toggle-btn {
-  left: calc(100% - 4px) !important;
-}
-.sidebar-toggle-btn {
-  border-radius: 0 8px 8px 0 !important;
-}
 
 .sidebar-toggle-btn:hover {
   background: #004475 !important;
 }
-
 
 /* Override ALL site.css .sidebar rules for the map page.
     site.css sets overflow-y:auto and max-height on .sidebar which
@@ -135,8 +112,8 @@
     z-index: 10 !important;
 }
 
-  /* SIDEBAR CONTENT */
-  .date-panel {
+/* SIDEBAR CONTENT */
+.date-panel {
   background-color: var(--primary-dark);
   border-radius: 12px;
   padding: 1.1rem;
@@ -191,48 +168,11 @@ Moves with sidebar as it opens/closes. Does NOT block map. */
     transition: background 0.2s;
 }
 
-/* ── DATA PRODUCT GROUPS ────────── */
-
-.data-product-group {
-  margin-bottom: 1rem;
-}
-
-.data-product-group:last-child {
-  margin-bottom: 0;
-}
-
-.data-product-group h4 {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  margin-bottom: 0.5rem;
-  margin-top: 0;
-}
-
-
 /* Map type selector buttons */
 .map-type-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.4rem;
-}
-
-/* Map Sidebar */
-.map-type-link {
-  text-decoration: none;
-  display: block;
-  padding: 0;
-  border-left: none;
-  background: transparent;
-  color: inherit;
-}
-
-.map-type-link:hover {
-  background: transparent;
-  color: inherit;
-  border-left-color: transparent;
 }
 
 .map-type-btn {
@@ -286,67 +226,60 @@ Moves with sidebar as it opens/closes. Does NOT block map. */
 
 /* ── FORM GROUPS (Pollution) ─────────────────── */
 
-  .form-group {
-    margin-bottom: 0.75rem;
-  }
+.form-group {
+  margin-bottom: 0.75rem;
+}
 
-  .form-group label {
-    display: block;
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.3rem;
-  }
+.form-group label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
 
-  .form-group input[type="date"],
-  .form-group input[type="month"],
-  .form-group input[type="number"],
-  .form-group input[type="text"],
-  .form-group select {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: var(--bg);
-    color: var(--text);
-    font-size: 0.85rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
+.form-group input[type="date"],
+.form-group input[type="month"],
+.form-group input[type="number"],
+.form-group input[type="text"],
+.form-group select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
 
-  .form-group input:focus,
-  .form-group select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
-  }
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
+}
 
-  .hint,
-  .form-group .hint{
-    font-size: 0.72rem;
-    color: var(--text-muted);
-    margin-top: 0.2rem;
-  }
+.hint,
+.form-group .hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
 
-  .form-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
 
-  .form-row .form-group {
-    flex: 1;
-  }
+.form-row .form-group {
+  flex: 1;
+}
 
-  .load-date-btn {
-    font-weight: 600;
-  }
-
-  #single-date-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-  }
-
-  #single-date-group {
-      margin-bottom: 0 !important;
-  }
+#single-date-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0 !important;
+}

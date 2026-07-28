@@ -39,7 +39,7 @@ DATA_DIR = os.path.join(settings.BASE_DIR, 'dashboard', 'data')
 #   page_refresh       — Dashboard page was refreshed/reloaded
 #   notification       — General notification
 
-ACTIVITY_FILE = os.path.join(settings.BASE_DIR, 'activity_log.json')
+ACTIVITY_FILE = os.path.join(settings.BASE_DIR, 'dashboard', 'data', 'activity_log.json')
 MAX_ACTIVITIES = 50
 NOTIFICATION_LIMIT = 5  # Show the 5 most recent user-facing notifications
 

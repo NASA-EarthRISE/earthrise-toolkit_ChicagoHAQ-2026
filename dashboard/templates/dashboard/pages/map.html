@@ -209,7 +209,7 @@
   <!-- html2canvas for PNG export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- Time Utilities Module -->
-  <script src="{% static 'dashboard/js/leaflet/time_utils.js' %}"></script>
+  <script src="{% static 'dashboard/js/map/time_utils.js' %}"></script>
 
   <script>
 
@@ -427,11 +427,7 @@ function updateBottomControlVisibility() {
   const tempoMonthlyCache = {};
   let communityIndexCache = {};
 
-function parseUTCStringToDate(s) {
-    return TimeUtils.parseUTCString(s);
-}
-
-function removeInvalidHourlyDate(date, reason) {
+  function removeInvalidHourlyDate(date, reason) {
     if (!date || TIME_SCALE !== "hourly" || currentDataProduct !== "clarity") {
         return;
     }
@@ -561,7 +557,6 @@ function removeInvalidHourlyDate(date, reason) {
     const tempoLayerGroup = L.layerGroup().addTo(map);
     const openaqLayerGroup = L.layerGroup();
     const fusionLayerGroup = L.layerGroup();
-    const windLayerGroup = L.layerGroup();
     let heatLayer = null;
     let savedMarkers = [];
     let markerIdSeq = 0;
@@ -705,58 +700,8 @@ function removeInvalidHourlyDate(date, reason) {
     }
 }
 
-function getChicagoDateStringFromUTC(utcString) {
-    return TimeUtils.getChicagoDateString(utcString);
-}
-function deriveClarityCentralDatesFromFiles(utcFileDates) {
-    return Promise.all(
-        utcFileDates.map(date => {
-            return fetch(`/data/clarity/${date}.geojson`)
-                .then(r => {
-                    if (!r.ok) {
-                        console.warn("Missing Clarity hourly file while deriving Central dates:", date);
-                        return null;
-                    }
-                    return r.json();
-                })
-                .catch(err => {
-                    console.warn("Could not inspect Clarity file:", date, err);
-                    return null;
-                });
-        })
-    ).then(files => {
-        const centralDates = new Set();
 
-        files.forEach(data => {
-            if (!data || !data.features) {
-                return;
-            }
-
-            data.features.forEach(feature => {
-                const p = feature.properties || {};
-
-                if (!p.time) {
-                    return;
-                }
-
-                const value = Number(p.no2concindividual_value);
-
-                if (isNaN(value)) {
-                    return;
-                }
-
-                const centralDate = getChicagoDateStringFromUTC(p.time);
-                    if (centralDate) {
-                        centralDates.add(centralDate);
-                    }
-            });
-        });
-
-        return Array.from(centralDates).sort();
-    });
-}
-
-function getChicagoParts(date) {
+function getChicagoParts(date){
     return TimeUtils.getChicagoParts(date);
 }
 
@@ -966,11 +911,7 @@ function applyPreferredDateAndHourAfterDateLoad(load) {
     loadDate(selectedDate, load);
 }
 
-function getPreviousDate(dateStr) {
-    return TimeUtils.getPreviousDay(dateStr);
-}
-
-function showLoading(message) {
+function showLoading(message){
     hideNoDataNotice();
 
     const overlay = document.getElementById("map-loading-overlay");
@@ -1069,7 +1010,7 @@ async function exportMapAsPNG() {
       // Elements to hide during capture (legend and scalebar stay visible)
       const coordsBar = document.getElementById('coords-bar');
       const shareHeader = document.querySelector('.map-export-header');
-      const explorePanel = document.getElementById('help-panel');
+      const helpPanel = document.getElementById('help-panel');
       const bottomSlider = document.getElementById('bottom-slider-bar');
       const loadingOverlay = document.getElementById('map-loading-overlay');
       const leafletControls = document.querySelectorAll('.leaflet-control-zoom, .leaflet-control');
@@ -1078,7 +1019,7 @@ async function exportMapAsPNG() {
       // Hide UI elements (keep legend and scalebar visible)
       if (coordsBar) coordsBar.style.display = 'none';
       if (shareHeader) shareHeader.style.display = 'none';
-      if (explorePanel) explorePanel.style.display = 'none';
+      if (helpPanel) helpPanel.style.display = 'none';
       if (bottomSlider) bottomSlider.style.display = 'none';
       if (loadingOverlay) loadingOverlay.style.display = 'none';
       leafletControls.forEach(el => { el.style.display = 'none'; });
@@ -1124,7 +1065,7 @@ async function exportMapAsPNG() {
           // Restore UI elements
           if (coordsBar) coordsBar.style.display = '';
           if (shareHeader) shareHeader.style.display = '';
-          if (explorePanel) explorePanel.style.display = '';
+          if (helpPanel) helpPanel.style.display = '';
           if (bottomSlider) bottomSlider.style.display = '';
           if (loadingOverlay) loadingOverlay.style.display = '';
           leafletControls.forEach(el => { el.style.display = ''; });
@@ -1151,30 +1092,30 @@ function updateScaleBar() {
       const center = map.getCenter();
       const zoom = map.getZoom();
 
-      // meters per pixel at this zoom / latitude (Web Mercator)
-      // corrected: divide by tile size (256) to get proper meters-per-pixel
-      const metersPerPixel = (2 * Math.PI * 6378137) /
+      // miles per pixel at this zoom / latitude (Web Mercator)
+      // corrected: divide by tile size (256) to get proper miles-per-pixel
+      const milesPerPixel = (2 * Math.PI * 6378137) /
           (Math.pow(2, zoom) * 256 * Math.cos(center.lat * Math.PI / 180));
 
       const totalPixels = 200;  // fixed ruler width
-      const distanceMeters = metersPerPixel * totalPixels;
+      const distanceMiles = milesPerPixel * totalPixels;
 
-      // Pick a nice round total distance
-      let value, units;
-      if (distanceMeters >= 1000) {
-          const distKm = distanceMeters / 1000;
-          const mag = Math.pow(10, Math.floor(Math.log10(distKm)));
-          const norm = distKm / mag;
-          value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
-          units = 'km';
-      } else {
-          const mag = Math.pow(10, Math.floor(Math.log10(distanceMeters || 1)));
-          const norm = distanceMeters / mag;
-          value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
-          units = 'm';
-      }
+       // Pick a nice round total distance
+       let value, units;
+       if (distanceMiles >= 1609.344) {
+           const distMiles = distanceMiles / 1609.344;
+           const mag = Math.pow(10, Math.floor(Math.log10(distMiles)));
+           const norm = distMiles / mag;
+           value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
+           units = 'mi';
+       } else {
+           const mag = Math.pow(10, Math.floor(Math.log10(distanceMiles || 1)));
+           const norm = distanceMiles / mag;
+           value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
+           units = 'ft';
+       }
 
-      const totalMeters = (units === 'km' ? value * 1000 : value);
+       const totalMeters = (units === 'mi' ? value * 1609.344 : value * 0.3048);
       const majorSegments = 4;   // 5 major ticks: 0, 1/4, 2/4, 3/4, 1
       const minorPerMajor = 4;   // 4 minor ticks between each major → 5 sub-segments
       const minorSegmentMeters = totalMeters / (majorSegments * minorPerMajor);
@@ -1193,19 +1134,20 @@ function updateScaleBar() {
           tick.style.left = (i * minorSegmentPixels) + 'px';
           ticksContainer.appendChild(tick);
 
-          if (isMajor) {
-              const label = document.createElement('span');
-              label.className = 'scalebar-label';
-              const valMeters = minorSegmentMeters * i;
-              if (units === 'km') {
-                  const valKm = valMeters / 1000;
-                  label.textContent = valKm.toFixed(valKm < 10 ? 1 : 0) + ' km';
-              } else {
-                  label.textContent = Math.round(valMeters) + ' m';
-              }
-              label.style.left = (i * minorSegmentPixels) + 'px';
-              labelsContainer.appendChild(label);
-          }
+           if (isMajor) {
+               const label = document.createElement('span');
+               label.className = 'scalebar-label';
+               const valMeters = minorSegmentMeters * i;
+               if (units === 'mi') {
+                   const valMiles = valMeters / 1609.344;
+                   label.textContent = valMiles.toFixed(valMiles < 10 ? 1 : 0) + ' mi';
+               } else {
+                   const valFt = valMeters / 0.3048;
+                   label.textContent = Math.round(valFt) + ' ft';
+               }
+               label.style.left = (i * minorSegmentPixels) + 'px';
+               labelsContainer.appendChild(label);
+           }
       }
   }
 
@@ -1570,21 +1512,7 @@ function getFusionValue(properties) {
     return Number(properties.no2_estimate);
 }
 
-function getFusionTimeString(properties) {
-    if (!properties) {
-        return "";
-    }
-
-    return (
-        properties.datetime ||
-        properties.datetime_local ||
-        properties.time ||
-        properties.timestamp ||
-        ""
-    );
-}
-
-function getFusionChicagoDateHour(properties) {
+function getFusionChicagoDateHour(properties){
     return TimeUtils.extractChicagoDateHour(properties);
 }
 
@@ -3956,39 +3884,28 @@ console.log("INITIAL PRODUCT STATE", {
      });
      document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
 
-     // ── coords PANEL ───────────────────────────────────────────────────────────────
-     const coordsPanel = document.getElementById('coords-panel');
-     if (coordsPanel) {
-     map.on('mousemove', e => {
-         coordsPanel.innerHTML =
-         `<strong>Lat:</strong> ${e.latlng.lat.toFixed(6)}<br>
-             <strong>Lng:</strong> ${e.latlng.lng.toFixed(6)}<br>
-             <strong>Zoom:</strong> ${map.getZoom()}`;
-     });
-     }
-
-     // ── EXPLORE PANEL TOGGLE ────────────────────────────────────────────────────
-     const explorePanel = document.getElementById('help-panel');
-     const explorePanelToggle = document.getElementById('help-panel-toggle');
-     const explorePanelBody = document.getElementById('help-panel-body');
-     if (explorePanelToggle && explorePanel) {
-     explorePanel.classList.add('retracted'); // start retracted
+     // EXPLORE PANEL TOGGLE
+     const helpPanel = document.getElementById('help-panel');
+     const helpPanelToggle = document.getElementById('help-panel-toggle');
+     const helpPanelBody = document.getElementById('help-panel-body');
+     if (helpPanelToggle && helpPanel) {
+     helpPanel.classList.add('retracted'); // start retracted
 
      // Also prevent the toggle button & body from propagating to map
-     if (explorePanelToggle) {
-         L.DomEvent.disableClickPropagation(explorePanelToggle);
-         L.DomEvent.disableScrollPropagation(explorePanelToggle);
+     if (helpPanelToggle) {
+         L.DomEvent.disableClickPropagation(helpPanelToggle);
+         L.DomEvent.disableScrollPropagation(helpPanelToggle);
      }
-     if (explorePanelBody) {
-         L.DomEvent.disableClickPropagation(explorePanelBody);
-         L.DomEvent.disableScrollPropagation(explorePanelBody);
+     if (helpPanelBody) {
+         L.DomEvent.disableClickPropagation(helpPanelBody);
+         L.DomEvent.disableScrollPropagation(helpPanelBody);
      }
 
-     explorePanelToggle.addEventListener('click', (e) => {
+     helpPanelToggle.addEventListener('click', (e) => {
          e.stopPropagation();
          e.preventDefault();
-         explorePanel.classList.toggle('retracted');
-         explorePanel.classList.toggle('expanded');
+         helpPanel.classList.toggle('retracted');
+         helpPanel.classList.toggle('expanded');
      });
      }
 
@@ -4028,10 +3945,9 @@ console.log("INITIAL PRODUCT STATE", {
          // Remove all data layers first
          map.removeLayer(tempoLayerGroup);
          map.removeLayer(openaqLayerGroup);
-         map.removeLayer(fusionLayerGroup);
+          map.removeLayer(fusionLayerGroup);
 
-
-         // Switch currentDataProduct and reload data
+          // Switch currentDataProduct and reload data
          if (currentDataProduct === "tempo") {
              displayMode = "sensor";  // TEMPO uses grid cells, not point sensors
 
@@ -4093,28 +4009,6 @@ console.log("INITIAL PRODUCT STATE", {
      
 
     // ── LAYER TOGGLES (legacy: for any remaining .layer-toggle checkboxes) ─────
-    document.querySelectorAll('.layer-toggle').forEach(checkbox => {
-    checkbox.addEventListener('change', e => {
-        const layer = e.target.dataset.layer;
-        const isChecked = e.target.checked;
-
-        const layerMap = {
-        tempo: tempoLayerGroup,
-        openaq: openaqLayerGroup,
-        fusion: fusionLayerGroup,
-        wind: windLayerGroup
-        };
-
-        if (layerMap[layer]) {
-            if (isChecked) {
-                layerMap[layer].addTo(map);
-            } else {
-                map.removeLayer(layerMap[layer]);
-            }
-            showToast(`${layer} layer ${isChecked ? 'enabled' : 'disabled'}`);
-        }
-    });
-    });
 
     // ── UPDATE LEGEND based on current data product ──────────────────────────────
      function updateLegend() {
@@ -4552,64 +4446,6 @@ function loadFusionDates() {
         });
 }
 
-     // Helper: load Clarity dates and return a promise with the dates array
-     function loadClarityDatesAndReturn() {
-         return fetch("/data/clarity/dates.json")
-             .then(r => r.json())
-             .then(response => {
-                 let loadedDates = Array.isArray(response) ? response : (response.dates || []);
-                 dates = loadedDates;
-                 rangeStartDate = dates[0];
-                 rangeEndDate = dates[dates.length - 1];
-                 rangeCurrentEndDate = rangeEndDate;
-
-                 var dateSlider = document.getElementById("dateSlider");
-                 var dateLabel = document.getElementById("dateLabel");
-                 var startDateInput = document.getElementById("startDate");
-                 var endDateInput = document.getElementById("endDate");
-
-                 if (startDateInput) startDateInput.value = rangeStartDate;
-                 if (endDateInput) endDateInput.value = rangeEndDate;
-
-                 dateSlider.max = dates.length - 1;
-                 dateSlider.value = 0;
-
-                 if (TIME_SCALE === "monthly") {
-                     if (dateLabel) dateLabel.innerHTML = formatMonthForDisplay(dates[0]);
-                 } else {
-                     if (dateLabel) dateLabel.innerHTML = utcDateToCentralPretty(dates[0]);
-                 }
-
-                 var timeLabel = document.getElementById("timeLabel");
-                 if (timeLabel) timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
-
-                 loadDate(dates[0]);
-                 return dates;
-             })
-             .catch(err => {
-                 console.error("Fallback Clarity dates also failed:", err);
-                 return [];
-             });
-     }
-
-    // ── TIME SLIDER (original sidebar slider) ────────────────────────────────────
-    const origTimeSlider = document.getElementById('time-slider');
-    const timeDisplay = document.getElementById('time-display');
-    let playInterval = null;
-
-    if (origTimeSlider && typeof loadTempoData === "function") {
-        origTimeSlider.addEventListener('input', () => {
-            const hour = parseInt(origTimeSlider.value);
-
-            if (timeDisplay) {
-                timeDisplay.textContent = `${String(hour).padStart(2, '0')}:00 UTC`;
-            }
-
-            const today = new Date().toISOString().split('T')[0];
-            loadTempoData(today, hour);
-        });
-    }
-
     // ── REGION DROPDOWN: fly to selected region ─────────────────────────────
     const regionDropdown = document.getElementById('region-dropdown');
     if (regionDropdown) {
@@ -4647,10 +4483,10 @@ function loadFusionDates() {
       L.DomEvent.disableScrollPropagation(bottomBar);
     }
 
-    const explore = document.getElementById('help-panel');
-    if (explore) {
-      L.DomEvent.disableClickPropagation(explore);
-      L.DomEvent.disableScrollPropagation(explore);
+    const help = document.getElementById('help-panel');
+    if (help) {
+      L.DomEvent.disableClickPropagation(help);
+      L.DomEvent.disableScrollPropagation(help);
     }
   }, 0);
 

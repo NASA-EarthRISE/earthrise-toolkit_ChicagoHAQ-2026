@@ -1,178 +1,105 @@
-
 /* ── MAP LAYOUT ──────────────────────────────────── */
 
-  /* Make sure .map-layout fills the content area properly */
-  .map-layout {
-      display: flex !important;
-      flex: 1 !important;
-      height: calc(100vh - var(--nav-height, 56px) - var(--map-export-height, 38px)) !important;
-      min-height: 0 !important;
-      position: relative !important;
-      overflow: hidden !important;
-  }
-
-  /* Ensure map container takes remaining space */
-  .map-layout .map-container {
-      flex: 1 !important;
-      min-width: 0 !important;
-      min-height: 0 !important;
-      height: 100% !important;
-      display: flex !important;
-      flex-direction: column !important;
-      position: relative !important;
-      overflow: hidden !important;
-  }
-
- /* Time Slider styling */
-.display-container {
-    background: white;
-    padding: 10px;
-    border-radius: 6px;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+.map-layout {
+  display: flex !important;
+  flex: 1 !important;
+  height: calc(100vh - var(--nav-height, 56px) - var(--map-export-height, 38px)) !important;
+  min-height: 0 !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
-.display-container input,
-.display-container button {
-    font-family: inherit;
+.map-layout .map-container {
+  flex: 1 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
- /* Bottom slider bar – positioned over the bottom of the map */
+/* Bottom slider bar – positioned over the bottom of the map */
 .bottom-slider-bar {
-    position: absolute;
-    bottom: 40px; /* above coords-bar */
-    left: 10px;
-    right: 10px;
-    background: white;
-    padding: 10px 14px;
-    border-radius: 6px;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+  position: absolute;
+  bottom: 40px;
+  left: 10px;
+  right: 10px;
+  background: white;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .bottom-slider-bar .slider-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .bottom-slider-bar .slider-row label {
-    font-weight: bold;
-    min-width: 80px;
-    font-size: 13px;
+  font-weight: bold;
+  min-width: 80px;
+  font-size: 13px;
 }
 
 .bottom-slider-bar input[type="range"] {
-    flex: 1;
+  flex: 1;
 }
 
 .bottom-slider-bar .time-label,
 .bottom-slider-bar .date-label-display {
-    width: 180px;
-    flex-shrink: 0;
-    text-align: right;
-    font-weight: 600;
-    font-size: 13px;
-    line-height: 1.2;
-    white-space: nowrap;
+  width: 180px;
+  flex-shrink: 0;
+  text-align: right;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: nowrap;
 }
+
 .bottom-slider-bar .playback-controls {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 4px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
 }
 
 .bottom-slider-bar .playback-controls button {
-    padding: 4px 14px;
-    font-size: 13px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background: #f7f7f7;
-    cursor: pointer;
+  padding: 4px 14px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f7f7f7;
+  cursor: pointer;
 }
 
 .bottom-slider-bar .playback-controls button:hover {
-    background: #e8e8e8;
+  background: #e8e8e8;
 }
 
 .bottom-slider-bar .playback-controls button.playing {
-    background: #263766;
-    color: #fff;
-    border-color: #263766;
-    cursor: default;
+  background: #263766;
+  color: #fff;
+  border-color: #263766;
+  cursor: default;
 }
 
 .bottom-slider-bar .playback-controls button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .bottom-slider-bar .hour-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-/* ── TIME SLIDER ─────────────────────────────────── */
-
-.time-slider-section {
-  padding: 0.75rem 0;
-}
-
-.time-slider-section label {
-  font-size: .78rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  display: block;
-  margin-bottom: .35rem;
-}
-
-#time-slider {
-  width: 100%;
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-
-#time-display {
-  font-size: .78rem;
-  color: var(--text);
-  font-weight: 600;
-  margin-top: .25rem;
-  text-align: center;
-}
-
-.time-controls {
   display: flex;
-  justify-content: center;
-  gap: .5rem;
-  margin-top: .5rem;
-}
-
-.time-controls button {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: .3rem .6rem;
-  font-size: .75rem;
-  cursor: pointer;
-  color: var(--text);
-  transition: all .2s;
-}
-
-.time-controls button:hover {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
-}
-
-.time-controls button.active {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
+  flex-direction: column;
+  gap: 2px;
 }
 
 /* ── LEAFLET POPUP THEME ─────────────────────────── */
@@ -213,199 +140,177 @@
   margin-top: .25rem;
 }
 
-  /* Pollution Map Legend */
-.legend {
-      background: white;
-      padding: 10px;
-      border-radius: 6px;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      line-height: 1.4em;
-  }
+/* Legend overlay — bottom left of map container, above timeslider */
+.map-legend-overlay {
+  position: absolute;
+  bottom: 150px;
+  left: 14px;
+  background: white;
+  padding: 10px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  z-index: 1000;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  pointer-events: none;
+}
 
-  .legend-gradient {
-      width: 150px;
-      height: 15px;
-      background: linear-gradient(to right, blue, green, yellow,red);
-      margin: 5px 0;
-  }
-  
-  .legend-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-  }
+.map-legend-overlay .legend-title {
+  display: block;
+  font-weight: bold;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
 
-  /* Legend overlay — bottom left of map container, above timeslider */
-  .map-legend-overlay {
-      position: absolute;
-      bottom: 150px;
-      left: 14px;
-      background: white;
-      padding: 10px 12px;
-      border-radius: 6px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-      z-index: 1000;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      pointer-events: none;
-  }
+.map-legend-overlay .legend-gradient-bar {
+  width: 150px;
+  height: 12px;
+  background: linear-gradient(to right, blue, green, yellow, red);
+  border-radius: 2px;
+}
 
-  .map-legend-overlay .legend-title {
-      display: block;
-      font-weight: bold;
-      font-size: 12px;
-      margin-bottom: 4px;
-  }
-
-  .map-legend-overlay .legend-gradient-bar {
-      width: 150px;
-      height: 12px;
-      background: linear-gradient(to right, blue, green, yellow, red);
-      border-radius: 2px;
-  }
-
-  .map-legend-overlay .legend-numbers {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      color: #333;
-      width: 150px;
-      margin-top: 2px;
-  }
+.map-legend-overlay .legend-numbers {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #333;
+  width: 150px;
+  margin-top: 2px;
+}
 
 /* Compass */
 .compass-overlay {
-      position: absolute;
-      bottom: 186px;
-      right: 10px;
-      z-index: 1000;
-      pointer-events: none;
-  }
+  position: absolute;
+  bottom: 186px;
+  right: 10px;
+  z-index: 1000;
+  pointer-events: none;
+}
 
-  .compass-image {
-      display: block;
-      width: 40px;
-      height: 40px;
-  }
+.compass-image {
+  display: block;
+  width: 40px;
+  height: 40px;
+}
 
 /* Scalebar */
 .scalebar-overlay {
-    position: absolute;
-    bottom: 145px;
-    right: 20px;
-    z-index: 1000;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    pointer-events: none;
-    display: flex;
-    flex-direction: column-reverse;
+  position: absolute;
+  bottom: 145px;
+  right: 20px;
+  z-index: 1000;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column-reverse;
 }
 
 .scalebar-overlay .scalebar-ruler {
-    position: relative;
-    height: 20px;
-    width: 200px;
+  position: relative;
+  height: 20px;
+  width: 200px;
 }
 
 .scalebar-overlay .scalebar-main-line {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 1.5px;
-    background: #333;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background: #333;
 }
 
 .scalebar-overlay .scalebar-ticks {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .scalebar-overlay .scalebar-tick {
-    position: absolute;
-    bottom: 0;
-    width: 1px;
-    background: #333;
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  background: #333;
 }
 
 .scalebar-overlay .scalebar-tick.major {
-    height: 14px;
+  height: 14px;
 }
 
 .scalebar-overlay .scalebar-tick.minor {
-    height: 8px;
+  height: 8px;
 }
 
 .scalebar-overlay .scalebar-labels {
-    position: relative;
-    width: 200px;
-    height: 14px;
-    margin-bottom: 2px;
+  position: relative;
+  width: 200px;
+  height: 14px;
+  margin-bottom: 2px;
 }
 
 .scalebar-overlay .scalebar-label {
-    position: absolute;
-    font-size: 9px;
-    font-weight: 600;
-    color: #333;
-    white-space: nowrap;
-    transform: translateX(-50%);
-    text-shadow:
-        1px 1px 0 #fff,
-        -1px -1px 0 #fff,
-        1px -1px 0 #fff,
-        -1px 1px 0 #fff,
-        0 1px 0 #fff,
-        0 -1px 0 #fff,
-        1px 0 0 #fff,
-        -1px 0 0 #fff;
+  position: absolute;
+  font-size: 9px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  text-shadow:
+    1px 1px 0 #fff,
+    -1px -1px 0 #fff,
+    1px -1px 0 #fff,
+    -1px 1px 0 #fff,
+    0 1px 0 #fff,
+    0 -1px 0 #fff,
+    1px 0 0 #fff,
+    -1px 0 0 #fff;
 }
 
-/* Map loading spinner  */
-  .map-loading-overlay {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 1500;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 20px 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-  }
+/* Map loading spinner */
+.map-loading-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
 
-  .map-loading-overlay.visible {
-      opacity: 1;
-  }
+.map-loading-overlay.visible {
+  opacity: 1;
+}
 
-  .map-loading-overlay .map-spinner {
-      width: 48px;
-      height: 48px;
-      border: 5px solid #e0e0e0;
-      border-top-color: #263766;
-      border-radius: 50%;
-      animation: map-spin 0.7s linear infinite;
-  }
+.map-loading-overlay .map-spinner {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #e0e0e0;
+  border-top-color: #263766;
+  border-radius: 50%;
+  animation: map-spin 0.7s linear infinite;
+}
 
-  .map-loading-overlay .map-loading-text {
-      margin-top: 12px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #263766;
-      text-align: center;
-    }
+.map-loading-overlay .map-loading-text {
+  margin-top: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #263766;
+  text-align: center;
+}
 
-  @keyframes map-spin {
-      to { transform: rotate(360deg); }
-  }
+@keyframes map-spin {
+  to { transform: rotate(360deg); }
+}
 
 /* Pollution Map Warnings */
 .map-warning-notice {
@@ -415,18 +320,15 @@
   right: auto;
   transform: translateX(-50%);
   z-index: 1600;
-
   background: rgba(255, 255, 255, 0.94);
   border: 1px solid #d6d6d6;
   border-left: 4px solid #d88c00;
   border-radius: 6px;
   padding: 8px 12px;
   max-width: 360px;
-
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   font-size: 0.82rem;
   color: #333;
-
   box-shadow: 0 2px 8px rgba(0,0,0,0.18);
   display: none;
   pointer-events: none;
@@ -450,7 +352,7 @@
   line-height: 1.25;
 }
 
-  .map-no-data-notice {
+.map-no-data-notice {
   position: absolute;
   top: 78px;
   right: 12px;
@@ -483,40 +385,22 @@
   height: 100%;
 }
 
-.map-no-data-notice strong {
-  display: inline;
-  vertical-align: middle;
-}
-
 .map-no-data-notice.visible {
-    display: block;
+  display: block;
 }
 
 .map-no-data-notice strong {
-    display: block;
-    color: #7a4b00;
-    font-size: 0.82rem;
-    margin-bottom: 2px;
+  display: block;
+  color: #7a4b00;
+  font-size: 0.82rem;
+  margin-bottom: 2px;
 }
 
 .map-no-data-notice span {
-    display: block;
-    font-size: 0.78rem;
-    color: #555;
-    line-height: 1.25;
-}
-
-.map-controls {
-  width: 320px;
-  flex-shrink: 0;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1.25rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  overflow-y: auto;
-  min-height: 500px;
-  max-height: calc(100vh - var(--nav-height) - 100px);
+  display: block;
+  font-size: 0.78rem;
+  color: #555;
+  line-height: 1.25;
 }
 
 .map-container {
@@ -539,46 +423,45 @@
 
 /* ── Share / Export PNG header ── */
 .map-export-header {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 0;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 .map-export-header .share-label {
-    font-size: 0.78rem;
-    font-weight: 400;
-    color: #888;
-    white-space: nowrap;
-    user-select: none;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: #888;
+  white-space: nowrap;
+  user-select: none;
 }
 
 .map-export-header .btn-export-png {
-    padding: 4px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background: transparent;
-    color: #666;
-    font-size: 0.78rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
+  padding: 4px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: transparent;
+  color: #666;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .map-export-header .btn-export-png:hover {
-    background: #f0f0f0;
-    border-color: #999;
-    color: #333;
+  background: #f0f0f0;
+  border-color: #999;
+  color: #333;
 }
 
 .map-export-header .btn-export-png:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-  
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 /* Coords bar */
 #coords-bar {
@@ -596,18 +479,6 @@
   display: flex;
   justify-content: space-between;
 }
-
-/* coords panel */
-#coords-panel {
-  background: #1a2035;
-  border-radius: 8px;
-  padding: .75rem;
-  font-size: .8rem;
-  color: #a0aec0;
-  min-height: 60px;
-}
-#coords-panel strong { color: #e2e8f0; }
-
 
 /* Explore panel — retractable overlay on map */
 #help-panel {
@@ -666,7 +537,6 @@
   color: var(--primary);
 }
 
-/* Spacing between sections in the explore panel */
 #help-panel-body p {
   margin: 0 0 8px 0;
   line-height: 1.4;
@@ -700,5 +570,5 @@
 
 /* When explore panel is expanded, push no-data notice downward so it's readable */
 #help-panel.expanded ~ .map-no-data-notice {
-    top: 325px;
+  top: 325px;
 }

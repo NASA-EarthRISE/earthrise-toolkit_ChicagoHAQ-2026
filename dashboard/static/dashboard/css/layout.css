@@ -122,6 +122,7 @@ nav {
 .logo-atmosphere {
   padding-top: 6px;
   height: 48px;
+  margin-left: 0;
 }
 
 /* NASA logo */
@@ -304,6 +305,47 @@ nav {
     line-height: 1.7;
     color: var(--text);
     margin-bottom: 0.75rem;
+}
+
+.content-section a {
+  color: var(--text-muted);
+  text-decoration: underline;
+}
+.content-section ul,
+.content-section ol {
+    font-size: 0.92rem;
+    line-height: 1.7;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+}
+
+.content-section li {
+    font-size: 0.92rem;
+    line-height: 1.7;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+}
+
+.content-section li::marker {
+    color: var(--primary);
+}
+
+.content-section ul ul li::marker,
+.content-section ol ol li::marker,
+.content-section ul ol li::marker,
+.content-section ol ul li::marker {
+    color: var(--primary-light);
+}
+
+.content-section ul ul ul li::marker,
+.content-section ol ol ol li::marker,
+.content-section ul ul ol li::marker,
+.content-section ul ol ul li::marker,
+.content-section ul ol ol li::marker,
+.content-section ol ul ul li::marker,
+.content-section ol ul ol li::marker,
+.content-section ol ol ul li::marker {
+    color: var(--primary-dark);
 }
 
 .content-section .highlight-box {
@@ -639,26 +681,7 @@ footer {
     font-size: 0.95rem;
   }
 
-  .sidebar {
-    position: fixed;
-    top: var(--nav-height);
-    left: 0;
-    bottom: 0;
-    z-index: 999;
-    transform: translateX(-100%);
-    box-shadow: 2px 0 8px rgba(0,0,0,0.15);
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  .sidebar.collapsed {
-    transform: translateX(-100%);
-  }
-
   .hero h1 {
     font-size: 1.4rem;
   }
-  
 }

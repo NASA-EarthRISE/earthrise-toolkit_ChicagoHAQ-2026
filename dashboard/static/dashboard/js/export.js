@@ -1,7 +1,6 @@
 // ── DATA FILE EXPORT STATE ─────────────────────────────────────────────────
 let currentDataSource = 'clarity';
 let currentExportFormat = 'geojson';
-let gDataFilesLoaded = false;
 let availableFiles = [];
 
 function selectDataSource(source) {
@@ -9,7 +8,6 @@ function selectDataSource(source) {
   document.querySelectorAll('#tab-data .map-type-btn[data-source]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.source === source);
   });
-  gDataFilesLoaded = false;
   loadDataFiles();
 }
 
@@ -30,7 +28,6 @@ async function loadDataFiles() {
   const tbody = document.getElementById('file-list-body');
   if (!tbody) return; // not on export page
   tbody.innerHTML = '<tr><td colspan="4" class="no-files-message">Loading files...</td></tr>';
-  gDataFilesLoaded = false;
 
   try {
     const fileType = document.getElementById('data-file-type');
@@ -50,7 +47,6 @@ async function loadDataFiles() {
     }
 
     availableFiles = data.files || [];
-    gDataFilesLoaded = true;
 
     if (availableFiles.length === 0) {
       tbody.innerHTML = '<tr><td colspan="4" class="no-files-message">No files found for the selected filters</td></tr>';

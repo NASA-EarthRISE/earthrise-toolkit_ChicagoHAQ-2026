@@ -89,8 +89,6 @@ function initManualStickyCommunityPanel() {
     panel.style.left = `${slotLeft - Math.round(layoutRect.left)}px`;
     panel.style.width = `${slotWidth}px`;
     panel.style.maxHeight = `calc(100vh - ${headerBottom + gap * 2 + searchBarOffset}px)`;
-    panel.style.boxSizing = "border-box";
-    panel.style.boxSizing = "";
 
     return;
   }
@@ -156,7 +154,6 @@ initManualStickyCommunityPanel();
             btn.style.width = '30px';
             btn.style.height = '30px';
             btn.style.cursor = 'pointer';
-            btn.innerHTML = '<span style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; font-weight: bold;">&#8962;</span>';
             btn.title = 'Zoom to Home';
 
       // inline SVG house icon – no external dependencies
@@ -278,9 +275,6 @@ fetch("/static/dashboard/layers/Chicago.geojson") // load Chicago boundary
       }
     }).addTo(map);
 
- //   if (ChicagoBounds && ChicagoBounds.getBounds().isValid()) {
-  //    map.fitBounds(ChicagoBounds.getBounds());
- //   }
   })
   .catch(err => {
     console.error("Chicago boundary load failed:", err);
@@ -327,7 +321,6 @@ fetch("/static/dashboard/layers/Chicago.geojson") // load Chicago boundary
     if (communityName === selectedArea) {
       selectedLayer = layer;
       layer.setStyle(highlightStyle);
-      //layer.bringToFront();
 
       if (shouldZoom) {
         map.flyToBounds(layer.getBounds(), {
@@ -387,7 +380,6 @@ fetch("/static/dashboard/layers/Chicago.geojson") // load Chicago boundary
 
                   if (layer !== selectedLayer) {
                     layer.setStyle(highlightStyle);
-                    //layer.bringToFront();
                   }
                 },
 
@@ -567,7 +559,7 @@ function renderPercentileGraph(communityName) {
   }
 
   const metric = getActivePercentileMetric(); // "ground" or "tempo"
-  
+
   const percentileCol =
   metric === 'ground'
     ? 'ground_percentile'
@@ -575,29 +567,7 @@ function renderPercentileGraph(communityName) {
       ? 'tempo_percentile'
       : 'fused_percentile_y';
 
-const rankCol =
-  metric === 'ground'
-    ? 'ground_rank'
-    : metric === 'tempo'
-      ? 'tempo_rank'
-      : 'fused_rank_y';
-
-const no2Col =
-  metric === 'ground'
-    ? 'ground_no2_ppb'
-    : metric === 'tempo'
-      ? 'tempo_no2_molecules_cm2'
-      : 'fused_no2_ppb_y';
-
-const label =
-  metric === 'ground'
-    ? 'Ground (OpenAir)'
-    : metric === 'tempo'
-      ? 'TEMPO'
-      : 'Fused';
-
    const communityPercentile = comm[percentileCol];
-   const communityRank = comm[rankCol];
 
    const percentileRounded =
       Math.round(communityPercentile);
@@ -1143,24 +1113,6 @@ function setupZoomNotification(chartDiv, notificationId) {
   });
 }
 
-fetch("/dashboard/layers/oacd.geojson/") //load sensors
-.then(response => response.json())
-.then(data => {
-  var circleOptions = {
-    radius: 1,
-    fillColor: "#263766",
-    opacity: 1,
-    color: "#263766",
-    weight: 2,
-  };
-
-    var Sensors = L.geoJSON(data, {
-        pointToLayer: function (feature, latlng) {
-        return L.circleMarker(latlng, circleOptions);
-      },
-    }).addTo(map);
-  })
-
 // ── PDF EXPORT ─────────────────────────────────────────────────────────────────────────────
 // Captures the entire community page content (hero + layout) as a PDF using html2canvas + jsPDF
 function exportCommunityAsPDF() {
@@ -1237,69 +1189,72 @@ function exportCommunityAsPDF() {
 
 // ── SCALEBAR: update on zoom/pan ──────────────────────────────────────────────
 function updateScaleBar() {
-  const ruler = document.getElementById('scalebar-ruler');
-  const ticksContainer = document.getElementById('scalebar-ticks');
-  const labelsContainer = document.getElementById('scalebar-labels');
-  if (!ruler || !ticksContainer || !labelsContainer) return;
+    const ruler = document.getElementById('scalebar-ruler');
+    const ticksContainer = document.getElementById('scalebar-ticks');
+    const labelsContainer = document.getElementById('scalebar-labels');
+    if (!ruler || !ticksContainer || !labelsContainer) return;
 
-  const center = map.getCenter();
-  const zoom = map.getZoom();
+    const center = map.getCenter();
+    const zoom = map.getZoom();
 
-  // meters per pixel at this zoom / latitude (Web Mercator)
-  const metersPerPixel = (2 * Math.PI * 6378137) /
-      (Math.pow(2, zoom) * 256 * Math.cos(center.lat * Math.PI / 180));
+    // miles per pixel at this zoom / latitude (Web Mercator)
+    // corrected: divide by tile size (256) to get proper miles-per-pixel
+    const milesPerPixel = (2 * Math.PI * 6378137) /
+        (Math.pow(2, zoom) * 256 * Math.cos(center.lat * Math.PI / 180));
 
-  const totalPixels = 100;  // fixed ruler width (small)
-  const distanceMeters = metersPerPixel * totalPixels;
+    const totalPixels = 100;  // fixed ruler width (matches CSS .scalebar-ruler width)
+    const distanceMiles = milesPerPixel * totalPixels;
 
-  // Pick a nice round total distance
-  let value, units;
-  if (distanceMeters >= 1000) {
-      const distKm = distanceMeters / 1000;
-      const mag = Math.pow(10, Math.floor(Math.log10(distKm)));
-      const norm = distKm / mag;
-      value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
-      units = 'km';
-  } else {
-      const mag = Math.pow(10, Math.floor(Math.log10(distanceMeters || 1)));
-      const norm = distanceMeters / mag;
-      value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
-      units = 'm';
-  }
-
-  const totalMeters = (units === 'km' ? value * 1000 : value);
-  const majorSegments = 4;   // 5 major ticks
-  const minorPerMajor = 4;   // 4 minor ticks between each major
-  const minorSegmentMeters = totalMeters / (majorSegments * minorPerMajor);
-  const minorSegmentPixels = totalPixels / (majorSegments * minorPerMajor);
-
-  // Build ticks
-  ticksContainer.innerHTML = '';
-  labelsContainer.innerHTML = '';
-  labelsContainer.style.width = totalPixels + 'px';
-
-  const totalMinorTicks = majorSegments * minorPerMajor + 1;
-  for (let i = 0; i < totalMinorTicks; i++) {
-      const isMajor = (i % minorPerMajor === 0);
-      const tick = document.createElement('div');
-      tick.className = 'scalebar-tick ' + (isMajor ? 'major' : 'minor');
-      tick.style.left = (i * minorSegmentPixels) + 'px';
-      ticksContainer.appendChild(tick);
-
-      if (isMajor) {
-          const label = document.createElement('span');
-          label.className = 'scalebar-label';
-          const valMeters = minorSegmentMeters * i;
-          if (units === 'km') {
-              const valKm = valMeters / 1000;
-              label.textContent = valKm.toFixed(valKm < 10 ? 1 : 0) + ' km';
-          } else {
-              label.textContent = Math.round(valMeters) + ' m';
-          }
-          label.style.left = (i * minorSegmentPixels) + 'px';
-          labelsContainer.appendChild(label);
+      // Pick a nice round total distance
+      let value, units;
+      if (distanceMiles >= 1609.344) {
+          const distMiles = distanceMiles / 1609.344;
+          const mag = Math.pow(10, Math.floor(Math.log10(distMiles)));
+          const norm = distMiles / mag;
+          value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
+          units = 'mi';
+      } else {
+          const mag = Math.pow(10, Math.floor(Math.log10(distanceMiles || 1)));
+          const norm = distanceMiles / mag;
+          value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
+          units = 'ft';
       }
-  }
+
+      const totalMeters = (units === 'mi' ? value * 1609.344 : value * 0.3048);
+    const majorSegments = 4;   // 5 major ticks: 0, 1/4, 2/4, 3/4, 1
+    const minorPerMajor = 4;   // 4 minor ticks between each major → 5 sub-segments
+    const minorSegmentMeters = totalMeters / (majorSegments * minorPerMajor);
+    const minorSegmentPixels = totalPixels / (majorSegments * minorPerMajor);
+
+    // Build ticks
+    ticksContainer.innerHTML = '';
+    labelsContainer.innerHTML = '';
+    labelsContainer.style.width = totalPixels + 'px';
+
+    const totalMinorTicks = majorSegments * minorPerMajor + 1;
+    for (let i = 0; i < totalMinorTicks; i++) {
+        const isMajor = (i % minorPerMajor === 0);
+        const tick = document.createElement('div');
+        tick.className = 'scalebar-tick ' + (isMajor ? 'major' : 'minor');
+        tick.style.left = (i * minorSegmentPixels) + 'px';
+        ticksContainer.appendChild(tick);
+
+          if (isMajor) {
+              const label = document.createElement('span');
+              label.className = 'scalebar-label';
+              const valMeters = minorSegmentMeters * i;
+              if (units === 'mi') {
+                  const valMiles = valMeters / 1609.344;
+                  label.textContent = valMiles.toFixed(valMiles < 10 ? 1 : 0) + ' mi';
+              } else {
+                  const valFt = valMeters / 0.3048;
+                  label.textContent = Math.round(valFt) + ' ft';
+              }
+              label.style.left = (i * minorSegmentPixels) + 'px';
+              label.style.transform = 'translateX(-50%)';
+              labelsContainer.appendChild(label);
+          }
+    }
 }
 
 // Attach scalebar update to map zoom/pan events

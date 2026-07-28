@@ -30,11 +30,14 @@ EarthRISE Developers Academy in collaboration with NASA LaRC and community partn
    - [Create migrations after editing models](#create-new-migration-files-after-editing-models)
 7. [Available Routes](#available-routes)
 8. [Frontend JavaScript Architecture](#frontend-javascript-architecture)
+   - [time_utils.js](#time_utilsjs)
    - [data_loader.js](#data_loaderjs)
    - [map_init.js](#map_initjs)
    - [map_layers.js](#map_layersjs)
    - [map_controls.js](#map_controlsjs)
-   - [export_controls.js](#export_controlsjs)
+   - [export.js](#exportjs)
+   - [home.js](#homejs)
+   - [community.js](#communityjs)
    - [navbar.js](#navbarjs)
 9. [Data Models](#data-models)
    - [LogMessage](#logmessage)
@@ -97,7 +100,7 @@ EarthRISE Developers Academy in collaboration with NASA LaRC and community partn
 
 ---
 
-![Regional Ozone Dashboard](../images/regionalozone_dashboard.png)
+![Regional Ozone Dashboard](../docs/regionalozone_dashboard.png)
 
 ---
 
@@ -316,7 +319,8 @@ develop-AQ_LaRC_2026/
 │   │   ├── clarity/            # Open Air Chicago hourly, daily, monthly GeoJSONs, dates.json
 │   │   ├── fused/              # Fused hourly, daily, monthly GeoJSONs, dates.json
 │   │   ├── tempo/              # TEMPO hourly, daily, monthly GeoJSONs, dates.json
-│   │   └── community_statistics/  # Community percentile & ranking datasets (CSV, parquet)
+│   │   ├── community_statistics/  # Community percentile & ranking datasets (CSV, parquet)
+│   │   └── activity_log.json   # File-based activity log (auto-created at runtime)
 │   ├── templates/
 │   │   └── dashboard/
 │   │       ├── includes/       # Reusable HTML fragments (navbar, map sidebar)
@@ -334,12 +338,15 @@ develop-AQ_LaRC_2026/
 │   │       ├── images/         # Logos, gradients, team photos, compass SVG
 │   │       ├── js/             # Application JavaScript
 │   │       │   ├── navbar.js
-│   │       │   ├── export_controls.js
-│   │       │   └── leaflet/    # Map-related JS modules
+│   │       │   ├── export.js
+│   │       │   ├── home.js
+│   │       │   ├── community.js
+│   │       │   └── map/        # Map-related JS modules
 │   │       │       ├── data_loader.js
 │   │       │       ├── map_init.js
 │   │       │       ├── map_layers.js
-│   │       │       └── map_controls.js
+│   │       │       ├── map_controls.js
+│   │       │       └── time_utils.js
 │   │       └── layers/         # Chicago boundary GeoJSON files
 │   │           ├── Chicago.geojson
 │   │           ├── ChicagoCommunityAreas.geojson
@@ -360,8 +367,7 @@ develop-AQ_LaRC_2026/
 ├── requirements.txt            # Python package dependencies
 ├── Procfile                    # Heroku/Render process definition
 ├── runtime.txt                 # Python version for hosting platforms
-├── db.sqlite3                  # Local SQLite database (auto-created)
-└── activity_log.json           # File-based activity log (auto-created at runtime)
+└── db.sqlite3                  # Local SQLite database (auto-created)
 ```
 
 ---
@@ -427,6 +433,21 @@ python manage.py migrate
 
 The dashboard's frontend is split into modular JavaScript files under `dashboard/static/dashboard/js/`. Understanding this structure helps when customizing maps, controls, or export behavior.
 
+### time_utils.js
+
+**Purpose:** Shared time/date conversion utilities extracted from `map.html` into a reusable module.
+
+Key responsibilities:
+- Exports a `TimeUtils` namespace with time-related helper functions
+- `isMonthlyDate()` — checks if a string matches the `YYYY-MM` month key format
+- `extractChicagoDateHour()` — parses a feature's `time` property and returns Chicago date (`YYYY-MM-DD`) and hour (0–23) using `Intl.DateTimeFormat`
+- `formatCentralTime()` — formats a UTC timestamp string to a readable Central Time string
+- `formatHourForDisplay()` — converts a slider hour (0–23) and date to a human-readable label (e.g., "2 PM CDT"), with DST gap handling
+- `formatMonthForDisplay()` — converts a `YYYY-MM` key to a localized month name (e.g., "September 2025")
+- `formatDateForDisplay()` — converts a `YYYY-MM-DD` key to a localized date string (e.g., "September 1, 2025")
+- `getChicagoParts()` — returns an object with year, month, day, hour, and timeZoneName for a given Date in Chicago time
+- `toMonthKey()` / `toDailyKey()` — normalize date strings to month or daily keys
+
 ### data_loader.js
 
 **Purpose:** Fetches pollution data from the backend API and handles community-area rendering.
@@ -478,7 +499,7 @@ Key responsibilities:
 - Loading spinner and no-data/warning notices
 - PNG export via html2canvas
 
-### export_controls.js
+### export.js
 
 **Purpose:** Export page tab navigation and export form logic.
 
@@ -487,6 +508,25 @@ Key responsibilities:
 - Date picker and file type selectors
 - File format options (GeoJSON, CSV)
 - Preview and download triggers
+
+### home.js
+
+**Purpose:** Home page interactivity and server statistics display.
+
+Key responsibilities:
+- Displays server uptime and start time
+- Renders recent activity notifications
+- Auto-refreshes server status data
+
+### community.js
+
+**Purpose:** Community statistics page logic and Plotly chart rendering.
+
+Key responsibilities:
+- Fetches community NO₂ data from `/api/community-no2-data/`
+- Renders Plotly charts (time series, bar charts, scatter plots)
+- Handles community selection filters
+- Displays percentile rankings and ground-vs-TEMPO comparisons
 
 ### navbar.js
 
@@ -532,7 +572,13 @@ Tracks system events and user interactions for the "Recent Activity" feed on the
 
 ### File-based activity log
 
-In addition to the database model, `views.py` implements a **file-based activity log** stored in `activity_log.json` at the project root. This provides a lightweight, no-database alternative for tracking:
+In addition to the database model, `views.py` implements a **file-based activity log** stored in `dashboard/data/activity_log.json`. The location is defined by the `ACTIVITY_FILE` constant in `views.py`:
+
+```python
+ACTIVITY_FILE = os.path.join(settings.BASE_DIR, 'dashboard', 'data', 'activity_log.json')
+```
+
+This provides a lightweight, no-database alternative for tracking:
 
 - Server starts
 - Page refreshes

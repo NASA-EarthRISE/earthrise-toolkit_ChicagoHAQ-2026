@@ -1,10 +1,28 @@
-dashboard/data/*
-!dashboard/data/community_statistics/
+# Virtual environments
 .venvv/
 .venv django/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Django
+db.sqlite3
+
+# IDE
 .vscode/
-.vscode/launch.json
-.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# App-generated files
 activity_log.json
-dashboard/__pycache__/
-.gitignore
+
+# Data (keep community_statistics for tracking)
+dashboard/data/*
+!dashboard/data/community_statistics/
