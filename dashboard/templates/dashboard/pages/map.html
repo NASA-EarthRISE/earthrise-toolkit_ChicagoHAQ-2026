@@ -10,13 +10,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
   <!-- Leaflet Heat CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet.heat.css" />
+  <!-- Map Sidebar.css CSS-->
+  <link rel="stylesheet" type="text/css" href="{% static 'dashboard/css/map_sidebar.css' %}"/>
+  <!-- Map.css CSS -->
+  <link rel="stylesheet" type="text/css" href="{% static 'dashboard/css/map.css' %}"/>
 
   <style>
 
-    :root {
-        --nav-height: 56px;
-        --map-export-height: 38px;
-    }
     /* Background image for page */
     main.content {
     background-image: url("{% static 'dashboard/images/blue_orange_gradient.png' %}");
@@ -26,658 +26,76 @@
     background-attachment: fixed;
     }
 
-    /* V4 Slider styling */
-    .display-container {
-        background: white;
-        padding: 10px;
-        border-radius: 6px;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    }
 
-    .legend {
-        background: white;
-        padding: 10px;
-        border-radius: 6px;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        line-height: 1.4em;
-    }
-
-    .legend-gradient {
-        width: 150px;
-        height: 15px;
-        background: linear-gradient(to right, blue, green, yellow,red);
-        margin: 5px 0;
-    }
-    
-    .legend-labels {
-        display: flex;
-        justify-content: space-between;
-        font-size: 12px;
-    }
-
-    .display-container input,
-    .display-container button {
-        font-family: inherit;
-    }
-
-    .compass-overlay {
-        position: absolute;
-        bottom: 186px;
-        right: -4px;
-        z-index: 1000;
-        pointer-events: none;
-    }
-
-    .compass-image {
-        display: block;
-        width: 40px;
-        height: 40px;
-    }
-    /* Bottom slider bar – positioned over the bottom of the map */
-    .bottom-slider-bar {
-        position: absolute;
-        bottom: 40px; /* above coords-bar */
-        left: 10px;
-        right: 10px;
-        background: white;
-        padding: 10px 14px;
-        border-radius: 6px;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .bottom-slider-bar .slider-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .bottom-slider-bar .slider-row label {
-        font-weight: bold;
-        min-width: 80px;
-        font-size: 13px;
-    }
-
-    .bottom-slider-bar input[type="range"] {
-        flex: 1;
-    }
-
-    .bottom-slider-bar .time-label,
-    .bottom-slider-bar .date-label-display {
-        width: 180px;
-        flex-shrink: 0;
-        text-align: right;
-        font-weight: 600;
-        font-size: 13px;
-        line-height: 1.2;
-        white-space: nowrap;
-    }
-    .bottom-slider-bar .playback-controls {
-        display: flex;
-        justify-content: center;
-        gap: 8px;
-        margin-top: 4px;
-    }
-
-    .bottom-slider-bar .playback-controls button {
-        padding: 4px 14px;
-        font-size: 13px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        background: #f7f7f7;
-        cursor: pointer;
-    }
-
-    .bottom-slider-bar .playback-controls button:hover {
-        background: #e8e8e8;
-    }
-
-    .bottom-slider-bar .playback-controls button.playing {
-        background: #263766;
-        color: #fff;
-        border-color: #263766;
-        cursor: default;
-    }
-
-    .bottom-slider-bar .playback-controls button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .bottom-slider-bar .hour-controls {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-
-    /* Legend overlay — bottom left of map container, above timeslider */
-    .map-legend-overlay {
-        position: absolute;
-        bottom: 150px;
-        left: 14px;
-        background: white;
-        padding: 10px 12px;
-        border-radius: 6px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-        z-index: 1000;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        pointer-events: none;
-    }
-
-    .map-legend-overlay .legend-title {
-        display: block;
-        font-weight: bold;
-        font-size: 12px;
-        margin-bottom: 4px;
-    }
-
-    .map-legend-overlay .legend-gradient-bar {
-        width: 150px;
-        height: 12px;
-        background: linear-gradient(to right, blue, green, yellow, red);
-        border-radius: 2px;
-    }
-
-    .map-legend-overlay .legend-numbers {
-        display: flex;
-        justify-content: space-between;
-        font-size: 11px;
-        color: #333;
-        width: 150px;
-        margin-top: 2px;
-    }
-
-    /* Centered loading spinner overlay for map */
-    .map-loading-overlay {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1500;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255, 255, 255, 0.9);
-        padding: 20px 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity 0.25s ease;
-    }
-
-    .map-loading-overlay.visible {
-        opacity: 1;
-    }
-
-    .map-loading-overlay .map-spinner {
-        width: 48px;
-        height: 48px;
-        border: 5px solid #e0e0e0;
-        border-top-color: #263766;
-        border-radius: 50%;
-        animation: map-spin 0.7s linear infinite;
-    }
-
-    .map-loading-overlay .map-loading-text {
-        margin-top: 12px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #263766;
-        text-align: center;
-      }
-
-    @keyframes map-spin {
-        to { transform: rotate(360deg); }
-    }
-
-    /* ── Share / Export PNG header ── */
-    .map-export-header {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 10px;
-        padding: 6px 0;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    }
-
-    .map-export-header .share-label {
-        font-size: 0.78rem;
-        font-weight: 400;
-        color: #888;
-        white-space: nowrap;
-        user-select: none;
-    }
-
-    .map-export-header .btn-export-png {
-        padding: 4px 12px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        background: transparent;
-        color: #666;
-        font-size: 0.78rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s;
-        white-space: nowrap;
-    }
-
-    .map-export-header .btn-export-png:hover {
-        background: #f0f0f0;
-        border-color: #999;
-        color: #333;
-    }
-
-    .map-export-header .btn-export-png:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-      }
-
-    
-
-    /* Scalebar overlay — ruler style, ticks/labels go UP, above time slider bar, right of map */
-    .scalebar-overlay {
-        position: absolute;
-        bottom: 145px;
-        right: 14px;
-        z-index: 1000;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        pointer-events: none;
-        display: flex;
-        flex-direction: column-reverse;
-    }
-
-    .scalebar-overlay .scalebar-ruler {
-        position: relative;
-        height: 20px;
-        width: 200px;
-    }
-
-    .scalebar-overlay .scalebar-main-line {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 1.5px;
-        background: #333;
-    }
-
-    .scalebar-overlay .scalebar-ticks {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-    }
-
-    .scalebar-overlay .scalebar-tick {
-        position: absolute;
-        bottom: 0;
-        width: 1px;
-        background: #333;
-    }
-
-    .scalebar-overlay .scalebar-tick.major {
-        height: 14px;
-    }
-
-    .scalebar-overlay .scalebar-tick.minor {
-        height: 8px;
-    }
-
-    .scalebar-overlay .scalebar-labels {
-        position: relative;
-        width: 200px;
-        height: 14px;
-        margin-bottom: 2px;
-    }
-
-    .scalebar-overlay .scalebar-label {
-        position: absolute;
-        font-size: 9px;
-        font-weight: 600;
-        color: #333;
-        white-space: nowrap;
-        transform: translateX(-50%);
-        text-shadow:
-            1px 1px 0 #fff,
-           -1px -1px 0 #fff,
-            1px -1px 0 #fff,
-           -1px 1px 0 #fff,
-            0 1px 0 #fff,
-            0 -1px 0 #fff,
-            1px 0 0 #fff,
-           -1px 0 0 #fff;
-    }
-
-
-    /* ── RETRACTABLE MAP SIDEBAR ─────────────────────── */
-
-    /* Override ALL site.css .sidebar rules for the map page.
-       site.css sets overflow-y:auto and max-height on .sidebar which
-       clips our toggle button. We reset those here on the outer shell
-       and delegate scroll to the inner wrapper. */
-    .map-layout .sidebar {
-        position: relative !important;
-        width: 320px !important;
-        min-width: 320px !important;
-        max-height: none !important;
-        flex-shrink: 0 !important;
-        overflow: visible !important;
-        overflow-y: visible !important;
-        overflow-x: visible !important;
-        padding: 0 !important;
-        border: none !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        transition: width 0.3s ease, min-width 0.3s ease !important;
-        display: flex !important;
-        flex-direction: column !important;
-    }
-
-    /* Inner wrapper — handles SCROLLING */
-    .sidebar-content-wrapper {
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        max-height: calc(100vh - var(--nav-height, 56px) - var(--map-export-height, 38px)) !important;
-        transition: opacity 0.2s ease, max-height 0.3s ease !important;
-        padding: 1.25rem !important;
-        padding-bottom: 3rem !important; /* extra space so last content isn't hidden behind gradient */
-        overscroll-behavior: contain;
-        position: relative !important;
-    }
-
-    /* Gradient fade overlay — child element positioned fixed at bottom of sidebar */
-    .sidebar-scroll-fade {
-        position: absolute !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        height: 60px !important;
-        background: linear-gradient(to bottom, rgba(0,90,158,0), rgba(0,90,158,0.95)) !important;
-        pointer-events: none !important;
-        z-index: 10 !important;
-    }
-
-    /* ── SIDEBAR BLUE STRIP ────────────────────────
-       Full-height non-interactive visual accent on right edge of sidebar.
-       Moves with sidebar as it opens/closes. Does NOT block map. */
-    .sidebar-blue-strip {
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 30px;
-        height: 100%;
-        background: #005a9e;
-        pointer-events: none;
-        z-index: 100;
-        transition: background 0.2s;
-    }
-
-    /* ── SIDEBAR TOGGLE BUTTON ─────────────────────
-        "Parameters" label on the blue strip.
-        Seamlessly combined with the blue strip (same color).
-        Left edge of button is flush with right edge of sidebar/blue strip. */
-    .sidebar-toggle-btn {
-        position: absolute !important;
-        top: 147px !important;
-        right: auto !important;
-        left: 100% !important;
-        transform: none !important;
-        z-index: 1100 !important;
-        width: 36px !important;
-        min-height: 160px !important;
-        background: #005a9e !important;
-        border: none !important;
-        border-radius: 0 !important;
-        cursor: pointer !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        color: #ffffff !important;
-        font-size: 12px !important;
-        font-weight: 600 !important;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
-        line-height: 1.4 !important;
-        padding: 16px 6px !important;
-        margin: 0 !important;
-        box-shadow: none !important;
-        transition: background 0.2s ease !important;
-        writing-mode: vertical-rl !important;
-        text-orientation: mixed !important;
-        letter-spacing: 2px !important;
-        overflow: visible !important;
-        white-space: nowrap !important;
-    }
-
-    .sidebar-toggle-btn:hover {
-        background: #004475 !important;
-    }
-
-    /* ── Retracted state ────────────────────────────── */
-    .map-layout .sidebar.retracted {
-        width: 0 !important;
-        min-width: 0 !important;
-    }
-
-    /* Hide inner content when retracted */
-    .map-layout .sidebar.retracted .sidebar-content-wrapper {
-        opacity: 0 !important;
-        max-height: 0 !important;
-        overflow: hidden !important;
-        padding: 0 !important;
-        pointer-events: none !important;
-    }
-
-    /* When retracted, button stays centered on the blue strip (at left edge of map) */
-    .map-layout .sidebar.retracted .sidebar-toggle-btn {
-        right: 0 !important;
-    }
-
-
-    /* Make sure .map-layout fills the content area properly */
-    .map-layout {
-        display: flex !important;
-        flex: 1 !important;
-        height: calc(100vh - var(--nav-height, 56px) - var(--map-export-height, 38px)) !important;
-        min-height: 0 !important;
-        position: relative !important;
-        overflow: hidden !important;
-    }
-
-    /* Ensure map container takes remaining space */
-    .map-layout .map-container {
-        flex: 1 !important;
-        min-width: 0 !important;
-        min-height: 0 !important;
-        height: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
-        position: relative !important;
-        overflow: hidden !important;
-    }
-.map-warning-notice {
-    position: absolute;
-    top: 12px;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    z-index: 1600;
-
-    background: rgba(255, 255, 255, 0.94);
-    border: 1px solid #d6d6d6;
-    border-left: 4px solid #d88c00;
-    border-radius: 6px;
-    padding: 8px 12px;
-    max-width: 360px;
-
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    font-size: 0.82rem;
-    color: #333;
-
-    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-    display: none;
-    pointer-events: none;
-}
-
-.map-warning-notice.visible {
-    display: block;
-}
-
-.map-warning-notice strong {
-    display: block;
-    color: #7a4b00;
-    font-size: 0.82rem;
-    margin-bottom: 2px;
-}
-
-.map-warning-notice span {
-    display: block;
-    font-size: 0.78rem;
-    color: #555;
-    line-height: 1.25;
-}
-
-    .map-no-data-notice {
-    position: absolute;
-    top: 78px;
-    right: 12px;
-    z-index: 1600;
-    background: rgba(255, 255, 255, 0.92);
-    border: 1px solid #d6d6d6;
-    border-left: 4px solid #d88c00;
-    border-radius: 6px;
-    padding: 8px 12px;
-    max-width: 290px;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    font-size: 0.82rem;
-    color: #333;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-    display: none;
-    pointer-events: none;
-}
-
-.map-no-data-notice .notice-icon {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    vertical-align: middle;
-    margin-right: 4px;
-    margin-top: -1px;
-}
-
-.map-no-data-notice .notice-icon svg {
-    width: 100%;
-    height: 100%;
-}
-
-.map-no-data-notice strong {
-    display: inline;
-    vertical-align: middle;
-}
-
-.map-no-data-notice.visible {
-        display: block;
-    }
-
-    .map-no-data-notice strong {
-        display: block;
-        color: #7a4b00;
-        font-size: 0.82rem;
-        margin-bottom: 2px;
-    }
-
-    .map-no-data-notice span {
-        display: block;
-        font-size: 0.78rem;
-        color: #555;
-        line-height: 1.25;
-    }
-
-    /* When explore panel is expanded, push no-data notice downward so it's readable */
-    #explore-panel.expanded ~ .map-no-data-notice {
-        top: 325px;
-    }
-
-    #map {
-        flex: 1 1 auto !important;
-        width: 100% !important;
-        height: 100% !important;
-        min-height: 0 !important;
-    }
-
-    .map-export-header {
-    height: var(--map-export-height, 38px);
-    box-sizing: border-box;
-    padding: 4px 0;
-    margin: 0;
-}
   </style>
 
 {% endblock %}
 
 {% block content %}
-<!-- Mobile disclaimer overlay -->
+
+<!-- Mobile Disclaimer Overlay (Screen size below 600 pixel width) -->
 <div class="mobile-disclaimer" id="mobile-disclaimer">
   <div class="mobile-disclaimer-content">
     <p>Mapping tools for the Regional Ozone Precursor Dashboard are best displayed on a desktop or laptop computer.</p>
     <a href="{% url 'home' %}" class="mobile-disclaimer-btn">Go to the Homepage</a>
   </div>
 </div>
-<!-- Share / Export PNG header (outside map container) -->
-  <div class="map-export-header">
-    <span class="share-label">Want to share this map?</span>
-    <button class="btn-export-png" id="export-png-btn" onclick="exportMapAsPNG()">Save as PNG</button>
-  </div>
 
-<!-- Map layout: sidebar and map container -->
+<!-- Export map as PNG  -->
+<div class="map-export-header">
+<span class="share-label">Want to share this map?</span>
+<button class="btn-export-png" id="export-png-btn" onclick="exportMapAsPNG()" aria-label="Save Map as PNG" title="Save Map as PNG">Save as PNG</button>
+</div>
+
+<!-- Map Layout: Sidebar + Map Container -->
 <div class="map-layout">
 
-  <!-- Map sidebar (draws from map_sidebar.html)-->
+  <!-- Parameter Sidebar -->
   <aside class="sidebar" id="map-controls">
-    <!-- Blue accent strip on right edge of sidebar -->
+    <!-- Blue Accent Strip -->
     <div class="sidebar-blue-strip"></div>
-    <!-- Sidebar toggle button -->
+    <!-- "Parameters" toggle button -->
     <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="Toggle sidebar" aria-label="Toggle sidebar">
       Parameters
     </button>
     <div class="sidebar-content-wrapper">
       {% include 'dashboard/includes/map_sidebar.html' %}
     </div>
+    <!-- Scroll Fade -->
     <div class="sidebar-scroll-fade"></div>
   </aside>
  
-
-  <!-- Map container -->
+  <!-- Map Container: Map + Help Button + Compass + Scalebar + Legend -->
   <div class="map-container">
     <div id="map"></div>
 
-    <!-- Explore "!" button -->
-    <div id="explore-panel" class="retracted">
-      <button id="explore-panel-toggle" class="explore-panel-toggle" title="Toggle explore panel" aria-label="Toggle explore panel">?</button>
-      <div id="explore-panel-body">
+    <!-- "?" Help Button -->
+    <div id="help-panel" class="retracted">
+        <button id="help-panel-toggle" class="help-panel-toggle" title="Toggle help panel" aria-label="Toggle help panel">?</button>
+        <div id="help-panel-body">
         <p>
-          <strong>Explore The Map</strong><br/>
-          <span id="explore-panel-content">Click and drag to shift your view.</span>
+            <strong>Explore The Map</strong><br/>
+            <span id="help-panel-content">Click and drag to shift your view.</span>
         </p>
         <p>
-          <strong>Display Data</strong><br/>
-          <span id="explore-panel-content">Customize the observation window, data products, and spatial scale with the Parameters sidebar to the left.</span>
+            <strong>Display Data</strong><br/>
+            <span id="help-panel-content">Customize the observation window, data products, and spatial scale with the Parameters sidebar to the left.</span>
         </p>
         <p>
-          <strong>Playback</strong><br/>
-          <span id="explore-panel-content">Click the play button or drag the slider below to view the change of data over time.</span>
+            <strong>Playback</strong><br/>
+            <span id="help-panel-content">Click the play button or drag the slider below to view the change of data over time.</span>
         </p>
         <p>
-          <span id="explore-panel-content">For an in-depth tutorial on this dashboard, visit the <strong>User Guide</strong> page.</span>
-        </p>
-      </div>
+        <span id="help-panel-content">
+            For an in-depth tutorial on this dashboard, visit the
+            <a href="{% url 'tutorial' %}" target="_blank"><strong>User Guide</strong></a>
+            page.
+        </span>
+
+
+
+    </p>
+        </div>
     </div>
   
     <!-- Compass -->
@@ -700,7 +118,7 @@
 
     <!-- Legend -->
     <div class="map-legend-overlay" id="map-legend-overlay">
-      <span class="legend-title">NO₂ (ppb)</span>
+      <span class="legend-title">NO<sub>2</sub> (ppb)</span>
       <div class="legend-gradient-bar"></div>
       <div class="legend-numbers">
         <span>0</span>
@@ -709,15 +127,16 @@
       </div>
     </div>
 
-    <!-- Time slider bars for all Map Types -->
+    <!-- Time Slider Bars (Hourly, Daily, Monthly) -->
     <div class="bottom-slider-bar" id="bottom-slider-bar">
 
+        <!-- Pause/Play Buttons -->
         <div class="playback-controls">
-          <button id="playBtn">⯈ Play</button>
-          <button id="pauseBtn" disabled>⏸ Pause</button>
+          <button id="playBtn" aria-label="Play" title="Play">⯈ Play</button>
+          <button id="pauseBtn" aria-label="Pause" title="Pause" disabled>⏸ Pause</button>
         </div>
 
-      <!-- Hourly time slider -->
+      <!-- Hourly Date Slider -->
       <div
         id="hourControls"
         class="hour-controls"
@@ -729,14 +148,14 @@
         </div>
       </div>
 
-      <!-- Daily & Monthly Date slider -->
+      <!-- Daily & Monthly Date Slider -->
       <div class="slider-row">
         <label>Date</label>
         <input type="range" min="0" max="0" value="0" id="dateSlider">
         <div class="date-label-display" id="dateLabel"></div>
       </div>
 
-      <!-- Date range controls -->
+      <!-- Date Range Controls -->
       <div id="rangeControls" style="display:none;">
         <div class="slider-row">
           <label>Start</label>
@@ -748,31 +167,32 @@
 
     </div>
 
-    <!-- Small non-blocking no-data notice -->
+    <!-- No Data Notice -->
     <div class="map-no-data-notice" id="map-no-data-notice">
     <span class="notice-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" stroke="#d88c00" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="13" stroke="#d88c00" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1" fill="#d88c00"/></svg></span>
     <strong>No data available</strong>
     <span id="map-no-data-text"></span>
     </div>
 
-    <!-- Small non-blocking date-adjustment warning -->
+    <!-- Date Adjustment Notice -->
     <div class="map-warning-notice" id="map-warning-notice">
     <strong>Date adjusted</strong>
     <span id="map-warning-text"></span>
     </div>
 
-    <!-- Centered loading spinner overlay -->
+    <!-- Loading Spinner -->
     <div class="map-loading-overlay" id="map-loading-overlay">
       <div class="map-spinner"></div>
       <div class="map-loading-text" id="map-loading-text">Loading...</div>
     </div>
 
-    <!-- Coords bar -->
+    <!-- Coordinates Bar -->
     <div id="coords-bar">
       <span id="coords-text">Lat: —  Lng: —</span>
       <span id="zoom-text">Zoom: —</span>
     </div>
   </div>
+
 </div>
 {% endblock %}
 
@@ -788,6 +208,8 @@
   <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
   <!-- html2canvas for PNG export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Time Utilities Module -->
+  <script src="{% static 'dashboard/js/map/time_utils.js' %}"></script>
 
   <script>
 
@@ -915,7 +337,7 @@ function startNewLoad(product) {
 }
 
 function isMonthlyDate(value) {
-    return /^\d{4}-\d{2}$/.test(value);
+    return TimeUtils.isMonthlyDate(value);
 }
 
 function isActiveLoad(load) {
@@ -949,7 +371,6 @@ function clearDataLayers() {
         communityLayer = null;
     }
 
-    markerGroup.clearLayers();
     tempoLayerGroup.clearLayers();
     openaqLayerGroup.clearLayers();
     fusionLayerGroup.clearLayers();
@@ -973,7 +394,7 @@ function updateBottomControlVisibility() {
     }
 }
 
-   let rangeStartDate = null;
+  let rangeStartDate = null;
   let rangeEndDate = null;
   let rangeCurrentEndDate = null;
 
@@ -984,12 +405,10 @@ function updateBottomControlVisibility() {
   let pendingPreferredHour = null;
   let invalidClarityHourlyDates = new Set();
 
-  // TEMPO-specific date arrays (hourly and daily can differ)
   let tempoHourlyDates = [];
   let tempoDailyDates = [];
-  let communityHourLookup = null;   // TEMPO community hourly lookup
-
-  let communityLayer = null;      // colored data layer
+  let communityHourLookup = null;  
+  let communityLayer = null;     
   
   let cachedDate = null;
   let cachedFeatures = null;
@@ -999,34 +418,10 @@ function updateBottomControlVisibility() {
   let nextCachedHourBuckets = null;
 
   let timeInterval = null;
-let isPlaying = false;
+  let isPlaying = false;
   const tempoDailyCache = {};
   const tempoMonthlyCache = {};
   let communityIndexCache = {};
-
-  let fusionCommunityRows = null;
-  let fusionCommunityPromise = null;
-
-  const chicagoDateFormatter =
-      new Intl.DateTimeFormat(
-          "en-US",
-          {
-              timeZone: "America/Chicago",
-              year: "numeric",
-              month: "numeric",
-              day: "numeric"
-          }
-      );
-
-  const chicagoHourFormatter =
-      new Intl.DateTimeFormat(
-          "en-US",
-          {
-              timeZone: "America/Chicago",
-              hour: "numeric",
-              hour12: false
-          }
-      );
 
 function removeInvalidHourlyDate(date, reason) {
     if (!date || TIME_SCALE !== "hourly" || currentDataProduct !== "clarity") {
@@ -1155,11 +550,9 @@ function removeInvalidHourlyDate(date, reason) {
     }
 
     // ── LAYER GROUPS ───────────────────────────────────────────────────────────
-    const markerGroup = L.layerGroup().addTo(map);
     const tempoLayerGroup = L.layerGroup().addTo(map);
     const openaqLayerGroup = L.layerGroup();
     const fusionLayerGroup = L.layerGroup();
-    const windLayerGroup = L.layerGroup();
     let heatLayer = null;
     let savedMarkers = [];
     let markerIdSeq = 0;
@@ -1203,7 +596,7 @@ function removeInvalidHourlyDate(date, reason) {
   }
 
 
-  // ── V4 HELPER FUNCTIONS ─────────────────────────────────────────────────────────────────────────────
+  // ── HELPER FUNCTIONS ─────────────────────────────────────────────────────────────────────────────
 
   function buildHourBuckets(features) {
       let buckets = {};
@@ -1231,72 +624,54 @@ function removeInvalidHourlyDate(date, reason) {
       let afterNextDate = currentIndex < dates.length - 2 ? dates[currentIndex + 2] : null;
 
       let requests = [];
+      if (prevDate) {
+          requests.push(
+              fetch(`/data/clarity/${prevDate}.geojson`)
+                  .then(r => r.ok ? r.json() : null)
+          );
+      }
+      requests.push(
+          fetch(`/data/clarity/${nextDate}.geojson`)
+              .then(r => r.ok ? r.json() : null)
+      );
+      if (afterNextDate) {
+          requests.push(
+              fetch(`/data/clarity/${afterNextDate}.geojson`)
+                  .then(r => r.ok ? r.json() : null)
+          );
+      }
 
-        if (prevDate) {
-            requests.push(
-                fetch(`/data/clarity/${prevDate}.geojson`)
-                    .then(r => r.ok ? r.json() : null)
-            );
+      Promise.all(requests)
+      .then(files => {
+        if (currentDataProduct !== "clarity" || TIME_SCALE !== "hourly") {
+            return;
         }
 
-        requests.push(
-            fetch(`/data/clarity/${nextDate}.geojson`)
-                .then(r => r.ok ? r.json() : null)
-        );
-
-        if (afterNextDate) {
-            requests.push(
-                fetch(`/data/clarity/${afterNextDate}.geojson`)
-                    .then(r => r.ok ? r.json() : null)
-            );
-        }
-
-        Promise.all(requests)
-        .then(files => {
-            if (currentDataProduct !== "clarity" || TIME_SCALE !== "hourly") {
-                return;
+        let combinedFeatures = [];
+        
+        files.forEach(data => {
+            if (data) {
+                combinedFeatures.push(...data.features);
             }
+        });
 
-            let combinedFeatures = [];
+        let filteredFeatures = combinedFeatures.filter(f => {
+            const dateHour = TimeUtils.extractChicagoDateHour(f.properties);
+            if (!dateHour) return false;
             
-            files.forEach(data => {
-                if (data) {
-                    combinedFeatures.push(...data.features);
-                }
-            });
+            f._chicagoHour = dateHour.hour;
+            return dateHour.date === nextDate;
+        });
 
-          let filteredFeatures = combinedFeatures.filter(f => {
-              let utcDate = new Date(f.properties.time + "Z");
-              let chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
-              let y = chicagoParts.find(p => p.type === "year").value;
-              let m = chicagoParts.find(p => p.type === "month").value.padStart(2,"0");
-              let d = chicagoParts.find(p => p.type === "day").value.padStart(2,"0");
-              let chicagoDateStr = `${y}-${m}-${d}`;
-
-              f._chicagoHour = Number(
-                  chicagoHourFormatter.formatToParts(utcDate)
-                      .find(x => x.type === "hour").value
-              );
-
-              return chicagoDateStr === nextDate;
-          });
-
-          nextCachedDate = nextDate;
-          nextCachedHourBuckets = buildHourBuckets(filteredFeatures);
-          console.log("Prefetched:", nextDate);
-      });
+        nextCachedDate = nextDate;
+        nextCachedHourBuckets = buildHourBuckets(filteredFeatures);
+        console.log("Prefetched:", nextDate);
+    });
   }
 
   function formatCentralTime(utcString) {
-      let d = new Date(utcString + "Z");
-      return d.toLocaleString("en-US", {
-          timeZone: "America/Chicago",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          timeZoneName: "short"
-      });
-  }
+    return TimeUtils.formatCentralTime(utcString);
+}
 
   function updateDateAndTimeLabels(date) {
     const dateLabel = document.getElementById("dateLabel");
@@ -1321,219 +696,29 @@ function removeInvalidHourlyDate(date, reason) {
     }
 }
 
-function getChicagoDateStringFromUTC(utcString) {
-    if (!utcString) {
-        return null;
-    }
 
-    const normalizedUTC = utcString.endsWith("Z")
-        ? utcString
-        : utcString + "Z";
-
-    const utcDate = new Date(normalizedUTC);
-
-    const chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
-
-    const y = chicagoParts.find(p => p.type === "year").value;
-    const m = chicagoParts.find(p => p.type === "month").value.padStart(2, "0");
-    const d = chicagoParts.find(p => p.type === "day").value.padStart(2, "0");
-
-    return `${y}-${m}-${d}`;
-}
-function deriveClarityCentralDatesFromFiles(utcFileDates) {
-    return Promise.all(
-        utcFileDates.map(date => {
-            return fetch(`/data/clarity/${date}.geojson`)
-                .then(r => {
-                    if (!r.ok) {
-                        console.warn("Missing Clarity hourly file while deriving Central dates:", date);
-                        return null;
-                    }
-                    return r.json();
-                })
-                .catch(err => {
-                    console.warn("Could not inspect Clarity file:", date, err);
-                    return null;
-                });
-        })
-    ).then(files => {
-        const centralDates = new Set();
-
-        files.forEach(data => {
-            if (!data || !data.features) {
-                return;
-            }
-
-            data.features.forEach(feature => {
-                const p = feature.properties || {};
-
-                if (!p.time) {
-                    return;
-                }
-
-                const value = Number(p.no2concindividual_value);
-
-                if (isNaN(value)) {
-                    return;
-                }
-
-                const centralDate = getChicagoDateStringFromUTC(p.time);
-                    if (centralDate) {
-                        centralDates.add(centralDate);
-                    }
-            });
-        });
-
-        return Array.from(centralDates).sort();
-    });
-}
-
- function getChicagoParts(date) {
-    const parts = new Intl.DateTimeFormat("en-US", {
-        timeZone: "America/Chicago",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        hour12: false,
-        timeZoneName: "short"
-    }).formatToParts(date);
-
-    const lookup = {};
-
-    parts.forEach(part => {
-        lookup[part.type] = part.value;
-    });
-
-    return {
-        year: lookup.year,
-        month: lookup.month,
-        day: lookup.day,
-        hour: lookup.hour === "24" ? "00" : lookup.hour,
-        timeZoneName: lookup.timeZoneName
-    };
+function getChicagoParts(date){
+    return TimeUtils.getChicagoParts(date);
 }
 
 function formatHourForDisplay(dateStr, selectedHour) {
-    if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-        return "";
-    }
-
-    // Simple DST fallback patch for Chicago on Nov 2, 2025.
-    // At 2 AM CDT, clocks fell back to 1 AM CST.
-    // Since our slider only has one "1 AM", show both labels.
-    if (dateStr === "2025-11-02") {
-        if (selectedHour === 0) {
-            return "12 AM CDT";
-        }
-
-        if (selectedHour === 1) {
-            return "1 AM CDT / 1 AM CST";
-        }
-
-        if (selectedHour === 2) {
-            return "2 AM CST";
-        }
-
-        const displayHour = selectedHour % 12 === 0
-            ? 12
-            : selectedHour % 12;
-
-        const suffix = selectedHour < 12 ? "AM" : "PM";
-
-        return `${displayHour} ${suffix} CST`;
-    }
-
-    const parts = dateStr.split("-");
-    const targetYear = parts[0];
-    const targetMonth = parts[1];
-    const targetDay = parts[2];
-    const targetHour = String(selectedHour).padStart(2, "0");
-
-    const searchStart = new Date(`${dateStr}T00:00:00Z`);
-    searchStart.setUTCHours(searchStart.getUTCHours() - 12);
-
-    for (let i = 0; i < 48; i++) {
-        const candidate = new Date(searchStart);
-        candidate.setUTCHours(searchStart.getUTCHours() + i);
-
-        const chicago = getChicagoParts(candidate);
-
-        if (
-            chicago.year === targetYear &&
-            chicago.month === targetMonth &&
-            chicago.day === targetDay &&
-            chicago.hour === targetHour
-        ) {
-            return candidate.toLocaleTimeString("en-US", {
-                timeZone: "America/Chicago",
-                hour: "numeric",
-                hour12: true,
-                timeZoneName: "short"
-            });
-        }
-    }
-
-    return `${selectedHour}:00 CT`;
+    return TimeUtils.formatHourForDisplay(dateStr, selectedHour);
 }
 
   function formatMonthForDisplay(dateStr) {
-      if (!dateStr || typeof dateStr !== 'string') {
-          console.warn("formatMonthForDisplay received invalid date:", dateStr);
-          return "Unknown Month";
-      }
-      const [year, month] = dateStr.split("-");
-      return new Date(
-          Number(year),
-          Number(month) - 1,
-          1
-      ).toLocaleDateString(
-          "en-US",
-          {
-              month: "long",
-              year: "numeric"
-          }
-      );
-  }
+    return TimeUtils.formatMonthForDisplay(dateStr);
+}
 
 function utcDateToCentralPretty(dateStr) {
-
-    if (/^\d{4}-\d{2}$/.test(dateStr)) {
-        return formatMonthForDisplay(dateStr);
-    }
-
-    const [year, month, day] = dateStr.split("-").map(Number);
-
-    return new Date(year, month - 1, day)
-        .toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric"
-        });
-}
-
-function isDailyDate(value) {
-    return /^\d{4}-\d{2}-\d{2}$/.test(value);
-}
-
-function isMonthKey(value) {
-    return /^\d{4}-\d{2}$/.test(value);
+    return TimeUtils.formatDateForDisplay(dateStr);
 }
 
 function toMonthKey(value) {
-    if (!value || typeof value !== "string") {
-        return null;
-    }
-
-    return value.substring(0, 7);
+    return TimeUtils.toMonthKey(value);
 }
 
 function toDailyKey(value) {
-    if (!value || typeof value !== "string") {
-        return null;
-    }
-
-    return isDailyDate(value) ? value : null;
+    return TimeUtils.toDailyKey(value);
 }
 
 function getCurrentSelectedDateFromSlider() {
@@ -1714,13 +899,7 @@ function applyPreferredDateAndHourAfterDateLoad(load) {
     loadDate(selectedDate, load);
 }
 
-  function getPreviousDate(dateStr) {
-      let d = new Date(dateStr + "T00:00:00Z");
-      d.setUTCDate(d.getUTCDate() - 1);
-      return d.toISOString().split("T")[0];
-  }
-
-function showLoading(message) {
+function showLoading(message){
     hideNoDataNotice();
 
     const overlay = document.getElementById("map-loading-overlay");
@@ -1741,35 +920,6 @@ function hideLoading() {
     const overlay = document.getElementById("map-loading-overlay");
     if (overlay) {
         overlay.classList.remove("visible");
-    }
-}
-
-function showMapWarningNotice(title, detailText, autoHideMs = 6000) {
-    const notice = document.getElementById("map-no-data-notice");
-    const textEl = document.getElementById("map-no-data-text");
-
-    if (!notice) {
-        return;
-    }
-
-    const strongEl = notice.querySelector("strong");
-
-    if (strongEl) {
-        strongEl.textContent = title || "Notice";
-    }
-
-    if (textEl) {
-        textEl.textContent = detailText || "";
-    }
-
-    notice.classList.add("visible");
-
-    if (autoHideMs && autoHideMs > 0) {
-        window.clearTimeout(notice._autoHideTimer);
-
-        notice._autoHideTimer = window.setTimeout(() => {
-            notice.classList.remove("visible");
-        }, autoHideMs);
     }
 }
 
@@ -1848,7 +998,7 @@ async function exportMapAsPNG() {
       // Elements to hide during capture (legend and scalebar stay visible)
       const coordsBar = document.getElementById('coords-bar');
       const shareHeader = document.querySelector('.map-export-header');
-      const explorePanel = document.getElementById('explore-panel');
+      const helpPanel = document.getElementById('help-panel');
       const bottomSlider = document.getElementById('bottom-slider-bar');
       const loadingOverlay = document.getElementById('map-loading-overlay');
       const leafletControls = document.querySelectorAll('.leaflet-control-zoom, .leaflet-control');
@@ -1857,7 +1007,7 @@ async function exportMapAsPNG() {
       // Hide UI elements (keep legend and scalebar visible)
       if (coordsBar) coordsBar.style.display = 'none';
       if (shareHeader) shareHeader.style.display = 'none';
-      if (explorePanel) explorePanel.style.display = 'none';
+      if (helpPanel) helpPanel.style.display = 'none';
       if (bottomSlider) bottomSlider.style.display = 'none';
       if (loadingOverlay) loadingOverlay.style.display = 'none';
       leafletControls.forEach(el => { el.style.display = 'none'; });
@@ -1903,7 +1053,7 @@ async function exportMapAsPNG() {
           // Restore UI elements
           if (coordsBar) coordsBar.style.display = '';
           if (shareHeader) shareHeader.style.display = '';
-          if (explorePanel) explorePanel.style.display = '';
+          if (helpPanel) helpPanel.style.display = '';
           if (bottomSlider) bottomSlider.style.display = '';
           if (loadingOverlay) loadingOverlay.style.display = '';
           leafletControls.forEach(el => { el.style.display = ''; });
@@ -1930,30 +1080,30 @@ function updateScaleBar() {
       const center = map.getCenter();
       const zoom = map.getZoom();
 
-      // meters per pixel at this zoom / latitude (Web Mercator)
-      // corrected: divide by tile size (256) to get proper meters-per-pixel
-      const metersPerPixel = (2 * Math.PI * 6378137) /
+      // miles per pixel at this zoom / latitude (Web Mercator)
+      // corrected: divide by tile size (256) to get proper miles-per-pixel
+      const milesPerPixel = (2 * Math.PI * 6378137) /
           (Math.pow(2, zoom) * 256 * Math.cos(center.lat * Math.PI / 180));
 
       const totalPixels = 200;  // fixed ruler width
-      const distanceMeters = metersPerPixel * totalPixels;
+      const distanceMiles = milesPerPixel * totalPixels;
 
-      // Pick a nice round total distance
-      let value, units;
-      if (distanceMeters >= 1000) {
-          const distKm = distanceMeters / 1000;
-          const mag = Math.pow(10, Math.floor(Math.log10(distKm)));
-          const norm = distKm / mag;
-          value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
-          units = 'km';
-      } else {
-          const mag = Math.pow(10, Math.floor(Math.log10(distanceMeters || 1)));
-          const norm = distanceMeters / mag;
-          value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
-          units = 'm';
-      }
+       // Pick a nice round total distance
+       let value, units;
+       if (distanceMiles >= 1609.344) {
+           const distMiles = distanceMiles / 1609.344;
+           const mag = Math.pow(10, Math.floor(Math.log10(distMiles)));
+           const norm = distMiles / mag;
+           value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
+           units = 'mi';
+       } else {
+           const mag = Math.pow(10, Math.floor(Math.log10(distanceMiles || 1)));
+           const norm = distanceMiles / mag;
+           value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
+           units = 'ft';
+       }
 
-      const totalMeters = (units === 'km' ? value * 1000 : value);
+       const totalMeters = (units === 'mi' ? value * 1609.344 : value * 0.3048);
       const majorSegments = 4;   // 5 major ticks: 0, 1/4, 2/4, 3/4, 1
       const minorPerMajor = 4;   // 4 minor ticks between each major → 5 sub-segments
       const minorSegmentMeters = totalMeters / (majorSegments * minorPerMajor);
@@ -1972,29 +1122,37 @@ function updateScaleBar() {
           tick.style.left = (i * minorSegmentPixels) + 'px';
           ticksContainer.appendChild(tick);
 
-          if (isMajor) {
-              const label = document.createElement('span');
-              label.className = 'scalebar-label';
-              const valMeters = minorSegmentMeters * i;
-              if (units === 'km') {
-                  const valKm = valMeters / 1000;
-                  label.textContent = valKm.toFixed(valKm < 10 ? 1 : 0) + ' km';
-              } else {
-                  label.textContent = Math.round(valMeters) + ' m';
-              }
-              label.style.left = (i * minorSegmentPixels) + 'px';
-              labelsContainer.appendChild(label);
-          }
+           if (isMajor) {
+               const label = document.createElement('span');
+               label.className = 'scalebar-label';
+               const valMeters = minorSegmentMeters * i;
+               if (units === 'mi') {
+                   const valMiles = valMeters / 1609.344;
+                   label.textContent = valMiles.toFixed(valMiles < 10 ? 1 : 0) + ' mi';
+               } else {
+                   const valFt = valMeters / 0.3048;
+                   label.textContent = Math.round(valFt) + ' ft';
+               }
+               label.style.left = (i * minorSegmentPixels) + 'px';
+               labelsContainer.appendChild(label);
+           }
       }
   }
 
 function resetPlaybackUI() {
-          playBtn.classList.remove('playing');
-          playBtn.disabled = false;
-          pauseBtn.disabled = true;
-          dateSlider.disabled = false;
-          timeSlider.disabled = false;
-      }
+    const playBtn = document.getElementById("playBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const dateSlider = document.getElementById("dateSlider");
+    const timeSlider = document.getElementById("timeSlider");
+    
+    if (playBtn) {
+        playBtn.classList.remove('playing');
+        playBtn.disabled = false;
+    }
+    if (pauseBtn) pauseBtn.disabled = true;
+    if (dateSlider) dateSlider.disabled = false;
+    if (timeSlider) timeSlider.disabled = false;
+}
 
 function updateIndividualModeLabel() {
     const label = document.getElementById('individual-mode-label');
@@ -2342,58 +1500,6 @@ function getFusionValue(properties) {
     return Number(properties.no2_estimate);
 }
 
-function getFusionTimeString(properties) {
-    if (!properties) {
-        return "";
-    }
-
-    return (
-        properties.datetime ||
-        properties.datetime_local ||
-        properties.time ||
-        properties.timestamp ||
-        ""
-    );
-}
-
-function getFusionChicagoDateHour(properties) {
-    const rawTime = getFusionTimeString(properties);
-
-    if (!rawTime) {
-        return null;
-    }
-
-    const normalized = rawTime.includes("T")
-        ? rawTime
-        : rawTime.replace(" ", "T");
-
-    const utcDate = new Date(
-        normalized.endsWith("Z")
-            ? normalized
-            : normalized + "Z"
-    );
-
-    if (isNaN(utcDate.getTime())) {
-        return null;
-    }
-
-    const chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
-    const chicagoHourParts = chicagoHourFormatter.formatToParts(utcDate);
-
-    const y = chicagoParts.find(p => p.type === "year").value;
-    const m = chicagoParts.find(p => p.type === "month").value.padStart(2, "0");
-    const d = chicagoParts.find(p => p.type === "day").value.padStart(2, "0");
-
-    const hour = Number(
-        chicagoHourParts.find(p => p.type === "hour").value
-    );
-
-    return {
-        date: `${y}-${m}-${d}`,
-        hour: hour
-    };
-}
-
 function showFusionNoDataMessage(date, detailText) {
     hideLoading();
 
@@ -2560,11 +1666,14 @@ function parseSimpleCSV(text) {
     });
 }
 
+let fusioncommunityHourLookup = {};   // global lookup bucket
+let fusionCommunityRows = null;
+let fusionCommunityPromise = null;
+
 function loadFusionCommunityCSV() {
     if (fusionCommunityRows) {
         return Promise.resolve(fusionCommunityRows);
     }
-
     if (fusionCommunityPromise) {
         return fusionCommunityPromise;
     }
@@ -2574,29 +1683,72 @@ function loadFusionCommunityCSV() {
             if (!r.ok) {
                 throw new Error("Could not load /data/fused/fused_hourly_by_community.csv");
             }
-
             return r.text();
         })
         .then(text => {
-            fusionCommunityRows = parseSimpleCSV(text).map(row => ({
-                community_id: row.community_id,
-                community: row.community,
-                time: row.time,
-                date: row.date,
-                hour: Number(row.hour),
-                no2_estimate_mean: Number(row.no2_estimate_mean),
-                no2_estimate_median: Number(row.no2_estimate_median),
-                no2_estimate_min: Number(row.no2_estimate_min),
-                no2_estimate_max: Number(row.no2_estimate_max),
-                grid_cell_count: Number(row.grid_cell_count || 0),
-            })).filter(row =>
-                row.community &&
-                row.date &&
-                !isNaN(row.hour) &&
-                !isNaN(row.no2_estimate_mean)
+            const rawRows = parseSimpleCSV(text);
+
+            fusionCommunityRows = rawRows.map(row => {
+                const timeString =
+                    row.time ||
+                    row.datetime ||
+                    row.timestamp ||
+                    row.datetime_utc ||
+                    "";
+
+                // Parse UTC → Chicago ONCE
+                const utcDate = TimeUtils.parseUTCString(timeString);
+                let chicagoDate = null;
+                let chicagoHour = null;
+
+                if (utcDate) {
+                    const parts = TimeUtils.getChicagoParts(utcDate);
+                    chicagoDate = `${parts.year}-${parts.month}-${parts.day}`;
+                    chicagoHour = Number(parts.hour);
+                }
+
+                return {
+                    community_id: Number(row.community_id),
+                    community: row.community,
+
+                    time: row.time,
+                    date: row.date,        // this is UTC date from CSV
+                    hour: Number(row.hour),// this is UTC hour from CSV
+
+                    _utc: utcDate,
+                    _chicagoDate: chicagoDate,
+                    _chicagoHour: chicagoHour,
+
+                    no2_estimate_mean: Number(row.no2_estimate_mean),
+                    no2_estimate_median: Number(row.no2_estimate_median),
+                    no2_estimate_min: Number(row.no2_estimate_min),
+                    no2_estimate_max: Number(row.no2_estimate_max),
+                    grid_cell_count: Number(row.grid_cell_count || 0)
+                };
+            })
+            .filter(r =>
+                r.community &&
+                r._chicagoDate &&
+                !isNaN(r._chicagoHour) &&
+                !isNaN(r.no2_estimate_mean)
             );
 
             console.log("Loaded Fusion community rows:", fusionCommunityRows.length);
+
+            fusioncommunityHourLookup = {};
+
+            fusionCommunityRows.forEach(r => {
+                const d = r._chicagoDate;
+                const h = r._chicagoHour;
+
+                if (!fusioncommunityHourLookup[d]) {
+                    fusioncommunityHourLookup[d] = Array.from({ length: 24 }, () => []);
+                }
+
+                fusioncommunityHourLookup[d][h].push(r);
+            });
+
+            console.log("Built Fusion community lookup:", Object.keys(fusioncommunityHourLookup).length, "dates");
 
             return fusionCommunityRows;
         });
@@ -2721,63 +1873,51 @@ function renderFusionCommunityAreas(rows, labelText) {
 
 function loadFusionCommunities(date, existingLoad) {
     const load = existingLoad || startNewLoad("fusion");
-
-    if (!isActiveLoad(load)) {
-        return;
-    }
+    if (!isActiveLoad(load)) return;
 
     loadFusionCommunityCSV()
-        .then(rows => {
-            if (!isActiveLoad(load)) {
-                return;
-            }
+        .then(() => {
+            if (!isActiveLoad(load)) return;
 
             let filteredRows = [];
             let labelText = "";
 
             if (TIME_SCALE === "hourly") {
-                filteredRows = rows.filter(row =>
-                    row.date === date &&
-                    row.hour === selectedHour
-                );
+                const bucket =
+                    fusioncommunityHourLookup[date] &&
+                    fusioncommunityHourLookup[date][selectedHour];
 
+                filteredRows = bucket || [];
                 labelText = `Time: ${formatHourForDisplay(date, selectedHour)}`;
             }
 
             else if (TIME_SCALE === "daily") {
-                filteredRows = rows.filter(row =>
-                    row.date === date
-                );
-
+                const buckets = fusioncommunityHourLookup[date];
+                filteredRows = buckets ? buckets.flat() : [];
                 labelText = "Daily Average";
             }
 
             else if (TIME_SCALE === "monthly") {
-                const month = toMonthKey(date);
+                const monthKey = toMonthKey(date);
 
-                filteredRows = rows.filter(row =>
-                    row.date &&
-                    row.date.substring(0, 7) === month
-                );
+                const matchedDates = Object.keys(fusioncommunityHourLookup)
+                    .filter(d => d.startsWith(monthKey));
+
+                filteredRows = matchedDates
+                    .flatMap(d => fusioncommunityHourLookup[d].flat());
 
                 labelText = "Monthly Average";
             }
 
-            const rendered = renderFusionCommunityAreas(
-                filteredRows,
-                labelText
-            );
+            const rendered = renderFusionCommunityAreas(filteredRows, labelText);
 
             if (!rendered) {
                 showFusionNoDataMessage(date, labelText);
             }
         })
         .catch(err => {
-            if (!isActiveLoad(load)) {
-                return;
-            }
-
-            console.error("Could not load Fusion community CSV:", err);
+            if (!isActiveLoad(load)) return;
+            console.error("Fusion community load failed:", err);
             showFusionNoDataMessage(date, "Community Area");
         });
 }
@@ -2804,15 +1944,29 @@ function loadFusionHourly(date, existingLoad) {
             const features = data && data.features ? data.features : [];
 
             const filteredFeatures = features.filter(f => {
-                const parts = getFusionChicagoDateHour(f.properties || {});
-
-                if (!parts) {
+                const p = f.properties || {};
+                const timeString = p.time || p.datetime || p.datetime_local || p.timestamp || "";
+                
+                if (!timeString) {
                     return false;
                 }
 
+                // Parse the UTC time to extract UTC date and hour
+                const utcDate = TimeUtils.parseUTCString(timeString);
+                if (!utcDate) {
+                    return false;
+                }
+
+                // Get UTC date in YYYY-MM-DD format
+                const utcDateStr = utcDate.toISOString().split('T')[0];
+                
+                // Get Chicago hour for filtering
+                const chicagoParts = TimeUtils.getChicagoParts(utcDate);
+                const hour = Number(chicagoParts.hour);
+
                 return (
-                    parts.date === date &&
-                    parts.hour === selectedHour
+                    utcDateStr === date &&
+                    hour === selectedHour
                 );
             });
 
@@ -2950,13 +2104,7 @@ function loadFusionMonthly(month, existingLoad) {
   // ── TEMPO DATA LOADING FUNCTIONS ──────────────────────────────────────────────────
 
   function formatCentralTimePretty(utcString) {
-      let d = new Date(utcString + "Z");
-      return d.toLocaleTimeString("en-US", {
-          timeZone: "America/Chicago",
-          hour: "numeric",
-          hour12: true,
-          timeZoneName: "short"
-      });
+      return TimeUtils.formatCentralTime(utcString);
   }
 
 function renderDailyTempoData(data) {
@@ -3241,7 +2389,7 @@ function renderMonthlyTempoData(data, load) {
   // TEMPO Date Range – average grid cells across selected dates
   function loadTempoDateRange() {
       if (!timeInterval) {
-          showLoading(`Loading ${rangeStartDate} to ${rangeCurrentEndDate}`);
+          showLoading(`Loading ${utcDateToCentralPretty(rangeStartDate)} to ${utcDateToCentralPretty(rangeCurrentEndDate)}`);
       }
 
       let selectedDates = rangeDates.length > 0
@@ -3325,7 +2473,7 @@ function renderMonthlyTempoData(data, load) {
   // TEMPO Community Date Range
   function loadTempoCommunityDateRange() {
       if (!timeInterval) {
-          showLoading(`Loading ${rangeStartDate} to ${rangeCurrentEndDate}`);
+          showLoading(`Loading ${utcDateToCentralPretty(rangeStartDate)} to ${utcDateToCentralPretty(rangeCurrentEndDate)}`);
       }
 
       let selectedDates = rangeDates.length > 0
@@ -3484,18 +2632,11 @@ function renderMonthlyTempoData(data, load) {
           });
 
           let filteredFeatures = combinedFeatures.filter(f => {
-              let utcDate = new Date(f.properties.time + "Z");
-              let chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
-              let y = chicagoParts.find(p => p.type === "year").value;
-              let m = chicagoParts.find(p => p.type === "month").value.padStart(2, "0");
-              let d = chicagoParts.find(p => p.type === "day").value.padStart(2, "0");
-              let chicagoDateStr = `${y}-${m}-${d}`;
-
-              f._chicagoHour = Number(
-                  chicagoHourFormatter.formatToParts(utcDate)
-                      .find(x => x.type === "hour").value
-              );
-              return chicagoDateStr === nextDate;
+              const dateHour = TimeUtils.extractChicagoDateHour(f.properties);
+              if (!dateHour) return false;
+              
+              f._chicagoHour = dateHour.hour;
+              return dateHour.date === nextDate;
           });
 
           nextCachedDate = nextDate;
@@ -3506,7 +2647,7 @@ function renderMonthlyTempoData(data, load) {
 
   function loadDateRange() {
       if (!timeInterval) {
-          showLoading(`Loading ${rangeStartDate} to ${rangeCurrentEndDate}`);
+          showLoading(`Loading ${utcDateToCentralPretty(rangeStartDate)} to ${utcDateToCentralPretty(rangeCurrentEndDate)}`);
       }
 
       let selectedDates = dates.filter(d =>
@@ -3931,7 +3072,7 @@ function renderMonthlyTempoData(data, load) {
 
       let loadingText;
       if (TIME_SCALE === "monthly") {
-          loadingText = `Loading ${date.substring(0, 7)}`;
+          loadingText = `Loading ${formatMonthForDisplay(date)}`;
       } else if (TIME_SCALE === "daily") {
           loadingText = `Loading ${utcDateToCentralPretty(date)}`;
       } else {
@@ -4019,18 +3160,11 @@ function renderMonthlyTempoData(data, load) {
               });
 
               let filteredFeatures = combinedFeatures.filter(f => {
-                  let utcDate = new Date(f.properties.time + "Z");
-                  let chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
-                  let y = chicagoParts.find(p => p.type === "year").value;
-                  let m = chicagoParts.find(p => p.type === "month").value.padStart(2, '0');
-                  let d = chicagoParts.find(p => p.type === "day").value.padStart(2, '0');
-                  let chicagoDateStr = `${y}-${m}-${d}`;
-
-                  f._chicagoHour = Number(
-                      chicagoHourFormatter.formatToParts(utcDate)
-                          .find(x => x.type === "hour").value
-                  );
-                  return chicagoDateStr === date;
+                  const dateHour = TimeUtils.extractChicagoDateHour(f.properties);
+                  if (!dateHour) return false;
+                  
+                  f._chicagoHour = dateHour.hour;
+                  return dateHour.date === date;
               });
 
               cachedDate = date;
@@ -4161,19 +3295,11 @@ if (TIME_SCALE === "monthly") {
           });
 
           let filteredFeatures = combinedFeatures.filter(f => {
-              let utcDate = new Date(f.properties.time + "Z");
-              let chicagoParts = chicagoDateFormatter.formatToParts(utcDate);
-              let y = chicagoParts.find(p => p.type === "year").value;
-              let m = chicagoParts.find(p => p.type === "month").value.padStart(2, '0');
-              let d = chicagoParts.find(p => p.type === "day").value.padStart(2, '0');
-              let chicagoDateStr = `${y}-${m}-${d}`;
-
-              f._chicagoHour = Number(
-                  chicagoHourFormatter.formatToParts(utcDate)
-                      .find(x => x.type === "hour").value
-              );
-
-              return chicagoDateStr === date;
+              const dateHour = TimeUtils.extractChicagoDateHour(f.properties);
+              if (!dateHour) return false;
+              
+              f._chicagoHour = dateHour.hour;
+              return dateHour.date === date;
           });
 
           cachedDate = date;
@@ -4552,8 +3678,6 @@ if (TIME_SCALE === "monthly") {
       // On page load we must read the checked radio for dataProduct and set displayMode accordingly
       // so that the JS state matches what the user sees in the sidebar.
      // Restore previously selected data product
-const urlProduct =
-    new URLSearchParams(window.location.search).get("product");
 
 const savedDataProduct =
     urlProduct ||
@@ -4778,39 +3902,28 @@ console.log("INITIAL PRODUCT STATE", {
      });
      document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;
 
-     // ── coords PANEL ───────────────────────────────────────────────────────────────
-     const coordsPanel = document.getElementById('coords-panel');
-     if (coordsPanel) {
-     map.on('mousemove', e => {
-         coordsPanel.innerHTML =
-         `<strong>Lat:</strong> ${e.latlng.lat.toFixed(6)}<br>
-             <strong>Lng:</strong> ${e.latlng.lng.toFixed(6)}<br>
-             <strong>Zoom:</strong> ${map.getZoom()}`;
-     });
-     }
-
-     // ── EXPLORE PANEL TOGGLE ────────────────────────────────────────────────────
-     const explorePanel = document.getElementById('explore-panel');
-     const explorePanelToggle = document.getElementById('explore-panel-toggle');
-     const explorePanelBody = document.getElementById('explore-panel-body');
-     if (explorePanelToggle && explorePanel) {
-     explorePanel.classList.add('retracted'); // start retracted
+     // EXPLORE PANEL TOGGLE
+     const helpPanel = document.getElementById('help-panel');
+     const helpPanelToggle = document.getElementById('help-panel-toggle');
+     const helpPanelBody = document.getElementById('help-panel-body');
+     if (helpPanelToggle && helpPanel) {
+     helpPanel.classList.add('retracted'); // start retracted
 
      // Also prevent the toggle button & body from propagating to map
-     if (explorePanelToggle) {
-         L.DomEvent.disableClickPropagation(explorePanelToggle);
-         L.DomEvent.disableScrollPropagation(explorePanelToggle);
+     if (helpPanelToggle) {
+         L.DomEvent.disableClickPropagation(helpPanelToggle);
+         L.DomEvent.disableScrollPropagation(helpPanelToggle);
      }
-     if (explorePanelBody) {
-         L.DomEvent.disableClickPropagation(explorePanelBody);
-         L.DomEvent.disableScrollPropagation(explorePanelBody);
+     if (helpPanelBody) {
+         L.DomEvent.disableClickPropagation(helpPanelBody);
+         L.DomEvent.disableScrollPropagation(helpPanelBody);
      }
 
-     explorePanelToggle.addEventListener('click', (e) => {
+     helpPanelToggle.addEventListener('click', (e) => {
          e.stopPropagation();
          e.preventDefault();
-         explorePanel.classList.toggle('retracted');
-         explorePanel.classList.toggle('expanded');
+         helpPanel.classList.toggle('retracted');
+         helpPanel.classList.toggle('expanded');
      });
      }
 
@@ -4850,10 +3963,9 @@ console.log("INITIAL PRODUCT STATE", {
          // Remove all data layers first
          map.removeLayer(tempoLayerGroup);
          map.removeLayer(openaqLayerGroup);
-         map.removeLayer(fusionLayerGroup);
+          map.removeLayer(fusionLayerGroup);
 
-
-         // Switch currentDataProduct and reload data
+          // Switch currentDataProduct and reload data
          if (currentDataProduct === "tempo") {
              displayMode = "sensor";  // TEMPO uses grid cells, not point sensors
 
@@ -4915,28 +4027,6 @@ console.log("INITIAL PRODUCT STATE", {
      
 
     // ── LAYER TOGGLES (legacy: for any remaining .layer-toggle checkboxes) ─────
-    document.querySelectorAll('.layer-toggle').forEach(checkbox => {
-    checkbox.addEventListener('change', e => {
-        const layer = e.target.dataset.layer;
-        const isChecked = e.target.checked;
-
-        const layerMap = {
-        tempo: tempoLayerGroup,
-        openaq: openaqLayerGroup,
-        fusion: fusionLayerGroup,
-        wind: windLayerGroup
-        };
-
-        if (layerMap[layer]) {
-            if (isChecked) {
-                layerMap[layer].addTo(map);
-            } else {
-                map.removeLayer(layerMap[layer]);
-            }
-            showToast(`${layer} layer ${isChecked ? 'enabled' : 'disabled'}`);
-        }
-    });
-    });
 
     // ── UPDATE LEGEND based on current data product ──────────────────────────────
      function updateLegend() {
@@ -5104,7 +4194,7 @@ function loadClarityDates() {
                     ...new Set(
                         loadedDates.map(d => d.substring(0, 7))
                     )
-                ];
+                ].filter(month => month !== "2026-06");
 
                 console.log("Monthly dates:", loadedDates);
             }
@@ -5132,12 +4222,12 @@ function loadClarityDates() {
                 dateSlider.value = 0;
             }
 
-            if (TIME_SCALE === "monthly") {
-                if (startDateInput) startDateInput.value = "";
-                if (endDateInput) endDateInput.value = "";
-            } else {
-                if (startDateInput) startDateInput.value = rangeStartDate;
-                if (endDateInput) endDateInput.value = rangeEndDate;
+            if (startDateInput) {
+                startDateInput.value = TIME_SCALE === "monthly" ? "" : rangeStartDate;
+            }
+
+            if (endDateInput) {
+                endDateInput.value = TIME_SCALE === "monthly" ? "" : rangeEndDate;
             }
 
             selectedHour = Number(
@@ -5223,7 +4313,7 @@ function loadFusionDates() {
     fetch("/data/fused/dates.json")
         .then(r => {
             if (!r.ok) {
-                throw new Error("Could not load /data/fused/fused_dates.json");
+                throw new Error("Could not load /data/fused/dates.json");
             }
             return r.json();
         })
@@ -5238,7 +4328,7 @@ function loadFusionDates() {
                 : (response.dates || []);
 
             if (!loadedDates || loadedDates.length === 0) {
-                console.warn("No Fusion dates found in fused_dates.json.");
+                console.warn("No Fusion dates found in dates.json.");
 
                 showToast(
                     "Fusion data product has no dates or data points available yet.",
@@ -5314,7 +4404,7 @@ function loadFusionDates() {
             }
 
             if (timeLabel && TIME_SCALE === "hourly") {
-                timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], selectedHour)}`;
+                timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
             } else if (timeLabel) {
                 timeLabel.innerHTML = "";
             }
@@ -5374,46 +4464,6 @@ function loadFusionDates() {
         });
 }
 
-     // Helper: load Clarity dates and return a promise with the dates array
-     function loadClarityDatesAndReturn() {
-         return fetch("/data/clarity/dates.json")
-             .then(r => r.json())
-             .then(response => {
-                 let loadedDates = Array.isArray(response) ? response : (response.dates || []);
-                 dates = loadedDates;
-                 rangeStartDate = dates[0];
-                 rangeEndDate = dates[dates.length - 1];
-                 rangeCurrentEndDate = rangeEndDate;
-
-                 var dateSlider = document.getElementById("dateSlider");
-                 var dateLabel = document.getElementById("dateLabel");
-                 var startDateInput = document.getElementById("startDate");
-                 var endDateInput = document.getElementById("endDate");
-
-                 if (startDateInput) startDateInput.value = rangeStartDate;
-                 if (endDateInput) endDateInput.value = rangeEndDate;
-
-                 dateSlider.max = dates.length - 1;
-                 dateSlider.value = 0;
-
-                 if (TIME_SCALE === "monthly") {
-                     if (dateLabel) dateLabel.innerHTML = formatMonthForDisplay(dates[0]);
-                 } else {
-                     if (dateLabel) dateLabel.innerHTML = utcDateToCentralPretty(dates[0]);
-                 }
-
-                 var timeLabel = document.getElementById("timeLabel");
-                 if (timeLabel) timeLabel.innerHTML = `Time: ${formatHourForDisplay(dates[0], 0)}`;
-
-                 loadDate(dates[0]);
-                 return dates;
-             })
-             .catch(err => {
-                 console.error("Fallback Clarity dates also failed:", err);
-                 return [];
-             });
-     }
-
     // ── TIME SLIDER (original sidebar slider) ────────────────────────────────────
     const origTimeSlider = document.getElementById('time-slider');
     const timeDisplay = document.getElementById('time-display');
@@ -5469,10 +4519,10 @@ function loadFusionDates() {
       L.DomEvent.disableScrollPropagation(bottomBar);
     }
 
-    const explore = document.getElementById('explore-panel');
-    if (explore) {
-      L.DomEvent.disableClickPropagation(explore);
-      L.DomEvent.disableScrollPropagation(explore);
+    const help = document.getElementById('help-panel');
+    if (help) {
+      L.DomEvent.disableClickPropagation(help);
+      L.DomEvent.disableScrollPropagation(help);
     }
   }, 0);
 
