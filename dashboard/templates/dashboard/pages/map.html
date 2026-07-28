@@ -1025,14 +1025,10 @@ function updateBottomControlVisibility() {
   let pendingPreferredHour = null;
   let invalidClarityHourlyDates = new Set();
 
-  // TEMPO-specific date arrays (hourly and daily can differ)
   let tempoHourlyDates = [];
   let tempoDailyDates = [];
-  let communityHourLookup = null;   // TEMPO community hourly lookup
-  let communityLayer = null;      // colored data layer
-
-  let fusionCommunityRows = null;
-  let fusionCommunityPromise = null;
+  let communityHourLookup = null;  
+  let communityLayer = null;     
   
   let cachedDate = null;
   let cachedFeatures = null;
@@ -1226,7 +1222,7 @@ function removeInvalidHourlyDate(date, reason) {
   }
 
 
-  // ── V4 HELPER FUNCTIONS ─────────────────────────────────────────────────────────────────────────────
+  // ── HELPER FUNCTIONS ─────────────────────────────────────────────────────────────────────────────
 
   function buildHourBuckets(features) {
       let buckets = {};
@@ -2375,11 +2371,14 @@ function parseSimpleCSV(text) {
     });
 }
 
+let fusioncommunityHourLookup = {};   // global lookup bucket
+let fusionCommunityRows = null;
+let fusionCommunityPromise = null;
+
 function loadFusionCommunityCSV() {
     if (fusionCommunityRows) {
         return Promise.resolve(fusionCommunityRows);
     }
-
     if (fusionCommunityPromise) {
         return fusionCommunityPromise;
     }
@@ -2402,37 +2401,34 @@ function loadFusionCommunityCSV() {
                     row.datetime_utc ||
                     "";
 
-                // Parse UTC once
-                const utc = TimeUtils.parseUTCString(timeString);
+                // Parse UTC → Chicago ONCE
+                const utcDate = TimeUtils.parseUTCString(timeString);
                 let chicagoDate = null;
                 let chicagoHour = null;
 
-                if (utc) {
-                    const parts = TimeUtils.getChicagoParts(utc);
+                if (utcDate) {
+                    const parts = TimeUtils.getChicagoParts(utcDate);
                     chicagoDate = `${parts.year}-${parts.month}-${parts.day}`;
                     chicagoHour = Number(parts.hour);
                 }
 
                 return {
-                    community_id: row.community_id,
+                    community_id: Number(row.community_id),
                     community: row.community,
 
-                    // Original UTC fields
                     time: row.time,
-                    date: row.date,
-                    hour: Number(row.hour), // UTC hour from CSV
+                    date: row.date,        // this is UTC date from CSV
+                    hour: Number(row.hour),// this is UTC hour from CSV
 
-                    // Chicago precomputed fields
-                    _utc: utc,
+                    _utc: utcDate,
                     _chicagoDate: chicagoDate,
                     _chicagoHour: chicagoHour,
 
-                    // values
                     no2_estimate_mean: Number(row.no2_estimate_mean),
                     no2_estimate_median: Number(row.no2_estimate_median),
                     no2_estimate_min: Number(row.no2_estimate_min),
                     no2_estimate_max: Number(row.no2_estimate_max),
-                    grid_cell_count: Number(row.grid_cell_count || 0),
+                    grid_cell_count: Number(row.grid_cell_count || 0)
                 };
             })
             .filter(r =>
@@ -2442,7 +2438,22 @@ function loadFusionCommunityCSV() {
                 !isNaN(r.no2_estimate_mean)
             );
 
-            console.log("Loaded Fusion community rows (with Chicago precompute):", fusionCommunityRows.length);
+            console.log("Loaded Fusion community rows:", fusionCommunityRows.length);
+
+            fusioncommunityHourLookup = {};
+
+            fusionCommunityRows.forEach(r => {
+                const d = r._chicagoDate;
+                const h = r._chicagoHour;
+
+                if (!fusioncommunityHourLookup[d]) {
+                    fusioncommunityHourLookup[d] = Array.from({ length: 24 }, () => []);
+                }
+
+                fusioncommunityHourLookup[d][h].push(r);
+            });
+
+            console.log("Built Fusion community lookup:", Object.keys(fusioncommunityHourLookup).length, "dates");
 
             return fusionCommunityRows;
         });
@@ -2567,62 +2578,51 @@ function renderFusionCommunityAreas(rows, labelText) {
 
 function loadFusionCommunities(date, existingLoad) {
     const load = existingLoad || startNewLoad("fusion");
-
-    if (!isActiveLoad(load)) {
-        return;
-    }
+    if (!isActiveLoad(load)) return;
 
     loadFusionCommunityCSV()
-        .then(rows => {
-            if (!isActiveLoad(load)) {
-                return;
-            }
+        .then(() => {
+            if (!isActiveLoad(load)) return;
 
             let filteredRows = [];
             let labelText = "";
 
             if (TIME_SCALE === "hourly") {
-                filteredRows = rows.filter(row =>
-                    row._chicagoDate === date &&
-                    row._chicagoHour === selectedHour
-                );
+                const bucket =
+                    fusioncommunityHourLookup[date] &&
+                    fusioncommunityHourLookup[date][selectedHour];
 
+                filteredRows = bucket || [];
                 labelText = `Time: ${formatHourForDisplay(date, selectedHour)}`;
             }
 
             else if (TIME_SCALE === "daily") {
-                filteredRows = rows.filter(row =>
-                    row._chicagoDate === date
-                );
-
+                const buckets = fusioncommunityHourLookup[date];
+                filteredRows = buckets ? buckets.flat() : [];
                 labelText = "Daily Average";
             }
 
             else if (TIME_SCALE === "monthly") {
-                const month = toMonthKey(date);
+                const monthKey = toMonthKey(date);
 
-                filteredRows = rows.filter(row =>
-                    row._chicagoDate.substring(0, 7) === month
-                );
+                const matchedDates = Object.keys(fusioncommunityHourLookup)
+                    .filter(d => d.startsWith(monthKey));
+
+                filteredRows = matchedDates
+                    .flatMap(d => fusioncommunityHourLookup[d].flat());
 
                 labelText = "Monthly Average";
             }
 
-            const rendered = renderFusionCommunityAreas(
-                filteredRows,
-                labelText
-            );
+            const rendered = renderFusionCommunityAreas(filteredRows, labelText);
 
             if (!rendered) {
                 showFusionNoDataMessage(date, labelText);
             }
         })
         .catch(err => {
-            if (!isActiveLoad(load)) {
-                return;
-            }
-
-            console.error("Could not load Fusion community CSV:", err);
+            if (!isActiveLoad(load)) return;
+            console.error("Fusion community load failed:", err);
             showFusionNoDataMessage(date, "Community Area");
         });
 }
@@ -3094,7 +3094,7 @@ function renderMonthlyTempoData(data, load) {
   // TEMPO Date Range – average grid cells across selected dates
   function loadTempoDateRange() {
       if (!timeInterval) {
-          showLoading(`Loading ${rangeStartDate} to ${rangeCurrentEndDate}`);
+          showLoading(`Loading ${utcDateToCentralPretty(rangeStartDate)} to ${utcDateToCentralPretty(rangeCurrentEndDate)}`);
       }
 
       let selectedDates = rangeDates.length > 0
@@ -3178,7 +3178,7 @@ function renderMonthlyTempoData(data, load) {
   // TEMPO Community Date Range
   function loadTempoCommunityDateRange() {
       if (!timeInterval) {
-          showLoading(`Loading ${rangeStartDate} to ${rangeCurrentEndDate}`);
+          showLoading(`Loading ${utcDateToCentralPretty(rangeStartDate)} to ${utcDateToCentralPretty(rangeCurrentEndDate)}`);
       }
 
       let selectedDates = rangeDates.length > 0
@@ -3352,7 +3352,7 @@ function renderMonthlyTempoData(data, load) {
 
   function loadDateRange() {
       if (!timeInterval) {
-          showLoading(`Loading ${rangeStartDate} to ${rangeCurrentEndDate}`);
+          showLoading(`Loading ${utcDateToCentralPretty(rangeStartDate)} to ${utcDateToCentralPretty(rangeCurrentEndDate)}`);
       }
 
       let selectedDates = dates.filter(d =>
@@ -3777,7 +3777,7 @@ function renderMonthlyTempoData(data, load) {
 
       let loadingText;
       if (TIME_SCALE === "monthly") {
-          loadingText = `Loading ${date.substring(0, 7)}`;
+          loadingText = `Loading ${formatMonthForDisplay(date)}`;
       } else if (TIME_SCALE === "daily") {
           loadingText = `Loading ${utcDateToCentralPretty(date)}`;
       } else {
@@ -4933,7 +4933,7 @@ function loadClarityDates() {
                     ...new Set(
                         loadedDates.map(d => d.substring(0, 7))
                     )
-                ];
+                ].filter(month => month !== "2026-06");
 
                 console.log("Monthly dates:", loadedDates);
             }
