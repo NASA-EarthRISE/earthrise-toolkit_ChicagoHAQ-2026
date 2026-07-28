@@ -208,8 +208,18 @@
   <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
   <!-- html2canvas for PNG export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <!-- Time Utilities Module -->
+  
+  <!-- Local Javascript for Pollution Map (in Dependant Order) -->
+  <!-- 1. Time Utilities Module -->
   <script src="{% static 'dashboard/js/map/time_utils.js' %}"></script>
+  <!-- 2. Map Initialization Module -->
+  <!--<script src="{% static 'dashboard/js/map/map_init.js' %}"></script>-->
+  <!-- 3. Data Loader Module -->
+  <!--<script src="{% static 'dashboard/js/map/data_loader.js' %}"></script>-->
+  <!-- 4. Map Layers Module -->
+  <!--<script src="{% static 'dashboard/js/map/map_layers.js' %}"></script>-->
+  <!-- 5. Map Controls  Module -->
+  <!--<script src="{% static 'dashboard/js/map/map_controls.js' %}"></script>-->
 
   <script>
 
@@ -223,7 +233,6 @@
         maxZoom: 19
     }),
     };
-
 
   // ── MAP INIT ───────────────────────────────────────────────────────────────
     var map = L.map('map', {
