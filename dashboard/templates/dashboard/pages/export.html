@@ -35,21 +35,21 @@
       <!-- Data Source Filter -->
       <h3>Data Source</h3>
       <div class="map-type-grid">
-        <button class="map-type-btn active" data-source="clarity" onclick="selectDataSource('clarity')">Open Air Chicago</button>
-        <button class="map-type-btn" data-source="tempo" onclick="selectDataSource('tempo')">TEMPO</button>
-        <button class="map-type-btn" data-source="fused" onclick="selectDataSource('fused')">Fused</button>
+        <button class="map-type-btn" data-source="tempo" onclick="selectDataSource('tempo')" aria-label="TEMPO Data" title="TEMPO Data">TEMPO</button>
+        <button class="map-type-btn active" data-source="clarity" onclick="selectDataSource('clarity')" aria-label="Open Air Chicago Data" title="Open Air Chicago Data">Open Air Chicago</button>
+        <button class="map-type-btn" data-source="fused" onclick="selectDataSource('fused')" aria-label="Fused Data" title="Fused Data">Fused</button>
       </div>
 
       <!-- Spatial Scale Filter -->
       <h3>Spatial/Temporal Scale</h3>
       <div class="form-group">
         <select id="data-file-type" onchange="loadDataFiles()">
-          <option value="">All types</option>
+          <option value="">All Types</option>
           <option value="daily">Hourly</option>
-          <option value="daily_community">Daily Community Average</option>
           <option value="daily_pixel">Daily Average</option>
-          <option value="monthly_community">Monthly Community Average</option>
+          <option value="daily_community">Daily Community Average</option>
           <option value="monthly_pixel">Monthly Average</option>
+          <option value="monthly_community">Monthly Community Average</option>
         </select>
       </div>
 
@@ -64,17 +64,17 @@
       <!-- Export Format -->
       <h3>Export Format</h3>
       <div class="map-type-grid">
-        <button class="map-type-btn active" data-format="geojson" onclick="selectExportFormat('geojson')">Original</button>
-        <button class="map-type-btn" data-format="csv" onclick="selectExportFormat('csv')">CSV</button>
+        <button class="map-type-btn active" data-format="geojson" onclick="selectExportFormat('geojson')" aria-label="Export Files in Original File Format" title="Export Files in Original File Format">Original</button>
+        <button class="map-type-btn" data-format="csv" onclick="selectExportFormat('csv')" aria-label="Export Files as CSV" title="Export Files as CSV">CSV</button>
       </div>
       <span class="hint">Note: To export .geojson or .json datafiles, select the "Original" option. To convert <strong>all selected files</strong> to .csv, select the "CSV" option.</span>
 
       <!-- Download Action Buttons -->
       <div class="export-actions">
-        <button class="btn-export btn-export-secondary" onclick="loadDataFiles()">
+        <button class="btn-export btn-export-secondary" onclick="loadDataFiles()" aria-label="Refresh Data Files List" title="Refresh Data Files List">
           &#8635; Refresh List
         </button>
-        <button class="btn-export btn-export-primary" onclick="exportSelectedFiles()" id="data-export-btn">
+        <button class="btn-export btn-export-primary" onclick="exportSelectedFiles()" id="data-export-btn" aria-label="Download Selected Files" title="Download Selected Files">
           &#10515; Download Selected
         </button>
       </div>
