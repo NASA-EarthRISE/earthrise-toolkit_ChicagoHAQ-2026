@@ -2389,29 +2389,60 @@ function loadFusionCommunityCSV() {
             if (!r.ok) {
                 throw new Error("Could not load /data/fused/fused_hourly_by_community.csv");
             }
-
             return r.text();
         })
         .then(text => {
-            fusionCommunityRows = parseSimpleCSV(text).map(row => ({
-                community_id: row.community_id,
-                community: row.community,
-                time: row.time,
-                date: row.date,
-                hour: Number(row.hour),
-                no2_estimate_mean: Number(row.no2_estimate_mean),
-                no2_estimate_median: Number(row.no2_estimate_median),
-                no2_estimate_min: Number(row.no2_estimate_min),
-                no2_estimate_max: Number(row.no2_estimate_max),
-                grid_cell_count: Number(row.grid_cell_count || 0),
-            })).filter(row =>
-                row.community &&
-                row.date &&
-                !isNaN(row.hour) &&
-                !isNaN(row.no2_estimate_mean)
+            const rawRows = parseSimpleCSV(text);
+
+            fusionCommunityRows = rawRows.map(row => {
+                const timeString =
+                    row.time ||
+                    row.datetime ||
+                    row.timestamp ||
+                    row.datetime_utc ||
+                    "";
+
+                // Parse UTC once
+                const utc = TimeUtils.parseUTCString(timeString);
+                let chicagoDate = null;
+                let chicagoHour = null;
+
+                if (utc) {
+                    const parts = TimeUtils.getChicagoParts(utc);
+                    chicagoDate = `${parts.year}-${parts.month}-${parts.day}`;
+                    chicagoHour = Number(parts.hour);
+                }
+
+                return {
+                    community_id: row.community_id,
+                    community: row.community,
+
+                    // Original UTC fields
+                    time: row.time,
+                    date: row.date,
+                    hour: Number(row.hour), // UTC hour from CSV
+
+                    // Chicago precomputed fields
+                    _utc: utc,
+                    _chicagoDate: chicagoDate,
+                    _chicagoHour: chicagoHour,
+
+                    // values
+                    no2_estimate_mean: Number(row.no2_estimate_mean),
+                    no2_estimate_median: Number(row.no2_estimate_median),
+                    no2_estimate_min: Number(row.no2_estimate_min),
+                    no2_estimate_max: Number(row.no2_estimate_max),
+                    grid_cell_count: Number(row.grid_cell_count || 0),
+                };
+            })
+            .filter(r =>
+                r.community &&
+                r._chicagoDate &&
+                !isNaN(r._chicagoHour) &&
+                !isNaN(r.no2_estimate_mean)
             );
 
-            console.log("Loaded Fusion community rows:", fusionCommunityRows.length);
+            console.log("Loaded Fusion community rows (with Chicago precompute):", fusionCommunityRows.length);
 
             return fusionCommunityRows;
         });
@@ -2552,8 +2583,8 @@ function loadFusionCommunities(date, existingLoad) {
 
             if (TIME_SCALE === "hourly") {
                 filteredRows = rows.filter(row =>
-                    row.date === date &&
-                    row.hour === selectedHour
+                    row._chicagoDate === date &&
+                    row._chicagoHour === selectedHour
                 );
 
                 labelText = `Time: ${formatHourForDisplay(date, selectedHour)}`;
@@ -2561,7 +2592,7 @@ function loadFusionCommunities(date, existingLoad) {
 
             else if (TIME_SCALE === "daily") {
                 filteredRows = rows.filter(row =>
-                    row.date === date
+                    row._chicagoDate === date
                 );
 
                 labelText = "Daily Average";
@@ -2571,8 +2602,7 @@ function loadFusionCommunities(date, existingLoad) {
                 const month = toMonthKey(date);
 
                 filteredRows = rows.filter(row =>
-                    row.date &&
-                    row.date.substring(0, 7) === month
+                    row._chicagoDate.substring(0, 7) === month
                 );
 
                 labelText = "Monthly Average";
