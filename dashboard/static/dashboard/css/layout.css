@@ -334,7 +334,7 @@ nav {
 .content-section ol ol li::marker,
 .content-section ul ol li::marker,
 .content-section ol ul li::marker {
-    color: var(--primary-light);
+    color: var(--primary-dark);
 }
 
 .content-section ul ul ul li::marker,

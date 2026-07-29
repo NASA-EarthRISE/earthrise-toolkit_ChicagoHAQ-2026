@@ -97,46 +97,67 @@
     To start visualizing data, use the left "Parameters" sidebar to choose an Observation Window, Data Product, and Spatial Scale and see the corresponding data appear on the map to the right. 
   </p>
   <p>
-    1. Choose <i>Hourly</i>, <i>Daily</i>, or <i>Monthly</i> as your Observation Window and then select a date or date range. 
-    <ol type="a"; style="padding-left: 36px;">
+    <ol type="1"; style="padding-left: 20px;">
       <li>
-        Hourly: Select one date to see how NO<sub>2</sub> changes on an hourly basis during that day. Keep in mind the general date and time ranges that are available for each product:
-        <ul style="padding-left: 72px;">
-          <li>TEMPO: September 4, 2025 — June 1, 2026 (Daylight Hours, approx. 7 AM CDT – 5 PM CDT)</li>
-          <li>Open Air Chicago: September 1, 2025 — June 1, 2026 (All 24 Hours)</li>
-          <li>Fused Dataset: September 4, 2025 — June 1, 2026 (Daylight Hours, approx. 6 AM CDT – 5 PM CDT)</li>
-        </ul>
+        Choose <i>Hourly</i>, <i>Daily</i>, or <i>Monthly</i> as your Observation Window and then select a date or date range. 
+        <ol type="a"; style="padding-left: 36px;">
+          <li>
+            Hourly: Select one date to see how NO<sub>2</sub> changes on an hourly basis during that day. Keep in mind the general date and time ranges that are available for each product:
+            <ul style="padding-left: 40px;">
+              <li>
+                TEMPO: September 4, 2025 — June 1, 2026 (Daylight Hours, approx. 7 AM CDT – 5 PM CDT)
+              </li>
+              <li>
+                Open Air Chicago: September 1, 2025 — June 1, 2026 (All 24 Hours)
+              </li>
+              <li>
+                Fused Dataset: September 4, 2025 — June 1, 2026 (Daylight Hours, approx. 6 AM CDT – 5 PM CDT)
+              </li>
+            </ul>
+          </li>
+          <li>
+            Daily: Select a date range to see how NO<sub>2</sub> changes on a daily basis during that time range. Keep in mind the general date ranges that are available for each product:
+            <ul style="padding-left: 40px;">
+              <li>
+                TEMPO: September 4, 2025 — June 1, 2026
+              </li>
+              <li>
+                Open Air Chicago: September 1, 2025 — June 1, 2026
+              </li>
+              <li>
+                Fused Dataset: September 4, 2025 — June 1, 2026
+              </li>
+             </ul>
+          </li>
+          <li>
+            Monthly: Select a month range to see how NO<sub>2</sub> changes on a monthly basis during that time range. Keep in mind the general date ranges that are available for each product:
+            <ul style="padding-left: 40px;">
+              <li>
+                TEMPO: September 2025 — May 2026
+              </li>
+              <li>
+                Open Air Chicago: September 2025 — May 2026
+              </li>
+              <li>
+                Fused Dataset: September 2025 — May 2026
+              </li>
+             </ul>
+          </li>
+        </ol>
       </li>
       <li>
-        Daily: Select a date range to see how NO<sub>2</sub> changes on a daily basis during that time range. Keep in mind the general date ranges that are available for each product:
-        <ul style="padding-left: 72px;">
-          <li>TEMPO: September 4, 2025 — June 1, 2026</li>
-          <li>Open Air Chicago: September 1, 2025 — June 1, 2026</li>
-          <li>Fused Dataset: September 4, 2025 — June 1, 2026</li>
-        </ul>
+        After choosing a valid Observation Window and Date Selection, choose the Data Product you want to visualize: TEMPO, Open Air Chicago, or Fused (TEMPO + Open Air Chicago).
       </li>
       <li>
-        Monthly: Select a month range to see how NO<sub>2</sub> changes on a monthly basis during that time range. Keep in mind the general date ranges that are available for each product:
-        <ul style="padding-left: 72px;">
-          <li>TEMPO: September 2025 — May 2026</li>
-          <li>Open Air Chicago: September 2025 — May 2026 </li>
-          <li>Fused Dataset: September 2025 — May 2026</li>
-        </ul>
+        Select the Spatial Scale you want to visualize the data on. TEMPO and the Fused data are available on an Individual Grid Cell (pixel) level and aggregated to Chicago's Community Areas. Open Air Chicago is available on an Individual Sensor level and aggregated to Chicago's Community Areas.
+      </li>
+      <li>
+        Click the "Load" button in the navy date selection box to load your data on the map. Click "Play" on the bottom of the map to see how NO<sub>2</sub> changes over time. Hover over or click on any individual sensor, pixel, or community area to see a pop-up with the location, time, number of measurements, and average NO<sub>2</sub> value. You may need to pause the playback to read the pop-ups.
       </li>
     </ol>
   </p>
   <p>
-    2. After choosing a valid Observation Window and Date Selection, choose the Data Product you want to visualize: TEMPO, Open Air Chicago, or Fused (TEMPO + Open Air Chicago).
-  </p>
-  <p>
-   3. Select the Spatial Scale you want to visualize the data on. TEMPO and the Fused data are available on an Individual Grid Cell (pixel) level and aggregated to Chicago's Community Areas. Open Air Chicago is available on an Individual Sensor level and aggregated to Chicago's Community Areas. 
-  </p>
-  <p>
-    4. Click the "Load" button in the navy date selection box to load your data on the map. Click "Play" on the bottom of the map to see how NO<sub>2</sub> changes over time.
-    Hover over or click on any individual sensor, pixel, or community area to see a pop-up with the location, time, number of measurements, and average NO<sub>2</sub> value. You may need to pause the playback to read the pop-ups. 
-  </p>
-  <p>
-    <br style="color: var(--primary)"> Data not displaying? Some data products are missing dates and pixels, which is normal and often a symptom of the data cleaning process. If a date has no data available for the selected data product, a warning symbol will pop up on the map to let you know that there is no data available for that specific date. If you are trying to visualize TEMPO or Fused data on the Hourly Map, use the time slider at the bottom of the map to change the Hour to daylight hours (typically 6 AM to 6 PM in spring and fall, and 7 AM to 5 PM in winter). 
+     Data not displaying? Some data products are missing dates and pixels, which is normal and often a symptom of the data cleaning process. If a date has no data available for the selected data product, a warning symbol will pop up on the map to let you know that there is no data available for that specific date (or hour if using the Hourly Map). 
   </p>
 </div>
 
@@ -147,17 +168,25 @@
     This page visualizes NO<sub>2</sub> statistics on a community level for each of the data products: TEMPO satellite measurements, Open Air Chicago ground sensors, and the fused data product. 
   </p>
   <p>
-    1. Select a community area from the dropdown on the left side of the page.
-    <ol type="a"; style="padding-left: 36px;">
-      <li>If you do not know the community area in which an address resides, click on the blue “Get Help” button below the map. This will take you to an external site created by the City of Chicago.</li>
-       <li>  Once you are on this site, click the search magnifying glass in the top left corner to search up an address and find the name of the associated community area.</li>
+    <ol type="1"; style="padding-left: 20px;">
+      <li>
+        Select a community area from the dropdown on the left side of the page.
+        <ol type="a"; style="padding-left: 36px;">
+          <li>
+            If you do not know the community area in which an address resides, click on the blue “Get Help” button below the map. This will take you to an external site created by the City of Chicago.
+          </li>
+          <li>
+            Once you are on this site, click the search magnifying glass in the top left corner to search up an address and find the name of the associated community area.
+          </li>
+        </ol>
+      </li>
+      <li>
+        After you have selected a community, graphs will appear on the right side of the page visualizing different statistics. By default, the selected statistics shown are based on the Ground Sensors (Open Air Chicago) for that community. Select the “TEMPO” or the “Fused” buttons to see data visualizations for a different data product.
+      </li>
+      <li>
+        If you would like to save a PDF of the community statistics page, click on the “Save as PDF” button in the top right corner of the page just below the navigation bar. You can also print to PDF by right clicking on the page and selecting "Print" or by pressing Ctrl + P (Windows) or Command + P (Mac).
+      </li>
     </ol>
-  </p>
-  <p>
-    2. After you have selected a community, graphs will appear on the right side of the page visualizing different statistics. By default, the selected statistics shown are based on the Ground Sensors (Open Air Chicago) for that community. Select the “TEMPO” or the “Fused” buttons to see data visualizations for a different data product.
-  </p>
-  <p>
-    3. If you would like to save a PDF of the community statistics page, click on the “Save as PDF” button in the top right corner of the page just below the navigation bar. You can also print to PDF by right clicking on the page and selecting "Print" or by pressing Ctrl + P (Windows) or Command + P (Mac).
   </p>
 </div>
 
@@ -168,34 +197,46 @@
     This page allows you to export the data files used in the dashboard. 
   </p>
   <p>
-    1. Under the Export Data Files left sidebar, first choose a Data Source, depending on whether you want to download TEMPO, Open Air Chicago, or Fused data.
-  </p>
-  <p>
-    2. Choose your preferred spatiotemporal scale:
-    <ul style="padding-left: 36px;">
-      <li>Hourly: Hourly concentrations of NO<sub>2</sub> </li>
-      <li>Daily Averages: Average daily NO<sub>2</sub> concentrations for each pixel (TEMPO and Fused data) or by sensor (Open Air Chicago) </li>
-      <li>Daily Community Average: Average daily NO<sub>2</sub> concentrations aggregated to Chicago's communities </li>
+    <ol type="1" style="padding-left: 20px;">
+      <li>
+        Under the Export Data Files left sidebar, first choose a Data Source, depending on whether you want to download TEMPO, Open Air Chicago, or Fused data.
       </li>
-      <li>Monthly Average: Average monthly NO<sub>2</sub> concentrations for each pixel (TEMPO and Fused data) or by sensor (Open Air Chicago) </li>
-      <li>Monthly Community Average: Average monthly NO<sub>2</sub> concentrations aggregated to Chicago's communities </li>
+      <li>
+        Choose your preferred spatiotemporal scale:
+        <ul style="padding-left: 36px;">
+          <li>
+            Hourly: Hourly concentrations of NO<sub>2</sub>
+          </li>
+          <li>
+            Daily Averages: Average daily NO<sub>2</sub> concentrations for each pixel (TEMPO and Fused data) or by sensor (Open Air Chicago)
+          </li>
+          <li>
+            Daily Community Average: Average daily NO<sub>2</sub> concentrations aggregated to Chicago's communities
+          </li>
+          <li>
+            Monthly Average: Average monthly NO<sub>2</sub> concentrations for each pixel (TEMPO and Fused data) or by sensor (Open Air Chicago)
+          </li>
+          <li>
+            Monthly Community Average: Average monthly NO<sub>2</sub> concentrations aggregated to Chicago's communities
+          </li>
+        </ul>
       </li>
-    </ul>
-  </p>
-  <p>
-    3. (Optional): Choose a date filter to filter the files to a certain month.
-  </p>
-  <p>
-    4. Choose the export format. Most files in their original format will export as a .geojson or .json if "Original" is selected as the export format. If you want to export <strong> all selected files </strong> as a .csv, click the “CSV” button for the export format.
-  </p>
-  <p>
-    5. On the right side of the page, you can click the “Select All” checkbox to select all data files for download or instead choose individual file names to download.
-  </p>
-  <p>
-    6. Click the "Download Selected” button in the left sidebar to download selected files. If all files have been downloaded successfully, there will be a confirmation under this button.
-  </p>
-  <p>
-    7. If there is trouble viewing newly added data files as a downloadable option, click the "Refresh List" to keep the list the file list up to date.
+      <li>
+        (Optional): Choose a date filter to filter the files to a certain month.
+      </li>
+      <li>
+        Choose the export format. Most files in their original format will export as a .geojson or .json if "Original" is selected as the export format. If you want to export selected files as a .csv, click the “CSV” button for the export format.
+      </li>
+      <li>
+        On the right side of the page, you can click the “Select All” checkbox to select all data files for download or instead choose individual file names to download.
+      </li>
+      <li>
+        Click the "Download Selected” button in the left sidebar to download selected files. If all files have been downloaded successfully, there will be a confirmation under this button.
+      </li>
+      <li>
+        If there is trouble viewing newly added data files as a downloadable option, click the "Refresh List" to keep the list the file list up to date.
+      </li>
+    </ol>
   </p>
 </div>
 
