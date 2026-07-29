@@ -1,11 +1,11 @@
 
-// Mobile menu toggle button
+// Mobile Arrow Toggle Button JS
 function MenuToggle(el) {
     el.classList.toggle('change');
     document.getElementById('nav-links').classList.toggle('open');
 }
 
-// Show mobile menu container on small screens
+// Show Mobile Arrow on Small Screens
 function checkMobileMenu() {
     const mobileMenu = document.getElementById('mobile-menu-container');
     if (window.innerWidth <= 992) {
@@ -15,6 +15,6 @@ function checkMobileMenu() {
     }
 }
 
-// Run on load and resize
+// Run on Window Load and Resize
 window.addEventListener('load', checkMobileMenu);
 window.addEventListener('resize', checkMobileMenu);
