@@ -7,100 +7,111 @@ EarthRISE Developers Academy in collaboration with NASA LaRC and community partn
 
 ## Table of Contents
 
-1. [This Project](#this-project)
-2. [Tech Stack](#tech-stack)
-3. [Prerequisites](#prerequisites)
-   - [1. Python 3.14](#1-python-312)
-   - [2. Git](#2-git)
-   - [3. A terminal](#3-a-terminal)
-   - [4. A code editor (recommended)](#4-a-code-editor-recommended)
-4. [Local Setup — Step by Step](#local-setup--step-by-step)
-   - [Step 1 — Clone the repository](#step-1--clone-the-repository)
-   - [Step 2 — Create a virtual environment](#step-2--create-a-virtual-environment)
-   - [Step 3 — Install dependencies](#step-3--install-dependencies)
-   - [Step 4 — Run database migrations](#step-4--run-database-migrations)
-   - [Step 5 — (Optional) Create a superuser](#step-5--optional-create-a-superuser)
-   - [Step 6 — Start the development server](#step-6--start-the-development-server)
-5. [Project Structure](#project-structure)
-6. [Running the Dashboard](#running-the-dashboard)
-   - [Start the server](#start-the-server)
-   - [Run on a different port](#run-on-a-different-port-if-8000-is-in-use)
-   - [Run accessible on local network](#run-accessible-to-other-devices-on-your-local-network)
-   - [Check for configuration errors](#check-for-configuration-errors-without-starting-the-server)
-   - [Create migrations after editing models](#create-new-migration-files-after-editing-models)
-7. [Available Routes](#available-routes)
-8. [Frontend JavaScript Architecture](#frontend-javascript-architecture)
-   - [time_utils.js](#time_utilsjs)
-   - [data_loader.js](#data_loaderjs)
-   - [map_init.js](#map_initjs)
-   - [map_layers.js](#map_layersjs)
-   - [map_controls.js](#map_controlsjs)
-   - [export.js](#exportjs)
-   - [home.js](#homejs)
-   - [community.js](#communityjs)
-   - [navbar.js](#navbarjs)
-9. [Data Models](#data-models)
-   - [LogMessage](#logmessage)
-   - [ActivityLog](#activitylog)
-   - [File-based activity log](#file-based-activity-log)
-10. [Database](#database)
-    - [Local development — SQLite](#local-development--sqlite)
-    - [Production — PostgreSQL](#production--postgresql)
-11. [Processing Raw Data](#processing-raw-data)
-    - [Available scripts](#available-scripts)
-    - [Data pipeline overview](#data-pipeline-overview)
-    - [Adding new processing scripts](#adding-new-processing-scripts)
-12. [Adding Data Files](#adding-data-files)
-    - [Directory structure](#directory-structure)
-    - [File naming conventions](#file-naming-conventions)
-    - [Clarity (Open Air) data files](#clarity-open-air-data-files)
-    - [TEMPO data files](#tempo-data-files)
-    - [Fused data files](#fused-data-files)
-    - [Community statistics files](#community-statistics-files)
-    - [Date index files (dates.json)](#date-index-files-datesjson)
-    - [Automatic file discovery](#automatic-file-discovery)
-13. [Setting Up a New API Endpoint](#setting-up-a-new-api-endpoint)
-    - [Step 1 — Write the view function](#step-1--write-the-view-function)
-    - [Step 2 — Register the URL pattern](#step-2--register-the-url-pattern)
-    - [Step 3 — Call from the frontend](#step-3--call-from-the-frontend)
-    - [Query parameter filtering](#query-parameter-filtering)
-    - [Complete example](#complete-example)
-14. [Adding a New Page](#adding-a-new-page)
-    - [Step 1 — Create the template](#step-1--create-the-template)
-    - [Step 2 — Add the view function](#step-2--add-the-view-function)
-    - [Step 3 — Register the URL](#step-3--register-the-url)
-    - [Step 4 — Add nav link](#step-4--add-nav-link)
-15. [Configuration & Environment Variables](#configuration--environment-variables)
-    - [Local development settings](#local-development-settings)
-    - [Production environment variables](#production-environment-variables)
-    - [Generating a secure secret key](#generating-a-secure-secret-key)
-16. [Common Errors and Fixes](#common-errors-and-fixes)
-    - [Virtual environment not active](#venv-is-not-showing-in-my-prompt)
-    - [ModuleNotFoundError](#modulenotfounderror-no-module-named-)
-    - [Port 8000 already in use](#port-8000-already-in-use)
-    - [TemplateDoesNotExist](#templatedoesnotexist)
-    - [Database table errors](#djangodbutilsoperationerror-no-such-table)
-    - [Data file 404 errors](#data-file-not-found-404-errors)
-    - [Dashboard webpage not updating after saved changes](#dashboard-webpage-not-updating-after-saved-changes)
-17. [Deploying to Production](#deploying-to-production)
-    - [Procfile and Gunicorn](#procfile-and-gunicorn)
-    - [runtime.txt](#runtimetxt)
-    - [Collecting static files](#collecting-static-files)
-    - [Deploying to Render](#deploying-to-render)
-18. [Git Workflow](#git-workflow)
-    - [How pushing to GitHub shares your changes](#how-pushing-to-github-shares-your-changes-with-other-developers)
-    - [First-time setup](#first-time-setup-on-a-new-machine)
-    - [Daily workflow](#daily-workflow)
-    - [Feature branches](#creating-a-feature-branch)
-19. [Extending the Project](#extending-the-project)
-20. [Support & Resources](#support--resources)
-    - [Contact](#contact)
-    - [Technical Paper](#technical-paper)
-    - [Dashboard Tutorial](#dashboard-tutorial)
+### Getting Started
+- [This Project](#this-project)
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+  - [1. Python 3.14](#1-python-312)
+  - [2. Git](#2-git)
+  - [3. A terminal](#3-a-terminal)
+  - [4. A code editor (recommended)](#4-a-code-editor-recommended)
+- [Local Setup — Step by Step](#local-setup--step-by-step)
+  - [Step 1 — Clone the repository](#step-1--clone-the-repository)
+  - [Step 2 — Create a virtual environment](#step-2--create-a-virtual-environment)
+  - [Step 3 — Install dependencies](#step-3--install-dependencies)
+  - [Step 4 — Run database migrations](#step-4--run-database-migrations)
+  - [Step 5 — (Optional) Create a superuser](#step-5--optional-create-a-superuser)
+  - [Step 6 — Start the development server](#step-6--start-the-development-server)
+
+### Project Architecture
+- [Project Structure](#project-structure)
+- [Running the Dashboard](#running-the-dashboard)
+  - [Start the server](#start-the-server)
+  - [Run on a different port](#run-on-a-different-port-if-8000-is-in-use)
+  - [Run accessible on local network](#run-accessible-to-other-devices-on-your-local-network)
+  - [Check for configuration errors](#check-for-configuration-errors-without-starting-the-server)
+  - [Create migrations after editing models](#create-new-migration-files-after-editing-models)
+- [Available Routes](#available-routes)
+- [Frontend JavaScript Architecture](#frontend-javascript-architecture)
+  - [time_utils.js](#time_utilsjs)
+  - [map_init.js](#map_initjs)
+  - [map_layers.js](#map_layersjs)
+  - [data_loader.js](#data_loaderjs)
+  - [map_controls.js](#map_controlsjs)
+  - [export.js](#exportjs)
+  - [home.js](#homejs)
+  - [community.js](#communityjs)
+  - [navbar.js](#navbarjs)
+
+### Data
+- [Data Models](#data-models)
+  - [LogMessage](#logmessage)
+  - [ActivityLog](#activitylog)
+  - [File-based activity log](#file-based-activity-log)
+- [Database](#database)
+  - [Local development — SQLite](#local-development--sqlite)
+  - [Production — PostgreSQL](#production--postgresql)
+- [Processing Raw Data](#processing-raw-data)
+  - [Available scripts](#available-scripts)
+  - [Data pipeline overview](#data-pipeline-overview)
+  - [Adding new processing scripts](#adding-new-processing-scripts)
+- [Adding Data Files](#adding-data-files)
+  - [Directory structure](#directory-structure)
+  - [File naming conventions](#file-naming-conventions)
+  - [Clarity (Open Air) data files](#clarity-open-air-data-files)
+  - [TEMPO data files](#tempo-data-files)
+  - [Fused data files](#fused-data-files)
+  - [Community statistics files](#community-statistics-files)
+  - [Date index files (dates.json)](#date-index-files-datesjson)
+  - [Automatic file discovery](#automatic-file-discovery)
+
+### Development Guide
+- [Setting Up a New API Endpoint](#setting-up-a-new-api-endpoint)
+  - [Step 1 — Write the view function](#step-1--write-the-view-function)
+  - [Step 2 — Register the URL pattern](#step-2--register-the-url-pattern)
+  - [Step 3 — Call from the frontend](#step-3--call-from-the-frontend)
+  - [Query parameter filtering](#query-parameter-filtering)
+  - [Complete example](#complete-example)
+- [Adding a New Page](#adding-a-new-page)
+  - [Step 1 — Create the template](#step-1--create-the-template)
+  - [Step 2 — Add the view function](#step-2--add-the-view-function)
+  - [Step 3 — Register the URL](#step-3--register-the-url)
+  - [Step 4 — Add nav link](#step-4--add-nav-link)
+- [Configuration & Environment Variables](#configuration--environment-variables)
+  - [Local development settings](#local-development-settings)
+  - [Production environment variables](#production-environment-variables)
+  - [Generating a secure secret key](#generating-a-secure-secret-key)
+- [Common Errors and Fixes](#common-errors-and-fixes)
+  - [Virtual environment not active](#venv-is-not-showing-in-my-prompt)
+  - [ModuleNotFoundError](#modulenotfounderror-no-module-named-)
+  - [Port 8000 already in use](#port-8000-already-in-use)
+  - [TemplateDoesNotExist](#templatedoesnotexist)
+  - [Database table errors](#djangodbutilsoperationerror-no-such-table)
+  - [Data file 404 errors](#data-file-not-found-404-errors)
+  - [Dashboard webpage not updating after saved changes](#dashboard-webpage-not-updating-after-saved-changes)
+
+### Deployment & Collaboration
+- [Deploying to Production](#deploying-to-production)
+  - [Procfile and Gunicorn](#procfile-and-gunicorn)
+  - [runtime.txt](#runtimetxt)
+  - [Collecting static files](#collecting-static-files)
+  - [Deploying to Render](#deploying-to-render)
+- [Making Changes with a Git Workflow](#making-changes-with-a-git-workflow)
+  - [How pushing to GitHub shares your changes](#how-pushing-to-github-shares-your-changes-with-other-developers)
+  - [First-time setup](#first-time-setup-on-a-new-machine)
+  - [Daily workflow](#daily-workflow)
+  - [Feature branches](#creating-a-feature-branch)
+
+### Other
+- [Extending the Project](#extending-the-project)
+- [Support & Resources](#support--resources)
+  - [Contact](#contact)
+  - [Technical Paper](#technical-paper)
+  - [Dashboard Tutorial](#dashboard-tutorial)
 
 ---
 
-![Regional Ozone Dashboard](../docs/regionalozone_dashboard.png)
+![Regional Ozone Dashboard](../docs/screenshots/regionalozone_dashboard.png)
 
 ---
 
@@ -117,7 +128,7 @@ The **Regional Ozone Precursor Dashboard** is an interactive web application tha
 - **Interactive map** with three time scales: hourly (with time-of-day slider), daily, and monthly.
 - **Playback controls** to animate data changes over time.
 - **Multiple display modes**: sensor-level pixels, community-area averages (colored Chicago community boundaries), and heatmaps.
-- **Community statistics page** with Plotly charts comparing ground vs. TEMPO NO₂ levels, percentile rankings, and time-series trends.
+- **Community statistics page** with Plotly charts comparing ground vs. TEMPO vs. Fused NO₂ levels, percentile rankings, and time-series trends.
 - **Data export tools** to download data files in GeoJSON, CSV, or PNG map screenshots.
 - **File-based activity logging** that tracks server starts, page refreshes, data exports, and map views.
 
@@ -152,9 +163,9 @@ The project is built with Django and uses a file-based data architecture — dat
 
 Complete every item here before touching any project code. This is a true cold-start list for a machine that has nothing installed.
 
-### 1. Python 3.12
+### 1. Python 3.14
 
-This project requires **Python 3.12** (specified in `runtime.txt`).
+This project requires **Python 3.14** (specified in `runtime.txt`).
 
 Check if you have it:
 ```bash
@@ -163,12 +174,12 @@ python --version
 python3 --version
 ```
 
-If you don't have Python 3.12, download it from https://www.python.org/downloads/ and install it. Make sure to check **"Add Python to PATH"** during the Windows installer.
+If you don't have Python 3.14, download it from https://www.python.org/downloads/ and install it. Make sure to check **"Add Python to PATH"** during the Windows installer.
 
 After installing, confirm it works:
 ```bash
 python --version
-# Expected: Python 3.12.x
+# Expected: Python 3.14.x
 ```
 
 ### 2. Git
@@ -193,7 +204,7 @@ If not, download from https://git-scm.com/downloads and install with default set
 
 ## Local Setup — Step by Step
 
-Follow these steps in order. Do not skip steps.
+Follow these steps in order. Do not skip steps. Type and 'Enter' each line one-by-one.
 
 ### Step 1 — Clone the repository
 
@@ -334,7 +345,12 @@ develop-AQ_LaRC_2026/
 │   │           └── userguide.html    # Dashboard tutorial
 │   ├── static/
 │   │   └── dashboard/
-│   │       ├── css/            # Site-wide styles (site.css)
+│   │       ├── css/            # Stylesheet files (one per page/feature)
+│   │       │   ├── layout.css      # Base layout: nav, footer, body, toast
+│   │       │   ├── map.css         # Map page: container, overlays, legends
+│   │       │   ├── map_sidebar.css # Map sidebar: controls, sliders, playback
+│   │       │   ├── community.css   # Community statistics page
+│   │       │   └── export.css      # Data export page
 │   │       ├── images/         # Logos, gradients, team photos, compass SVG
 │   │       ├── js/             # Application JavaScript
 │   │       │   ├── navbar.js
@@ -342,11 +358,11 @@ develop-AQ_LaRC_2026/
 │   │       │   ├── home.js
 │   │       │   ├── community.js
 │   │       │   └── map/        # Map-related JS modules
-│   │       │       ├── data_loader.js
-│   │       │       ├── map_init.js
-│   │       │       ├── map_layers.js
-│   │       │       ├── map_controls.js
-│   │       │       └── time_utils.js
+│   │       │       ├── time_utils.js     # Shared time/date conversion utilities
+│   │       │       ├── map_init.js       # Map configuration, global state, initialization
+│   │       │       ├── map_layers.js     # Color scales, layer rendering, legends
+│   │       │       ├── data_loader.js    # Data fetching, date loading, caching
+│   │       │       └── map_controls.js   # UI controls, events, notices, initialization
 │   │       └── layers/         # Chicago boundary GeoJSON files
 │   │           ├── Chicago.geojson
 │   │           ├── ChicagoCommunityAreas.geojson
@@ -435,69 +451,87 @@ The dashboard's frontend is split into modular JavaScript files under `dashboard
 
 ### time_utils.js
 
-**Purpose:** Shared time/date conversion utilities extracted from `map.html` into a reusable module.
+**Purpose:** Shared time/date conversion and formatting utilities, exported as a `TimeUtils` namespace (IIFE module). Loaded first in the map JS chain.
+
+**Load order:** `time_utils.js` → `map_init.js` → `map_layers.js` → `data_loader.js` → `map_controls.js`
 
 Key responsibilities:
-- Exports a `TimeUtils` namespace with time-related helper functions
-- `isMonthlyDate()` — checks if a string matches the `YYYY-MM` month key format
-- `extractChicagoDateHour()` — parses a feature's `time` property and returns Chicago date (`YYYY-MM-DD`) and hour (0–23) using `Intl.DateTimeFormat`
-- `formatCentralTime()` — formats a UTC timestamp string to a readable Central Time string
-- `formatHourForDisplay()` — converts a slider hour (0–23) and date to a human-readable label (e.g., "2 PM CDT"), with DST gap handling
-- `formatMonthForDisplay()` — converts a `YYYY-MM` key to a localized month name (e.g., "September 2025")
-- `formatDateForDisplay()` — converts a `YYYY-MM-DD` key to a localized date string (e.g., "September 1, 2025")
-- `getChicagoParts()` — returns an object with year, month, day, hour, and timeZoneName for a given Date in Chicago time
+- `parseUTCString()` — parses UTC date strings (with or without timezone indicator) into JavaScript `Date` objects
+- `getChicagoParts()` — returns an object with year, month, day, hour, and timeZoneName for a given Date in Chicago time using `Intl.DateTimeFormat`
+- `getChicagoDateString()` — extracts a Chicago `YYYY-MM-DD` string from a UTC string
+- `formatCentralTime()` — formats a UTC timestamp to a readable Central Time string (e.g., "09:30:45 CDT")
+- `formatCentralDate()` — formats a UTC string to a human-readable Chicago date (e.g., "Sep 15, 2025")
+- `isDailyDate()` / `isMonthlyDate()` — regex checks for `YYYY-MM-DD` and `YYYY-MM` formats
 - `toMonthKey()` / `toDailyKey()` — normalize date strings to month or daily keys
-
-### data_loader.js
-
-**Purpose:** Fetches pollution data from the backend API and handles community-area rendering.
-
-Key responsibilities:
-- Loads date index files (`dates.json`) for each data source
-- Fetches GeoJSON data files via `fetch()` from `/data/{source}/{filename}`
-- Filters features by hour for hourly display mode
-- Computes average NO₂ per Chicago community area using Turf.js point-in-polygon
-- Renders daily and monthly community GeoJSON files
+- `formatMonthForDisplay()` — converts a `YYYY-MM` key to a localized month name (e.g., "September 2025")
+- `formatDailyForDisplay()` — converts a `YYYY-MM-DD` key to a localized date string (e.g., "September 1, 2025")
+- `formatDateForDisplay()` — universal formatter that dispatches to monthly or daily based on input
+- `formatHourForDisplay()` — converts a slider hour (0–23) and date to a human-readable label (e.g., "2 PM CDT"), with DST gap handling
+- `getPreviousDay()` — returns the day before a given `YYYY-MM-DD` string
+- `extractChicagoDateHour()` — parses a feature's `time` property and returns `{ date, hour }` in Chicago timezone
 
 ### map_init.js
 
-**Purpose:** Initializes the Leaflet map and configures basemap layers.
+**Purpose:** Map configuration, global state, backward-compatibility wrappers, and initialization. Second in the load chain.
 
 Key responsibilities:
-- Creates the `L.map()` instance centered on Chicago `[41.8, -87.629]`
-- Configures tile layers (Esri World Topo Map)
-- Adds the home/reset button control (SVG house icon)
-- Sets up coordinate and zoom display in the bottom bar
+- Creates the `L.map()` instance centered on Chicago `[41.8, -87.629]` with Esri basemap tiles
+- Adds the home/reset button control (inline SVG house icon)
+- Defines backward-compatibility wrapper functions (`formatCentralTime`, `formatHourForDisplay`, `formatMonthForDisplay`, etc.) that delegate to `TimeUtils`
+- Sets global state variables: color scale constants (`CLARITY_GLOBAL_MAX/MIN`, `TEMPO_GLOBAL_MAX/MIN`, `FUSION_GLOBAL_MAX/MIN`), `selectedHour`, `displayMode`, `currentDataProduct`, `dates`, `allDates`, caching vars, layer groups
+- `normalizeDataProduct()` — maps user-facing product names ("openaq", "openair") to internal keys ("clarity")
+- `startNewLoad()` / `isActiveLoad()` — load token system to prevent stale async renders
+- `canRenderTempo()` — guard to block TEMPO renders when product has switched
+- `clearDataLayers()` — removes all data layers, community layers, and heat layers from the map
+- `updateBottomControlVisibility()` — shows/hides hour controls based on `TIME_SCALE`
 
 ### map_layers.js
 
-**Purpose:** Manages data layers, color scales, and layer switching.
+**Purpose:** Color scales, feature rendering, community area drawing, and legend updates. Third in the load chain.
 
 Key responsibilities:
 - Defines color scales for each data source:
-  - Clarity: linear 0–50 ppb (blue → green → yellow → red)
-  - TEMPO: sqrt-based 1e9–5e16 molecules/cm²
-  - Fused: linear 0–50 ppb (same scale as Clarity)
-- Creates point layers with colored circles sized by concentration
-- Manages layer groups (`markerGroup`, `tempoLayerGroup`, `openaqLayerGroup`, `fusionLayerGroup`)
-- Handles heatmap layer creation with Leaflet Heat
-- Clears and switches between data layers
+  - Clarity: linear 0–50 ppb (`getColorClarity`)
+  - TEMPO: sqrt-based 1e9–5e16 molecules/cm² (`getColorTempo`)
+  - Unified `getColor()` delegates to the correct scale based on `currentDataProduct`
+- Clarity rendering: `renderFeatures()` — groups sensor readings by name, creates circle markers sized by average NO₂
+- Community area rendering: `drawCommunityAreas()` — computes per-community averages using Turf.js point-in-polygon
+- TEMPO rendering: `renderTempoFeatures()` (hourly grid cells), `renderDailyTempoData()`, `renderMonthlyTempoData()`
+- TEMPO community areas: `drawTempoCommunityAreas()`
+- Fusion rendering: `renderFusionFeatures()` (grid cells), `renderFusionCommunityAreas()` (weighted community averages)
+- `getFusionValue()` — extracts `no2_estimate` from fusion feature properties
+- Legend: `updateLegend()` — updates legend title and numbers based on active data product
+- `updateIndividualModeLabel()` — changes "Individual Sensor" / "Individual Pixel" / "Individual Grid Cell" label text
+
+### data_loader.js
+
+**Purpose:** Data fetching, date loading, caching, and prefetching. Fourth in the load chain.
+
+Key responsibilities:
+- CSV parsing and community helpers: `parseSimpleCSV()`, `normalizeCommunityName()`, `getCommunityFeatureName()`
+- Fusion community CSV loader: `loadFusionCommunityCSV()` — loads and caches `/data/fused/fused_hourly_by_community.csv`
+- Hour bucket builders and prefetching: `buildHourBuckets()`, `prefetchNextDay()`, `prefetchTempoNextDay()`
+- Fusion data loaders: `loadFusionHourly()`, `loadFusionDaily()`, `loadFusionMonthly()`, `loadFusionCommunities()`
+- Clarity data loaders: `loadDailySensors()`, `loadMonthlySensors()`, `loadDailyCommunities()`, `loadMonthlyCommunities()`, `loadDateRange()`, `renderCommunityRange()`
+- TEMPO data loaders: `loadDailyTempo()`, `loadMonthlyTempo()`, `loadTempoDailyCommunities()`, `loadTempoMonthlyCommunities()`, `loadTempoDateRange()`, `loadTempoCommunityDateRange()`
+- Invalid date handling: `removeInvalidHourlyDate()` — removes dates with no valid hourly data from the slider
+- Fusion no-data messages: `showFusionNoDataMessage()`
+- Unified router: `loadDate()` — dispatches to the correct loader based on product, time scale, and display mode
 
 ### map_controls.js
 
-**Purpose:** Sidebar parameter controls, time sliders, and playback.
+**Purpose:** UI controls, event bindings, notices, playback, and page initialization. Fifth (last) in the load chain.
 
 Key responsibilities:
-- Sidebar toggle (expand/retract "Parameters" panel)
-- Date slider with play/pause animation
-- Hour slider (hourly mode only)
-- Data product selector (Clarity / TEMPO / Fused)
-- Display mode selector (sensor pixels / community areas / heatmap)
-- Explode panel ("?" button with map tips)
-- Scalebar rendering
-- Legend overlay
-- Loading spinner and no-data/warning notices
-- PNG export via html2canvas
+- Loading and notice UI: `showLoading()`, `hideLoading()`, `showNoDataNotice()`, `hideNoDataNotice()`, `showMapWarningNotice()`, `hideMapWarningNotice()`
+- Toast notifications: `showToast()` — displays temporary messages on the map
+- PNG export: `exportMapAsPNG()` — captures map container as PNG via html2canvas
+- Scalebar: `updateScaleBar()` — draws dynamic scalebar ruler with proper units (ft/mi) based on zoom level
+- Playback: `resetPlaybackUI()` — resets play/pause button states
+- Map navigation: `refreshMap()`, `updateDateAndTimeLabels()`, `selectMapType()`, `handleMapTypeClick()`
+- Aggregation changes: `changeAggregation()` — switches TIME_SCALE, updates UI, reloads dates
+- Date/hour preference capture: `captureCurrentDateHourPreference()`, `findBestDateIndex()`, `applyPreferredDateAndHourAfterDateLoad()`
+- Page init (inside `setTimeout`): binds all event listeners for sliders, play/pause, data product radios, display mode radios, sidebar toggle, help panel, region dropdown, load buttons, and coordinate/zoom display
 
 ### export.js
 
@@ -587,7 +621,7 @@ This provides a lightweight, no-database alternative for tracking:
 - Data exports
 - Notification events
 
-The log keeps the most recent 50 entries. The "Recent Notifications" section on the home page shows the 5 most recent user-facing notifications.
+The log keeps the most recent 50 entries.
 
 ---
 
@@ -758,33 +792,102 @@ The `_scan_data_files()` function in `views.py` classifies files by their filena
 
 Place Open Air Chicago sensor GeoJSON files in `dashboard/data/clarity/`. The frontend fetches these from `/data/clarity/<filename>`.
 
+**Clarity data file naming conventions:**
+
+| File Type | Naming Pattern | Example |
+|---|---|---|
+| Hourly GeoJSON | `YYYY-MM-DD.geojson` | `2025-09-01.geojson` |
+| Daily sensor GeoJSON | `daily_sensor_YYYY-MM-DD.geojson` | `daily_sensor_2025-09-01.geojson` |
+| Daily community GeoJSON | `daily_community_YYYY-MM-DD.geojson` | `daily_community_2025-09-01.geojson` |
+| Monthly sensor GeoJSON | `monthly_sensor_YYYY-MM.geojson` | `monthly_sensor_2025-09.geojson` |
+| Monthly community GeoJSON | `monthly_community_YYYY-MM.geojson` | `monthly_community_2025-09.geojson` |
+
 **To add a new daily sensor file:**
-1. Save your GeoJSON as `daily_sensor_YYYY-MM-DD.geojson`
+1. Save your GeoJSON as `daily_sensor_YYYY-MM-DD.geojson` (e.g., `daily_sensor_2025-09-15.geojson`)
 2. Place it in `dashboard/data/clarity/`
 3. Add the date to `dashboard/data/clarity/dates.json`
 4. Restart the server — the file will be automatically available
-5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/clarity/daily_sensor_YYYY-MM-DD.geojson` to confirm the file is served correctly. If you see a 404 error or the file is not found, see the [Data file not found (404 errors)](#data-file-not-found-404-errors) section below.
+5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/clarity/daily_sensor_2025-09-15.geojson` to confirm the file is served correctly. If you see a 404 error or the file is not found, see the [Data file not found (404 errors)](#data-file-not-found-404-errors) section below.
+
+**To add a new daily community file:**
+1. Save your GeoJSON as `daily_community_YYYY-MM-DD.geojson` (e.g., `daily_community_2025-09-15.geojson`)
+2. Place it in `dashboard/data/clarity/`
+3. Add the date to `dashboard/data/clarity/dates.json`
+4. Restart the server
+5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/clarity/daily_community_2025-09-15.geojson` to confirm the file is served correctly.
+
+**To add a new monthly file:**
+1. Save your GeoJSON as `monthly_sensor_YYYY-MM.geojson` or `monthly_community_YYYY-MM.geojson` (e.g., `monthly_sensor_2025-09.geojson`)
+2. Place it in `dashboard/data/clarity/`
+3. Restart the server
+4. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/clarity/monthly_sensor_2025-09.geojson` to confirm the file is served correctly.
 
 ### TEMPO data files
 
 Place TEMPO satellite GeoJSON files in `dashboard/data/tempo/`. The frontend fetches these from `/data/tempo/<filename>`.
 
+**TEMPO data file naming conventions:**
+
+| File Type | Naming Pattern | Example |
+|---|---|---|
+| Hourly GeoJSON | `YYYY-MM-DD.geojson` | `2025-09-01.geojson` |
+| Daily GeoJSON | `day_YYYY-MM-DD.geojson` | `day_2025-09-01.geojson` |
+| Daily community GeoJSON | `day_community_YYYY-MM-DD.geojson` | `day_community_2025-09-01.geojson` |
+| Monthly GeoJSON | `month_YYYY-MM.geojson` | `month_2025-09.geojson` |
+
 **To add a new daily TEMPO file:**
-1. Save your GeoJSON as `day_YYYY-MM-DD.geojson`
+1. Save your GeoJSON as `day_YYYY-MM-DD.geojson` (e.g., `day_2025-09-15.geojson`)
+2. Place it in `dashboard/data/tempo/`
+3. Add the date to the appropriate TEMPO dates index file (`TEMPOdates.json` or `TEMPOdaily_dates.json`)
+4. Restart the server
+5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/tempo/day_2025-09-15.geojson` to confirm the file is served correctly. If you see a 404 error or the file is not found, see the [Data file not found (404 errors)](#data-file-not-found-404-errors) section below.
+
+**To add a new daily community TEMPO file:**
+1. Save your GeoJSON as `day_community_YYYY-MM-DD.geojson` (e.g., `day_community_2025-09-15.geojson`)
 2. Place it in `dashboard/data/tempo/`
 3. Add the date to the appropriate TEMPO dates index file
 4. Restart the server
-5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/tempo/day_YYYY-MM-DD.geojson` to confirm the file is served correctly. If you see a 404 error or the file is not found, see the [Data file not found (404 errors)](#data-file-not-found-404-errors) section below.
+5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/tempo/day_community_2025-09-15.geojson` to confirm the file is served correctly.
+
+**To add a new monthly TEMPO file:**
+1. Save your GeoJSON as `month_YYYY-MM.geojson` (e.g., `month_2025-09.geojson`)
+2. Place it in `dashboard/data/tempo/`
+3. Restart the server
+4. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/tempo/month_2025-09.geojson` to confirm the file is served correctly.
 
 ### Fused data files
 
-Place fused (combined) GeoJSON files in `dashboard/data/fused/`. The frontend fetches these from `/data/fused/<filename>`.
+Place fused (TEMPO + ground sensor) GeoJSON files in `dashboard/data/fused/`. The frontend fetches these from `/data/fused/<filename>`.
 
-**To add a new fused file:**
-1. Save your GeoJSON with the appropriate naming convention in `dashboard/data/fused/`
-2. Update the corresponding `dates.json` index file
-3. Restart the server
-4. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/fused/<filename>` to confirm the file is served correctly. If you see a 404 error or the file is not found, see the [Data file not found (404 errors)](#data-file-not-found-404-errors) section below.
+**Fused data file naming conventions:**
+
+| File Type | Naming Pattern | Example |
+|---|---|---|
+| Hourly GeoJSON | `YYYY-MM-DD.geojson` | `2025-09-01.geojson` |
+| Daily GeoJSON | `day_YYYY-MM-DD.geojson` | `day_2025-09-01.geojson` |
+| Monthly GeoJSON | `month_YYYY-MM.geojson` | `month_2025-09.geojson` |
+| Community CSV | `fused_hourly_by_community.csv` | (single file, updated in place) |
+
+**To add a new fused hourly file:**
+1. Save your GeoJSON as `YYYY-MM-DD.geojson` (e.g., `2025-09-15.geojson`)
+2. Place it in `dashboard/data/fused/`
+3. Add the date to `dashboard/data/fused/dates.json`
+4. Restart the server — the file will be automatically available
+5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/fused/2025-09-15.geojson` to confirm the file is served correctly. If you see a 404 error or the file is not found, see the [Data file not found (404 errors)](#data-file-not-found-404-errors) section below.
+
+**To add a new fused daily file:**
+1. Save your GeoJSON as `day_YYYY-MM-DD.geojson` (e.g., `day_2025-09-15.geojson`)
+2. Place it in `dashboard/data/fused/`
+3. Update the corresponding `dates.json` index file
+4. Restart the server
+5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/fused/day_2025-09-15.geojson` to confirm the file is served correctly.
+
+**To add a new fused monthly file:**
+1. Save your GeoJSON as `month_YYYY-MM.geojson` (e.g., `month_2025-09.geojson`)
+2. Place it in `dashboard/data/fused/`
+3. Update the corresponding `dates.json` index file
+4. Restart the server
+5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/fused/month_2025-09.geojson` to confirm the file is served correctly.
 
 ### Community statistics files
 
@@ -916,7 +1019,7 @@ def filtered_data_api(request):
 
 ### Complete example
 
-Here's a complete, real-world example that serves sensor readings from a GeoJSON file, with optional filtering by community name:
+Here is a complete example that serves sensor readings from a GeoJSON file, with optional filtering by community name:
 
 **`dashboard/views.py`:**
 ```python
@@ -1062,7 +1165,7 @@ After adding the route, test it by navigating to `http://127.0.0.1:8000/my-page/
 
 ### Step 4 — Add nav link
 
-So users can discover your new page, add a link to the navigation bar. Open `dashboard/templates/dashboard/includes/navbar.html` and add a new `<a>` tag among the existing nav links:
+So users can discover your new page, add a link to the top navigation bar. Open `dashboard/templates/dashboard/includes/navbar.html` and add a new `<a>` tag among the existing nav links:
 
 ```html
 <a href="{% url 'my_page' %}" class="nav-link">My Page</a>
@@ -1115,7 +1218,7 @@ python -c "from django.core.management.utils import get_random_secret_key; print
 
 ### `(venv)` is not showing in my prompt
 
-Your virtual environment is not active. Run the activate command for your OS (see Step 2 in Local Setup). You need to do this every time you open a new terminal window.
+Your virtual environment is not active. Run the activate command for your OS (see [Step 2 — Create a virtual environment](#step-2--create-a-virtual-environment)). You need to do this every time you open a new terminal window.
 
 ### `ModuleNotFoundError: No module named '...'`
 
@@ -1238,7 +1341,7 @@ Your app will be live at: `https://your-app-name.onrender.com`
 
 ---
 
-## Git Workflow
+## Making Changes with a Git Workflow
 
 Git is the version control system used by this project to **track every change made to the codebase**. It serves two critical purposes:
 
@@ -1329,9 +1432,9 @@ Install `djangorestframework` for a complete REST API with serializers, authenti
 For any questions about the framework, codebase, data pipeline, or dashboard functionality, please reach out to:
 
 **Team Contact:** Caitlyn McClanahan
-**Email:** [INSERT EMAIL ADDRESS]
+**Email:** mcclan.caitlyn@gmail.com
 **Project Coordinator:** Kristina Glass
-**Email:** [INSERT EMAIL ADDRESS]
+**Email:** kristina.glass@ama-inc.com
 
 ### Technical Paper
 
