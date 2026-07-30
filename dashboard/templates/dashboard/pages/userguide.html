@@ -58,7 +58,7 @@
   <p>
     <strong>Status Cards:</strong> 
     <ul style="padding-left: 36px;">
-      <li> The "Data Load Status" status card tracks the availablity of all three data sources (TEMPO, Open Air Chicago, and Fused) within the server. If this message displays "Complete," all three data products have been properly loaded and sourced within the server. If this message displays "Incomplete," one or more data sources is missing or not found by the server. If this message displays "Failed," no data sources have been found within the server. To remedy data loading issues, refer to the Chicago_HAQ_ReadME file found in the source Github. </li>
+      <li> The "Data Load Status" status card tracks the availablity of all three data sources (TEMPO, Open Air Chicago, and Ground Surface Estimate) within the server. If this message displays "Complete," all three data products have been properly loaded and sourced within the server. If this message displays "Incomplete," one or more data sources is missing or not found by the server. If this message displays "Failed," no data sources have been found within the server. To remedy data loading issues, refer to the Chicago_HAQ_ReadME file found in the source Github. </li>
       <li> The "Ground Sensor Network" status card displays a static value of the number of active sensors in the Open Air Chicago network. </li>
       <li> The "Last Server Update" status card tracks the last time the server source code was re-run or re-loaded. This card indicates when the last update or change was made to the dashboard UI. </li>
     </ul>
@@ -82,7 +82,7 @@
       <li> Dashboard Reloaded: the last time the dashboard webpage was reloaded</li>
       <li> TEMPO Data: the number of available TEMPO data files within the server. If the disclaimer displays "No files loaded," there were no data entries found for TEMPO.</li>
       <li>Open Air Chicago Data: the number of available Open Air Chicago data files within the server. If the disclaimer displays "No files loaded," there were no data entries found for Open Air Chicago.</li>
-      <li> Fused Data: the number of available Fused data files within the server. If the disclaimer displays "No files loaded," there were no data entries found for the Fused data product.</li>
+      <li> Ground Surface Estimate Data: the number of available ground surface estimate data files within the server. If the disclaimer displays "No files loaded," there were no data entries found for the surface estimate data product.</li>
     </ul>
   </p>
 </div>
@@ -91,7 +91,7 @@
 <div class="content-section" id="pollution-map">
   <h2>Pollution Map</h2>
   <p>
-    The Pollution Map homepage visualizes NO<sub>2</sub> for each of the data products: TEMPO satellite measurements, Open Air Chicago ground sensors, and the Fused data product. Use the <b>+</b> and <b>-</b> symbols in the top left to zoom in and out of the map. Click the <svg width="20" height = "20" fill = "none" stroke = "#333" stroke-width = "1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12L5 10M19 10L21 12M12 2L4 10V20H9V15H15V20H20V10L12 2Z"></svg> button to reset the zoom to center Chicago.
+    The Pollution Map homepage visualizes NO<sub>2</sub> for each of the data products: TEMPO satellite measurements, Open Air Chicago ground sensors, and the Ground Surface Estimate data product. Use the <b>+</b> and <b>-</b> symbols in the top left to zoom in and out of the map. Click the <svg width="20" height = "20" fill = "none" stroke = "#333" stroke-width = "1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12L5 10M19 10L21 12M12 2L4 10V20H9V15H15V20H20V10L12 2Z"></svg> button to reset the zoom to center Chicago.
   </p>
   <p>
     To start visualizing data, use the left "Parameters" sidebar to choose an Observation Window, Data Product, and Spatial Scale and see the corresponding data appear on the map to the right. 
@@ -111,7 +111,7 @@
                 Open Air Chicago: September 1, 2025 — June 1, 2026 (All 24 Hours)
               </li>
               <li>
-                Fused Dataset: September 4, 2025 — June 1, 2026 (Daylight Hours, approx. 6 AM CDT – 5 PM CDT)
+                Ground Surface Estimate Dataset: September 4, 2025 — June 1, 2026 (Daylight Hours, approx. 6 AM CDT – 5 PM CDT)
               </li>
             </ul>
           </li>
@@ -125,7 +125,7 @@
                 Open Air Chicago: September 1, 2025 — June 1, 2026
               </li>
               <li>
-                Fused Dataset: September 4, 2025 — June 1, 2026
+                Ground Surface Estimate Dataset: September 4, 2025 — June 1, 2026
               </li>
              </ul>
           </li>
@@ -139,17 +139,17 @@
                 Open Air Chicago: September 2025 — May 2026
               </li>
               <li>
-                Fused Dataset: September 2025 — May 2026
+                Ground Surface Estimate Dataset: September 2025 — May 2026
               </li>
              </ul>
           </li>
         </ol>
       </li>
       <li>
-        After choosing a valid Observation Window and Date Selection, choose the Data Product you want to visualize: TEMPO, Open Air Chicago, or Fused (TEMPO + Open Air Chicago).
+        After choosing a valid Observation Window and Date Selection, choose the Data Product you want to visualize: TEMPO, Open Air Chicago, or Ground Surface Estimate.
       </li>
       <li>
-        Select the Spatial Scale you want to visualize the data on. TEMPO and the Fused data are available on an Individual Grid Cell (pixel) level and aggregated to Chicago's Community Areas. Open Air Chicago is available on an Individual Sensor level and aggregated to Chicago's Community Areas.
+        Select the Spatial Scale you want to visualize the data on. TEMPO and the Ground Surface Estimate data are available on an Individual Grid Cell (pixel) level and aggregated to Chicago's Community Areas. Open Air Chicago is available on an Individual Sensor level and aggregated to Chicago's Community Areas.
       </li>
       <li>
         Click the "Load" button in the navy date selection box to load your data on the map. Click "Play" on the bottom of the map to see how NO<sub>2</sub> changes over time. Hover over or click on any individual sensor, pixel, or community area to see a pop-up with the location, time, number of measurements, and average NO<sub>2</sub> value. You may need to pause the playback to read the pop-ups.
@@ -165,7 +165,7 @@
 <div class="content-section" id="community-statistics">
   <h2>Community Statistics</h2>
   <p>
-    This page visualizes NO<sub>2</sub> statistics on a community level for each of the data products: TEMPO satellite measurements, Open Air Chicago ground sensors, and the fused data product. 
+    This page visualizes NO<sub>2</sub> statistics on a community level for each of the data products: TEMPO satellite measurements, Open Air Chicago ground sensors, and the ground surface estimate data product. 
   </p>
   <p>
     <ol type="1"; style="padding-left: 20px;">
@@ -181,7 +181,7 @@
         </ol>
       </li>
       <li>
-        After you have selected a community, graphs will appear on the right side of the page visualizing different statistics. By default, the selected statistics shown are based on the Ground Sensors (Open Air Chicago) for that community. Select the “TEMPO” or the “Fused” buttons to see data visualizations for a different data product.
+        After you have selected a community, graphs will appear on the right side of the page visualizing different statistics. By default, the selected statistics shown are based on the Ground Sensors (Open Air Chicago) for that community. Select the “TEMPO” or the "Ground Surface Estimate" buttons to see data visualizations for a different data product.
       </li>
       <li>
         If you would like to save a PDF of the community statistics page, click on the “Save as PDF” button in the top right corner of the page just below the navigation bar. You can also print to PDF by right clicking on the page and selecting "Print" or by pressing Ctrl + P (Windows) or Command + P (Mac).
@@ -199,7 +199,7 @@
   <p>
     <ol type="1" style="padding-left: 20px;">
       <li>
-        Under the Export Data Files left sidebar, first choose a Data Source, depending on whether you want to download TEMPO, Open Air Chicago, or Fused data.
+        Under the Export Data Files left sidebar, first choose a Data Source, depending on whether you want to download TEMPO, Open Air Chicago, or Ground Surface Estimate data.
       </li>
       <li>
         Choose your preferred spatiotemporal scale:
@@ -208,13 +208,13 @@
             Hourly: Hourly concentrations of NO<sub>2</sub>
           </li>
           <li>
-            Daily Averages: Average daily NO<sub>2</sub> concentrations for each pixel (TEMPO and Fused data) or by sensor (Open Air Chicago)
+            Daily Averages: Average daily NO<sub>2</sub> concentrations for each pixel (TEMPO and Ground Surface Estimate data) or by sensor (Open Air Chicago)
           </li>
           <li>
             Daily Community Average: Average daily NO<sub>2</sub> concentrations aggregated to Chicago's communities
           </li>
           <li>
-            Monthly Average: Average monthly NO<sub>2</sub> concentrations for each pixel (TEMPO and Fused data) or by sensor (Open Air Chicago)
+            Monthly Average: Average monthly NO<sub>2</sub> concentrations for each pixel (TEMPO and Ground Surface Estimate data) or by sensor (Open Air Chicago)
           </li>
           <li>
             Monthly Community Average: Average monthly NO<sub>2</sub> concentrations aggregated to Chicago's communities

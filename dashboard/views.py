@@ -155,7 +155,7 @@ def check_data_status():
             fused_latest = sorted(fused_files)[-1]
 
     status['sources'].append({
-        'name': 'Fused Data',
+        'name': 'Ground Surface Estimate Data',
         'type': 'fused',
         'exists': fused_exists,
         'file_count': fused_count,
