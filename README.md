@@ -129,7 +129,6 @@ The project is built with Django and uses a file-based data architecture, as dat
   - [Feature branches](#creating-a-feature-branch)
 
 ### Other
-- [Extending the Project](#extending-the-project)
 - [Support & Resources](#support--resources)
   - [Contact](#contact)
   - [Technical Paper](#technical-paper)
@@ -1399,30 +1398,6 @@ git push -u origin feature/my-feature-name  # Push the branch to GitHub
 - Your experimental changes stay isolated until they are reviewed and merged.
 - Other developers can continue working on `main` without being blocked by incomplete work.
 - Pull Requests on GitHub enable code review, discussion, and automated testing before changes are merged.
-
----
-
-## Extending the Project
-
-The project is structured so that each new feature lives in `dashboard/` and is wired into the existing URL and template system. Here are ideas for extending the dashboard:
-
-**Add real-time data ingestion**
-Create a Django management command in `dashboard/management/commands/` that fetches the latest TEMPO or OpenAQ data on a schedule and saves it to the `dashboard/data/` directories.
-
-**Add a charts/analysis page**
-Use Plotly.js (already loaded on the community page) to create a standalone `/analysis/` page with customizable time-series charts, correlation plots, and downloadable figures.
-
-**Add user authentication**
-Django ships with a full auth system. Enable login/logout views and protect admin-only features with `@login_required` or `@staff_member_required`.
-
-**Add a data quality dashboard**
-Create a page that shows sensor health metrics, data gaps, and quality flags from the Open Air Chicago sensor network.
-
-**Swap SQLite for PostgreSQL locally**
-Install PostgreSQL, create a database, and update `DATABASES` in `settings.py`. Use `dj-database-url` to parse the connection string.
-
-**Add a full REST API**
-Install `djangorestframework` for a complete REST API with serializers, authentication, and browsable API pages.
 
 ---
 
