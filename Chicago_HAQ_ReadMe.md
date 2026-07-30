@@ -1,9 +1,35 @@
 # Regional Ozone Precursor Dashboard
 
+![Regional Ozone Dashboard](../docs/screenshots/ROPD_Heading.png)
+
+
 A real-time visualization tool for TEMPO satellite and Open Air Chicago ground sensor NO₂ data, developed by the
 EarthRISE Developers Academy in collaboration with NASA LaRC and community partners.
 
 ---
+
+## This Project
+
+The **Regional Ozone Precursor Dashboard** is an interactive web application that visualizes nitrogen dioxide (NO₂) pollution data over the Chicago metropolitan region from multiple sources:
+
+- **TEMPO (Tropospheric Emissions: Monitoring of Pollution)** — NASA's geostationary satellite instrument that provides hourly column measurements of NO₂ in molecules/cm².
+- **Open Air Chicago (Clarity sensors)** — A network of ground-level air quality sensors deployed across Chicago communities, providing hourly NO₂ readings in ppb (parts per billion).
+- **Fused Data** — A combination of TEMPO satellite and ground sensor data, aligned to a common linear ppb scale for direct comparison.
+
+### Key features
+
+- **Interactive map** with three time scales: hourly (with time-of-day slider), daily, and monthly.
+- **Playback controls** to animate data changes over time.
+- **Multiple display modes**: sensor-level pixels, community-area averages (colored Chicago community boundaries), and heatmaps.
+- **Community statistics page** with Plotly charts comparing ground vs. TEMPO vs. Fused NO₂ levels, percentile rankings, and time-series trends.
+- **Data export tools** to download data files in GeoJSON, CSV, or PNG map screenshots.
+- **File-based activity logging** that tracks server starts, page refreshes, data exports, and map views.
+
+The project is built with Django and uses a file-based data architecture — data files (GeoJSON, parquet, CSV) are stored on disk and served directly through API endpoints, with no intermediate database required for the pollution data.
+
+
+![Regional Ozone Dashboard](../docs/screenshots/regionalozone_dashboard.png)
+
 
 ## Table of Contents
 
@@ -108,31 +134,6 @@ EarthRISE Developers Academy in collaboration with NASA LaRC and community partn
   - [Contact](#contact)
   - [Technical Paper](#technical-paper)
   - [Dashboard Tutorial](#dashboard-tutorial)
-
----
-
-![Regional Ozone Dashboard](../docs/screenshots/regionalozone_dashboard.png)
-
----
-
-## This Project
-
-The **Regional Ozone Precursor Dashboard** is an interactive web application that visualizes nitrogen dioxide (NO₂) pollution data over the Chicago metropolitan region from multiple sources:
-
-- **TEMPO (Tropospheric Emissions: Monitoring of Pollution)** — NASA's geostationary satellite instrument that provides hourly column measurements of NO₂ in molecules/cm².
-- **Open Air Chicago (Clarity sensors)** — A network of ground-level air quality sensors deployed across Chicago communities, providing hourly NO₂ readings in ppb (parts per billion).
-- **Fused Data** — A combination of TEMPO satellite and ground sensor data, aligned to a common linear ppb scale for direct comparison.
-
-### Key features
-
-- **Interactive map** with three time scales: hourly (with time-of-day slider), daily, and monthly.
-- **Playback controls** to animate data changes over time.
-- **Multiple display modes**: sensor-level pixels, community-area averages (colored Chicago community boundaries), and heatmaps.
-- **Community statistics page** with Plotly charts comparing ground vs. TEMPO vs. Fused NO₂ levels, percentile rankings, and time-series trends.
-- **Data export tools** to download data files in GeoJSON, CSV, or PNG map screenshots.
-- **File-based activity logging** that tracks server starts, page refreshes, data exports, and map views.
-
-The project is built with Django and uses a file-based data architecture — data files (GeoJSON, parquet, CSV) are stored on disk and served directly through API endpoints, with no intermediate database required for the pollution data.
 
 ---
 
