@@ -2,34 +2,34 @@
 
 ![Regional Ozone Precursor Dashboard Heading](docs/screenshots/ROPD_Heading.png)
 
+The **Regional Ozone Precursor Dashboard** is a visualization tool for TEMPO satellite and Open Air Chicago ground sensor NO<sub>2</sub> data, developed by the EarthRISE Developers Academy in collaboration with NASA Langley Research Center and community partners.
 
-A real-time visualization tool for TEMPO satellite and Open Air Chicago ground sensor NO<sub>2</sub> data, developed by the
-EarthRISE Developers Academy in collaboration with NASA LaRC and community partners.
+Tropospheric ozone is a major public health concern in the Chicago metropolitan area, with nitrogen dioxide (NO<sub>2</sub>) serving as a practical proxy for understanding spatiotemporal patterns of pollution. The NASA EarthRISE Developers Academy Summer 2026 Chicago Health & Air Quality research team worked with partners from the Lake Michigan Air Directors Consortium (LADCO) on a project that aimed to assess regional air quality concerns from potential sources of NO<sub>2</sub> pollution across Chicago and the broader Cook County, Illinois, area. Utilizing TEMPO satellite data and Open Air Chicago ground sensor data collected from September 2025 to June 2026, the team created a fused data product that estimates surface-level NO2 concentrations using a collection of data sources and estimating parameters. This dashboard visualizes those spatiotemporal trends of NO<sub>2</sub> pollution across Chicago and its community areas.
 
 ---
 
 ## This Project
 
-The **Regional Ozone Precursor Dashboard** is an interactive web application that visualizes nitrogen dioxide (NO₂) pollution data over the Chicago metropolitan region from multiple sources:
+An interactive web application that visualizes nitrogen dioxide (NO₂) pollution data over the Chicago metropolitan region from multiple sources:
 
 - **TEMPO (Tropospheric Emissions: Monitoring of Pollution)**: NASA's geostationary satellite instrument that provides hourly column measurements of NO₂ in molecules/cm².
-- **Open Air Chicago (Clarity sensors)** — A network of ground-level air quality sensors deployed across Chicago communities, providing hourly NO₂ readings in ppb (parts per billion).
-- **Fused Data** — A combination of TEMPO satellite and ground sensor data, aligned to a common linear ppb scale for direct comparison.
+- **Open Air Chicago (Clarity sensors)**: A network of ground-level air quality sensors deployed across Chicago communities, providing hourly NO₂ readings in ppb (parts per billion).
+- **Fused Data**: A combination of TEMPO satellite and ground sensor data, aligned to a common linear ppb scale for direct comparison.
 
 ### Key features
 
-- **Interactive map** with three time scales: hourly (with time-of-day slider), daily, and monthly.
+- **Interactive map** with three time scales: hourly, daily, and monthly.
 - **Playback controls** to animate data changes over time.
 - **Multiple display modes**: sensor-level pixels, community-area averages (colored Chicago community boundaries), and heatmaps.
-- **Community statistics page** with Plotly charts comparing ground vs. TEMPO vs. Fused NO₂ levels, percentile rankings, and time-series trends.
+- **Community statistics page** with Plotly charts comparing OpenAir vs. TEMPO vs. Fused NO₂ levels, percentile rankings, and time-series trends.
 - **Data export tools** to download data files in GeoJSON, CSV, or PNG map screenshots.
 - **File-based activity logging** that tracks server starts, page refreshes, data exports, and map views.
 
-The project is built with Django and uses a file-based data architecture — data files (GeoJSON, parquet, CSV) are stored on disk and served directly through API endpoints, with no intermediate database required for the pollution data.
-
+The project is built with Django and uses a file-based data architecture, as data files (GeoJSON, parquet, CSV) are stored on disk and served directly through API endpoints, with no intermediate database required for the pollution data.
 
 ![Regional Ozone Precursor Dashboard Main Page](docs/screenshots/regionalozone_dashboard.png)
 
+---
 
 ## Table of Contents
 
