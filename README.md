@@ -4,13 +4,13 @@
 
 The **Regional Ozone Precursor Dashboard** is a visualization tool for TEMPO satellite and Open Air Chicago ground sensor NO<sub>2</sub> data, developed by the EarthRISE Developers Academy in collaboration with NASA Langley Research Center and community partners.
 
-This interactive web application that visualizes nitrogen dioxide (NO₂) pollution across the Chicago metropolitan area from three data sources:
+This interactive web application visualizes nitrogen dioxide (NO₂) pollution across the Chicago metropolitan area from three data sources:
 
 | Source | Description |
 |---|---|
 | **TEMPO** | NASA's geostationary satellite providing hourly NO₂ column measurements (molecules/cm²) |
-| **Open Air Chicago** | Ground-level sensor network providing hourly NO₂ readings (ppb) |
-| **Fused Data** | Combination of TEMPO + ground sensor data, aligned to a common ppb scale |
+| **Open Air Chicago (Clarity)** | Ground-level sensor network providing hourly NO₂ readings (ppb) |
+| **Surface Estimate (Fused)** | Combination of TEMPO + ground sensor data, aligned to a common ppb scale |
 
 **Key features:**
 - **Interactive map** with hourly, daily, and monthly time scales
@@ -30,7 +30,7 @@ Tropospheric ozone is a major public health concern in the Chicago metropolitan 
 
 ---
 
-## 👥 Meet the Team
+## Meet the Team
 
 This dashboard was built by the **Summer 2026 NASA EarthRISE Developers Academy** Chicago Health & Air Quality research team in collaboration with NASA Langley Research Center and the Lake Michigan Air Directors Consortium (LADCO).
 
@@ -56,20 +56,20 @@ We'd like to thank **Zac Adelman**, **Angie Dickens**, and **Grant Coleman** fro
 ## Table of Contents
 
 - [This Project](#this-project)
-- [Meet the Team](#-meet-the-team)
+- [Meet the Team](#meet-the-team)
 - [Tech Stack](#tech-stack)
 - [Prerequisites](#prerequisites)
-  - [1. Python 3.14](#1-python-312)
+  - [1. Python 3.14](#1-python-314)
   - [2. Git](#2-git)
   - [3. A terminal](#3-a-terminal)
   - [4. A code editor (recommended)](#4-a-code-editor-recommended)
-- [Local Setupp](#local-setup)
-  - [Step 1 — Clone the repository](#step-1--clone-the-repository)
-  - [Step 2 — Create a virtual environment](#step-2--create-a-virtual-environment)
-  - [Step 3 — Install dependencies](#step-3--install-dependencies)
-  - [Step 4 — Run database migrations](#step-4--run-database-migrations)
-  - [Step 5 — (Optional) Create a superuser](#step-5--optional-create-a-superuser)
-  - [Step 6 — Start the development server](#step-6--start-the-development-server)
+- [Local Setup](#local-setup)
+  - [Step 1: Clone the repository](#step-1--clone-the-repository)
+  - [Step 2: Create a virtual environment](#step-2--create-a-virtual-environment)
+  - [Step 3: Install dependencies](#step-3--install-dependencies)
+  - [Step 4: Run database migrations](#step-4--run-database-migrations)
+  - [Step 5: (Optional) Create a superuser](#step-5--optional-create-a-superuser)
+  - [Step 6: Start the development server](#step-6--start-the-development-server)
 - [Project Structure](#project-structure)
 - [Running the Dashboard](#running-the-dashboard)
   - [Start the server](#start-the-server)
@@ -92,8 +92,8 @@ We'd like to thank **Zac Adelman**, **Angie Dickens**, and **Grant Coleman** fro
   - [ActivityLog](#activitylog)
   - [File-based activity log](#file-based-activity-log)
 - [Database](#database)
-  - [Local development — SQLite](#local-development--sqlite)
-  - [Production — PostgreSQL](#production--postgresql)
+  - [Local development: SQLite](#local-development--sqlite)
+  - [Production: PostgreSQL](#production--postgresql)
 - [Processing Raw Data](#processing-raw-data)
   - [Available scripts](#available-scripts)
   - [Data pipeline overview](#data-pipeline-overview)
@@ -108,16 +108,16 @@ We'd like to thank **Zac Adelman**, **Angie Dickens**, and **Grant Coleman** fro
   - [Date index files (dates.json)](#date-index-files-datesjson)
   - [Automatic file discovery](#automatic-file-discovery)
 - [Setting Up a New API Endpoint](#setting-up-a-new-api-endpoint)
-  - [Step 1 — Write the view function](#step-1--write-the-view-function)
-  - [Step 2 — Register the URL pattern](#step-2--register-the-url-pattern)
-  - [Step 3 — Call from the frontend](#step-3--call-from-the-frontend)
+  - [Step 1: Write the view function](#step-1--write-the-view-function)
+  - [Step 2: Register the URL pattern](#step-2--register-the-url-pattern)
+  - [Step 3: Call from the frontend](#step-3--call-from-the-frontend)
   - [Query parameter filtering](#query-parameter-filtering)
   - [Complete example](#complete-example)
 - [Adding a New Page](#adding-a-new-page)
-  - [Step 1 — Create the template](#step-1--create-the-template)
-  - [Step 2 — Add the view function](#step-2--add-the-view-function)
-  - [Step 3 — Register the URL](#step-3--register-the-url)
-  - [Step 4 — Add nav link](#step-4--add-nav-link)
+  - [Step 1: Create the template](#step-1--create-the-template)
+  - [Step 2: Add the view function](#step-2--add-the-view-function)
+  - [Step 3: Register the URL](#step-3--register-the-url)
+  - [Step 4: Add nav link](#step-4--add-nav-link)
 - [Configuration & Environment Variables](#configuration--environment-variables)
   - [Local development settings](#local-development-settings)
   - [Production environment variables](#production-environment-variables)
@@ -157,8 +157,8 @@ We'd like to thank **Zac Adelman**, **Angie Dickens**, and **Grant Coleman** fro
 | Map library | Leaflet 1.9.4 (CDN) |
 | Map drawing | Leaflet Draw 1.0.4 (CDN) |
 | Heatmap | Leaflet Heat 0.2.0 (CDN) |
-| Spatial analysis | Turf.js 6 (CDN) — point-in-polygon |
-| Charting | Plotly.js (CDN) — community statistics |
+| Spatial analysis | Turf.js 6 (CDN) -> point-in-polygon |
+| Charting | Plotly.js (CDN) -> community statistics |
 | PNG export | html2canvas 1.4.1 (CDN) |
 | File processing | Pandas, PyArrow |
 | Numerical computing | NumPy |
@@ -331,11 +331,11 @@ develop-AQ_LaRC_2026/
 │
 ├── config/                     # Django project configuration
 │   ├── settings.py             # All settings: database, apps, static files, timezone
-│   ├── urls.py                 # Root URL router — links to dashboard/urls.py
+│   ├── urls.py                 # Root URL router -> links to dashboard/urls.py
 │   ├── wsgi.py                 # WSGI entry point (used by Gunicorn in production)
 │   └── asgi.py                 # ASGI entry point (for future async support)
 │
-├── dashboard/                  # Main Django app — all feature code lives here
+├── dashboard/                  # Main Django app -> all feature code lives here
 │   ├── migrations/             # Auto-generated database migration files
 │   ├── data/                   # Study period data products stored here
 │   │   ├── clarity/            # Open Air Chicago hourly, daily, monthly GeoJSONs, dates.json
@@ -357,9 +357,9 @@ develop-AQ_LaRC_2026/
 │   ├── static/
 │   │   └── dashboard/
 │   │       ├── css/            # Stylesheet files (one per page/feature)
-│   │       │   ├── layout.css      # Base layout: nav, footer, body, toast
-│   │       │   ├── map.css         # Map page: container, overlays, legends
-│   │       │   ├── map_sidebar.css # Map sidebar: controls, sliders, playback
+│   │       │   ├── layout.css      # Base layout -> nav, footer, body, toast
+│   │       │   ├── map.css         # Map page -> container, overlays, legends
+│   │       │   ├── map_sidebar.css # Map sidebar -> controls, sliders, playback
 │   │       │   ├── community.css   # Community statistics page
 │   │       │   └── export.css      # Data export page
 │   │       ├── images/         # Logos, gradients, team photos, compass SVG
