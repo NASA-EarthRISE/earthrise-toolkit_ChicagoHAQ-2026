@@ -137,7 +137,10 @@ async function exportSelectedFiles() {
     const filename = selectedFiles[i];
     showDataExportStatus(`Downloading ${i + 1}/${selectedFiles.length}: ${filename}`, 'info');
 
-    const downloadUrl = `/api/export-data-file/?source=${currentDataSource}&file=${encodeURIComponent(filename)}&format=${currentExportFormat}`;
+    // For original CSV files, skip the format parameter and serve as is
+    const fmt = filename.endsWith('.csv') ? 'geojson' : currentExportFormat;
+
+    const downloadUrl = `/api/export-data-file/?source=${currentDataSource}&file=${encodeURIComponent(filename)}&format=${fmt}`;
 
     const a = document.createElement('a');
     a.href = downloadUrl;

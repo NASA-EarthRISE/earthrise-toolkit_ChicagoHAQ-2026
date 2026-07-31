@@ -243,7 +243,7 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map
 // Sensors, Chicago Borders & Communities Layers
 
 // Load Sensors
-fetch("/static/dashboard/layers/oacd.geojson") 
+fetch("/static/dashboard/layers/Sensors.geojson") 
 .then(response => response.json())
 .then(data => {
   var sensorMarker = L.divIcon({

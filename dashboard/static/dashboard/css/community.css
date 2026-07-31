@@ -1,5 +1,4 @@
 
-/* Main two-column layout */
 .community-layout {
   display: flex;
   flex-wrap: wrap;
@@ -10,7 +9,7 @@
   position: relative;
 }
 
-/* Left column: map + help */
+/* Left column: Map + Help */
 .community-left {
   flex: 1;
   display: flex;
@@ -43,7 +42,7 @@
   visibility: hidden;
 }
 
-/* Dropdown styling */
+/* Community Dropdown */
 #community-dropdown {
   overflow: auto;
   width: 100%;
@@ -55,7 +54,7 @@
   flex: 0 0 auto;
 }
 
-/* Right column: graphs */
+/* Right Column: Statisical Graphs */
 .community-right {
   flex: 2;
   display: flex;
@@ -64,13 +63,12 @@
   gap: 1rem;
 }
 
-/* Container to hold dropdown and go in same row */
 .dropdown-go {
   display: flex;
   flex-direction: row;
 }
 
-/* Map container for community */
+/* Map Container */
 .community-map-container {
   overflow: hidden;
   background: var(--bg-card);
@@ -91,7 +89,7 @@
   z-index: 0;
 }
 
-/* Help container */
+/* 'Get Help' Container */
 .help-container {
   flex: 0 0 auto;
   background: var(--bg-card);
@@ -122,7 +120,7 @@
   opacity: 0.9;
 }
 
-/* Graph container */
+/* Graph Gontainers */
 .graph-container {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -136,7 +134,7 @@
   position: relative;
 }
 
-/* Loading spinner overlay */
+/* Graph Loading Overlay */
 .graph-loading {
   position: absolute;
   top: 0;
@@ -188,7 +186,7 @@
   margin: auto;
 }
 
-/* Graph title */
+/* Graph Titles */
 .graph-title {
   font-size: 0.95rem;
   font-weight: 600;
@@ -212,7 +210,7 @@
   margin-top: 0.25rem;
 }
 
-/* Percentile toggle */
+/* Data Product Percentile Radio Buttons */
 .percentile-toggle {
   display: flex;
   justify-content: center;
@@ -234,14 +232,13 @@
   cursor: pointer;
 }
 
-/* Plotly chart container */
 .plotly-chart {
   width: 100%;
   flex: 1;
   min-height: 0;
 }
 
-/* Plotly zoom notification */
+/* Plotly Zoom Notification */
 .plotly-zoom-notification {
   position: absolute;
   top: 8px;
@@ -272,40 +269,7 @@
   color: var(--primary);
 }
 
-/* Responsive: stack columns on small screens */
-@media (max-width: 900px) {
-  .community-layout {
-    flex-direction: column;
-  }
-
-  .community-left {
-    position: static;
-    width: 100%;
-    flex: none;
-    padding: 0.75rem;
-  }
-
-  .community-right {
-    width: 100%;
-    flex: none;
-  }
-
-  .community-map-container {
-    min-height: 350px;
-    max-height: 450px;
-  }
-
-  #community-map {
-    min-height: 350px;
-  }
-
-  .graph-container {
-    width: 100%;
-    min-height: 280px;
-  }
-}
-
-/* ── Map Legend Overlay ── */
+/* Legend */
 .map-legend {
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid var(--border, #ccc);
@@ -342,7 +306,7 @@
   white-space: nowrap;
 }
 
-/* ── Share / Export PDF header ── */
+/* Export Page as PDF Heading */
 .community-export-header {
   display: flex;
   justify-content: flex-end;
@@ -384,26 +348,7 @@
   cursor: not-allowed;
 }
 
-/* Extra small screens — tighten up spacing */
-@media (max-width: 600px) {
-  .community-left {
-    padding: 0.5rem;
-  }
-
-  .community-map-container {
-    min-height: 280px;
-    max-height: 350px;
-  }
-
-  #community-map {
-    min-height: 280px;
-  }
-
-  .graph-container {
-    min-height: 250px;
-  }
-}
-
+/* Compass */
 .compass-overlay {
   position: absolute;
   bottom: 60px;
@@ -418,7 +363,7 @@
   height: 40px;
 }
 
-/* ── Scalebar overlay — ruler style, small, bottom right ── */
+/* Scalebar */
 .scalebar-overlay {
   position: absolute;
   bottom: 36px;
@@ -491,4 +436,57 @@
     0 -1px 0 #fff,
     1px 0 0 #fff,
     -1px 0 0 #fff;
+}
+
+/* Small Screen Responsive */
+
+@media (max-width: 900px) {
+  .community-layout {
+    flex-direction: column;
+  }
+
+  .community-left {
+    position: static;
+    width: 100%;
+    flex: none;
+    padding: 0.75rem;
+  }
+
+  .community-right {
+    width: 100%;
+    flex: none;
+  }
+
+  .community-map-container {
+    min-height: 350px;
+    max-height: 450px;
+  }
+
+  #community-map {
+    min-height: 350px;
+  }
+
+  .graph-container {
+    width: 100%;
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 600px) {
+  .community-left {
+    padding: 0.5rem;
+  }
+
+  .community-map-container {
+    min-height: 280px;
+    max-height: 350px;
+  }
+
+  #community-map {
+    min-height: 280px;
+  }
+
+  .graph-container {
+    min-height: 250px;
+  }
 }

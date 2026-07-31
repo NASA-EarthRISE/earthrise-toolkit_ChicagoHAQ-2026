@@ -3,8 +3,7 @@
 // Load order: time_utils.js → map_init.js → map_layers.js → data_loader.js → map_controls.js
 // ──────────────────────────────────────────────────────────────────────────────
 
-// ── CSV / COMMUNITY HELPERS ──────────────────────────────────────────────────
-
+// Read CSV
 function parseSimpleCSV(text) {
     const lines = text.trim().split(/\r?\n/);
     if (lines.length < 2) return [];
@@ -20,6 +19,7 @@ function parseSimpleCSV(text) {
     });
 }
 
+// Community Feature Helpers
 function normalizeCommunityName(value) {
     return String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
 }
@@ -36,8 +36,7 @@ function getCommunityFeatureName(feature) {
     );
 }
 
-// ── FUSION COMMUNITY CSV LOADER ─────────────────────────────────────────────
-
+// Fusion Data Product Community CSV Loader
 let fusioncommunityHourLookup = {};
 let fusionCommunityRows = null;
 let fusionCommunityPromise = null;
@@ -102,8 +101,7 @@ function loadFusionCommunityCSV() {
     return fusionCommunityPromise;
 }
 
-// ── HOUR BUCKETS / PREFETCH HELPERS ──────────────────────────────────────────
-
+// Hour Buckets
 function buildHourBuckets(features) {
     let buckets = {};
     for (let h = 0; h < 24; h++) buckets[h] = [];
@@ -111,6 +109,7 @@ function buildHourBuckets(features) {
     return buckets;
 }
 
+// Prefetch Helpers
 function prefetchNextDay(date) {
     let currentIndex = dates.indexOf(date);
     if (currentIndex < 0 || currentIndex >= dates.length - 1) return;
@@ -181,7 +180,7 @@ function prefetchTempoNextDay(date) {
     });
 }
 
-// ── REMOVE INVALID HOURLY DATE ───────────────────────────────────────────────
+//Remove Invalid or Empty Hourly Dates
 
 function removeInvalidHourlyDate(date, reason) {
     if (!date || TIME_SCALE !== "hourly" || currentDataProduct !== "clarity") return;
@@ -226,14 +225,14 @@ function removeInvalidHourlyDate(date, reason) {
     loadDate(nextDate);
 }
 
-// ── FUSION VALUE HELPER ──────────────────────────────────────────────────────
+// Get Fusion Value Helper
 
 function getFusionValue(properties) {
     if (!properties) return NaN;
     return Number(properties.no2_estimate);
 }
 
-// ── FUSION NO DATA MESSAGE ───────────────────────────────────────────────────
+// 'No Data' for Fusion Message 
 
 function showFusionNoDataMessage(date, detailText) {
     hideLoading();
@@ -248,7 +247,7 @@ function showFusionNoDataMessage(date, detailText) {
     showNoDataNotice("No Fusion Data Available", detailParts.join(" • "));
 }
 
-// ── FUSION DATA LOADERS ──────────────────────────────────────────────────────
+// Load Hourly, Daily, and Monthly Fusion Data
 
 function loadFusionHourly(date, existingLoad) {
     const load = existingLoad || startNewLoad("fusion");
@@ -385,7 +384,7 @@ function loadFusionCommunities(date, existingLoad) {
         });
 }
 
-// ── CLARITY DATA LOADERS ─────────────────────────────────────────────────────
+// Load Hourly, Daily, Monthly Open Air Chicago (Clarity) Data
 
 function loadDailySensors(date, existingLoad) {
     const dailyKey = toDailyKey(date);
@@ -545,8 +544,7 @@ function loadMonthlyCommunities(month, existingLoad) {
         });
 }
 
-// ── CLARITY DATE RANGE ───────────────────────────────────────────────────────
-
+// Load Date Ranges for Open Air Chicago
 function loadDateRange() {
     if (!timeInterval) {
         showLoading(`Loading ${utcDateToCentralPretty(rangeStartDate)} to ${utcDateToCentralPretty(rangeCurrentEndDate)}`);
@@ -645,8 +643,7 @@ function renderCommunityRange(files) {
     hideLoading();
 }
 
-// ── TEMPO DATA LOADERS ───────────────────────────────────────────────────────
-
+// Load Hourly, Daily, and Monthly TEMPO Data
 function formatCentralTimePretty(utcString) {
     return TimeUtils.formatCentralTime(utcString);
 }
@@ -782,8 +779,7 @@ function loadTempoMonthlyCommunities(month, existingLoad) {
         });
 }
 
-// ── TEMPO DATE RANGE ─────────────────────────────────────────────────────────
-
+// Load Date Ranges for TEMPO
 function loadTempoDateRange() {
     if (!timeInterval) {
         showLoading(`Loading ${utcDateToCentralPretty(rangeStartDate)} to ${utcDateToCentralPretty(rangeCurrentEndDate)}`);
@@ -901,8 +897,7 @@ function loadTempoCommunityDateRange() {
     .catch(err => { console.error("TEMPO community range load failed:", err); });
 }
 
-// ── UNIFIED LOAD DATE ────────────────────────────────────────────────────────
-
+// Unified Load Date Functions for TEMPO, Clarity, and Fused (from dates.json)
 function loadDate(date, existingLoad) {
     if (!date || typeof date !== "string") {
         console.warn("Blocked loadDate because date is invalid:", date);
@@ -932,7 +927,7 @@ function loadDate(date, existingLoad) {
     let nextDate = currentIndex < dates.length - 1 ? dates[currentIndex + 1] : null;
     let selectedMonth = date.substring(0, 7);
 
-    // ── TEMPO ROUTING ──
+    // TEMPO Routing
     if (productAtStart === "tempo") {
         if (TIME_SCALE === "range") {
             if (displayMode === "community") loadTempoCommunityDateRange();
@@ -996,7 +991,7 @@ function loadDate(date, existingLoad) {
         return;
     }
 
-    // ── FUSION ROUTING ──
+    // Fusion Routing
     if (productAtStart === "fusion") {
         if (displayMode === "community") { loadFusionCommunities(date, load); return; }
         if (TIME_SCALE === "hourly") { loadFusionHourly(date, load); return; }
@@ -1007,7 +1002,7 @@ function loadDate(date, existingLoad) {
         return;
     }
 
-    // ── CLARITY ROUTING ──
+    // Clarity Routing
     if (TIME_SCALE === "range") { loadDateRange(); return; }
     if (TIME_SCALE === "daily") {
         if (displayMode === "sensor") loadDailySensors(date, load);
@@ -1066,9 +1061,6 @@ function loadDate(date, existingLoad) {
         else renderFeatures(filteredFeatures, date);
     });
 }
-
-// ── DATE LOADING FUNCTIONS ───────────────────────────────────────────────────
-
 function generateClarityDatesFromFiles() {
     const fallbackDates = [];
     const start = new Date(2025, 8, 1);

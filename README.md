@@ -4,28 +4,50 @@
 
 The **Regional Ozone Precursor Dashboard** is a visualization tool for TEMPO satellite and Open Air Chicago ground sensor NO<sub>2</sub> data, developed by the EarthRISE Developers Academy in collaboration with NASA Langley Research Center and community partners.
 
-Tropospheric ozone is a major public health concern in the Chicago metropolitan area, with nitrogen dioxide (NO<sub>2</sub>) serving as a practical proxy for understanding spatiotemporal patterns of pollution. The NASA EarthRISE Developers Academy Summer 2026 Chicago Health & Air Quality research team worked with partners from the Lake Michigan Air Directors Consortium (LADCO) on a project that aimed to assess regional air quality concerns from potential sources of NO<sub>2</sub> pollution across Chicago and the broader Cook County, Illinois, area. Utilizing TEMPO satellite data and Open Air Chicago ground sensor data collected from September 2025 to June 2026, the team created a fused data product that estimates surface-level NO2 concentrations using a collection of data sources and estimating parameters. This dashboard visualizes those spatiotemporal trends of NO<sub>2</sub> pollution across Chicago and its community areas.
+This interactive web application that visualizes nitrogen dioxide (NO₂) pollution across the Chicago metropolitan area from three data sources:
+
+| Source | Description |
+|---|---|
+| **TEMPO** | NASA's geostationary satellite providing hourly NO₂ column measurements (molecules/cm²) |
+| **Open Air Chicago** | Ground-level sensor network providing hourly NO₂ readings (ppb) |
+| **Fused Data** | Combination of TEMPO + ground sensor data, aligned to a common ppb scale |
+
+**Key features:**
+- **Interactive map** with hourly, daily, and monthly time scales
+- **Playback controls** to animate data changes over time
+- **Multiple display modes**: individual pixels/sensors and community-area averages
+- **Community statistics page** with Plotly charts and percentile rankings
+- **Data export tools** for GeoJSON, CSV, and PNG map screenshots
+- **File-based activity logging** that tracks server starts, page refreshes, data exports, and map views.
+
+The project is built with Django and uses a file-based data architecture, as data files (GeoJSON, parquet, CSV) are stored on disk and served directly through API endpoints, with no intermediate database required for the pollution data.
 
 ---
 
 ## This Project
 
-An interactive web application that visualizes nitrogen dioxide (NO₂) pollution data over the Chicago metropolitan region from multiple sources:
+Tropospheric ozone is a major public health concern in the Chicago metropolitan area, with nitrogen dioxide (NO<sub>2</sub>) serving as a practical proxy for understanding spatiotemporal patterns of pollution. The NASA EarthRISE Developers Academy Summer 2026 Chicago Health & Air Quality research team worked with partners from the Lake Michigan Air Directors Consortium (LADCO) on a project that aimed to assess regional air quality concerns from potential sources of NO<sub>2</sub> pollution across Chicago and the broader Cook County, Illinois, area. Utilizing TEMPO satellite data and Open Air Chicago ground sensor data collected from September 2025 to June 2026, the team created a fused data product that estimates surface-level NO<sub>2</sub> concentrations using a collection of data sources and estimating parameters. This dashboard visualizes those spatiotemporal trends of NO<sub>2</sub> pollution across Chicago and its community areas.
 
-- **TEMPO (Tropospheric Emissions: Monitoring of Pollution)**: NASA's geostationary satellite instrument that provides hourly column measurements of NO₂ in molecules/cm².
-- **Open Air Chicago (Clarity sensors)**: A network of ground-level air quality sensors deployed across Chicago communities, providing hourly NO₂ readings in ppb (parts per billion).
-- **Fused Data**: A combination of TEMPO satellite and ground sensor data, aligned to a common linear ppb scale for direct comparison.
+---
 
-### Key features
+## 👥 Meet the Team
 
-- **Interactive map** with three time scales: hourly, daily, and monthly.
-- **Playback controls** to animate data changes over time.
-- **Multiple display modes**: sensor-level pixels, community-area averages (colored Chicago community boundaries), and heatmaps.
-- **Community statistics page** with Plotly charts comparing OpenAir vs. TEMPO vs. Fused NO₂ levels, percentile rankings, and time-series trends.
-- **Data export tools** to download data files in GeoJSON, CSV, or PNG map screenshots.
-- **File-based activity logging** that tracks server starts, page refreshes, data exports, and map views.
+This dashboard was built by the **Summer 2026 NASA EarthRISE Developers Academy** Chicago Health & Air Quality research team in collaboration with NASA Langley Research Center and the Lake Michigan Air Directors Consortium (LADCO).
 
-The project is built with Django and uses a file-based data architecture, as data files (GeoJSON, parquet, CSV) are stored on disk and served directly through API endpoints, with no intermediate database required for the pollution data.
+| | |
+|---|---|
+| **Anya Desai** | **Margot Langenbach** |
+| Team Member | Team Member |
+| **Caitlyn McClanahan** | **Kathryn Phung** |
+| Team Member | Team Member |
+| **Noah Ring** | **Kristina Glass** |
+| Team Member | Project Coordinator |
+
+### Our Partners
+
+We'd like to thank **Zac Adelman**, **Angie Dickens**, and **Grant Coleman** from [LADCO](https://www.ladco.org/) for their valuable insights and collaboration throughout this project.
+
+---
 
 ![Regional Ozone Precursor Dashboard Main Page](docs/screenshots/regionalozone_dashboard.png)
 
@@ -33,23 +55,21 @@ The project is built with Django and uses a file-based data architecture, as dat
 
 ## Table of Contents
 
-### Getting Started
 - [This Project](#this-project)
+- [Meet the Team](#-meet-the-team)
 - [Tech Stack](#tech-stack)
 - [Prerequisites](#prerequisites)
   - [1. Python 3.14](#1-python-312)
   - [2. Git](#2-git)
   - [3. A terminal](#3-a-terminal)
   - [4. A code editor (recommended)](#4-a-code-editor-recommended)
-- [Local Setup — Step by Step](#local-setup--step-by-step)
+- [Local Setupp](#local-setup)
   - [Step 1 — Clone the repository](#step-1--clone-the-repository)
   - [Step 2 — Create a virtual environment](#step-2--create-a-virtual-environment)
   - [Step 3 — Install dependencies](#step-3--install-dependencies)
   - [Step 4 — Run database migrations](#step-4--run-database-migrations)
   - [Step 5 — (Optional) Create a superuser](#step-5--optional-create-a-superuser)
   - [Step 6 — Start the development server](#step-6--start-the-development-server)
-
-### Project Architecture
 - [Project Structure](#project-structure)
 - [Running the Dashboard](#running-the-dashboard)
   - [Start the server](#start-the-server)
@@ -68,10 +88,7 @@ The project is built with Django and uses a file-based data architecture, as dat
   - [home.js](#homejs)
   - [community.js](#communityjs)
   - [navbar.js](#navbarjs)
-
-### Data
 - [Data Models](#data-models)
-  - [LogMessage](#logmessage)
   - [ActivityLog](#activitylog)
   - [File-based activity log](#file-based-activity-log)
 - [Database](#database)
@@ -90,8 +107,6 @@ The project is built with Django and uses a file-based data architecture, as dat
   - [Community statistics files](#community-statistics-files)
   - [Date index files (dates.json)](#date-index-files-datesjson)
   - [Automatic file discovery](#automatic-file-discovery)
-
-### Development Guide
 - [Setting Up a New API Endpoint](#setting-up-a-new-api-endpoint)
   - [Step 1 — Write the view function](#step-1--write-the-view-function)
   - [Step 2 — Register the URL pattern](#step-2--register-the-url-pattern)
@@ -115,8 +130,6 @@ The project is built with Django and uses a file-based data architecture, as dat
   - [Database table errors](#djangodbutilsoperationerror-no-such-table)
   - [Data file 404 errors](#data-file-not-found-404-errors)
   - [Dashboard webpage not updating after saved changes](#dashboard-webpage-not-updating-after-saved-changes)
-
-### Deployment & Collaboration
 - [Deploying to Production](#deploying-to-production)
   - [Procfile and Gunicorn](#procfile-and-gunicorn)
   - [runtime.txt](#runtimetxt)
@@ -127,8 +140,6 @@ The project is built with Django and uses a file-based data architecture, as dat
   - [First-time setup](#first-time-setup-on-a-new-machine)
   - [Daily workflow](#daily-workflow)
   - [Feature branches](#creating-a-feature-branch)
-
-### Other
 - [Support & Resources](#support--resources)
   - [Contact](#contact)
   - [Technical Paper](#technical-paper)
@@ -159,7 +170,7 @@ The project is built with Django and uses a file-based data architecture, as dat
 
 ---
 
-## Prerequisites — Cold Start Checklist
+## Prerequisites
 
 Complete every item here before touching any project code. This is a true cold-start list for a machine that has nothing installed.
 
@@ -202,7 +213,7 @@ If not, download from https://git-scm.com/downloads and install with default set
 
 ---
 
-## Local Setup — Step by Step
+## Local Setup
 
 Follow these steps in order. Do not skip steps. Type and 'Enter' each line one-by-one.
 
@@ -370,7 +381,6 @@ develop-AQ_LaRC_2026/
 │   ├── views.py                # Request handlers and API endpoints
 │   ├── urls.py                 # URL patterns for this app
 │   ├── models.py               # Database models (LogMessage, ActivityLog)
-│   ├── forms.py                # Django form for message logging
 │   ├── admin.py                # Django admin registration
 │   └── apps.py                 # App configuration
 │
@@ -538,10 +548,13 @@ Key responsibilities:
 **Purpose:** Export page tab navigation and export form logic.
 
 Key responsibilities:
-- Tab switching between Clarity, TEMPO, and Fused export options
-- Date picker and file type selectors
-- File format options (GeoJSON, CSV)
-- Preview and download triggers
+- Data source selection (Clarity, TEMPO, Fused)
+- Spatial/temporal scale filter including community averages
+- File list rendering with type badges (geojson, json, csv)
+- Export of GeoJSON/JSON files with optional CSV conversion
+- Direct CSV serving for files already in CSV format (e.g., fused community data)
+- Select-all, individual selection, and batch download
+
 
 ### home.js
 
@@ -574,18 +587,7 @@ Key responsibilities:
 
 ## Data Models
 
-The project defines two Django models in `dashboard/models.py` for tracking user messages and system activity.
-
-### LogMessage
-
-A simple model for storing user-submitted messages through a form on the frontend.
-
-| Field | Type | Description |
-|---|---|---|
-| `message` | `CharField(max_length=300)` | The message text |
-| `log_date` | `DateTimeField` | When the message was logged |
-
-Messages are submitted through `LogMessageForm` in `dashboard/forms.py`.
+The project defines one Django model in `dashboard/models.py` for tracking user messages and system activity.
 
 ### ActivityLog
 
@@ -631,7 +633,6 @@ The log keeps the most recent 50 entries.
 
 SQLite requires no setup. The file `db.sqlite3` is created automatically when you run `python manage.py migrate`. It lives in the project root and stores:
 - Django auth users (superuser accounts)
-- `LogMessage` entries
 - `ActivityLog` entries
 
 This is fine for development and testing. The pollution data (GeoJSON, parquet, CSV) is stored as files on disk, not in the database.
@@ -801,6 +802,8 @@ Place Open Air Chicago sensor GeoJSON files in `dashboard/data/clarity/`. The fr
 | Daily community GeoJSON | `daily_community_YYYY-MM-DD.geojson` | `daily_community_2025-09-01.geojson` |
 | Monthly sensor GeoJSON | `monthly_sensor_YYYY-MM.geojson` | `monthly_sensor_2025-09.geojson` |
 | Monthly community GeoJSON | `monthly_community_YYYY-MM.geojson` | `monthly_community_2025-09.geojson` |
+| `.csv` | community | `fused_hourly_by_community.csv` |
+
 
 **To add a new daily sensor file:**
 1. Save your GeoJSON as `daily_sensor_YYYY-MM-DD.geojson` (e.g., `daily_sensor_2025-09-15.geojson`)

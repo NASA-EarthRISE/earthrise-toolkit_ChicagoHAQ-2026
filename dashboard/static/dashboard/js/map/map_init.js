@@ -3,19 +3,20 @@
 // Load order: time_utils.js → map_init.js → map_layers.js → data_loader.js → map_controls.js
 // ──────────────────────────────────────────────────────────────────────────────
 
-// ── CONFIGURATION ────────────────────────────────────────────────────────────
+// Map Configuration
+
 // NOTE: TIME_SCALE must be set by the map.html BEFORE this script loads.
 // The map.html template includes a small inline script: let TIME_SCALE = '{{ time_scale|default:"hourly" }}';
 // If not set, default to "hourly".
+
 if (typeof window.TIME_SCALE === 'undefined') {
     window.TIME_SCALE = 'hourly';
 }
 
-// Alias to global for convenience throughout the codebase.
+// Alias to global for convenience throughout the codebase
 var TIME_SCALE = window.TIME_SCALE;
 
-// ── TIMEUTILS WRAPPER FUNCTIONS (for backward compatibility) ──────────────────
-// These wrappers were previously inline in map.html and are called by all modules.
+// TimeUtils.js Wrapper Functions (for backward compatibility)
 function formatCentralTime(utcString) {
     return TimeUtils.formatCentralTime(utcString);
 }
@@ -44,7 +45,7 @@ function toDailyKey(value) {
     return TimeUtils.toDailyKey(value);
 }
 
-// ── BASEMAP LAYERS ───────────────────────────────────────────────────────────
+// Basemap
 const tileLayers = {
     osm: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
         attribution: 'Tiles &copy; Esri',
@@ -52,16 +53,16 @@ const tileLayers = {
     }),
 };
 
-// ── MAP INIT ─────────────────────────────────────────────────────────────────
+//  Map Init
 var map = L.map('map', {
-    center: [41.8, -87.629],  // Chicago, IL default
+    center: [41.8, -87.629],  // Chicago, IL as default
     zoom: 10,
     layers: [tileLayers.osm],
     zoomControl: true,
     preferCanvas: true
 });
 
-// ── HOME BUTTON (reset view to Chicago) ──────────────────────────────────────
+// Home Button (reset view to Chicago)
 const homeCoords = [41.8, -87.629];
 const homeZoom = 10;
 
@@ -101,18 +102,18 @@ var HomeButton = L.Control.extend({
 
 map.addControl(new HomeButton());
 
-// ── GLOBAL VARIABLES ─────────────────────────────────────────────────────────
+// Global Variables
 var currentLayer = null;
 
-// Clarity (Open Air) color scale – linear, ppb
+// Open Air Chicago (Clarity) color scale –> linear, ppb
 const CLARITY_GLOBAL_MAX = 50;
 const CLARITY_GLOBAL_MIN = 0;
 
-// TEMPO color scale – sqrt-based, molecules/cm²
+// TEMPO color scale –> sqrt-based, molecules/cm²
 const TEMPO_GLOBAL_MAX = 5e16;
 const TEMPO_GLOBAL_MIN = 1e9;
 
-// Fusion color scale – same linear ppb scale as Clarity
+// Fusion color scale –> same linear ppb scale as Clarity
 const FUSION_GLOBAL_MAX = 50;
 const FUSION_GLOBAL_MIN = 0;
 
@@ -184,13 +185,13 @@ function canRenderTempo(label) {
     return true;
 }
 
-// ── DATE/STATE VARIABLES ─────────────────────────────────────────────────────
+// Date & State Variables 
 let rangeStartDate = null;
 let rangeEndDate = null;
 let rangeCurrentEndDate = null;
 
 let dates = [];
-let allDates = [];       // unfiltered copy — kept in sync by each date loader
+let allDates = [];       // unfiltered copy —> kept in sync by each date loader
 let rangeDates = [];
 let pendingPreferredDate = null;
 let pendingPreferredHour = null;
@@ -213,7 +214,7 @@ const tempoDailyCache = {};
 const tempoMonthlyCache = {};
 let communityIndexCache = {};
 
-// ── LAYER GROUPS ─────────────────────────────────────────────────────────────
+// Data Layer Groups
 const tempoLayerGroup = L.layerGroup().addTo(map);
 const openaqLayerGroup = L.layerGroup();
 const fusionLayerGroup = L.layerGroup();
@@ -222,7 +223,7 @@ let communityLayer = null;
 let savedMarkers = [];
 let markerIdSeq = 0;
 
-// ── CLEAR DATA LAYERS ────────────────────────────────────────────────────────
+// Clear Data Layers upon Refresh
 function clearDataLayers() {
     hideNoDataNotice();
     hideLoading();
@@ -247,7 +248,7 @@ function clearDataLayers() {
     }
 }
 
-// ── UPDATE BOTTOM CONTROL VISIBILITY ─────────────────────────────────────────
+// Update Time Slider Controls for each Map View
 function updateBottomControlVisibility() {
     const hourControls = document.getElementById("hourControls");
     const timeLabel = document.getElementById("timeLabel");

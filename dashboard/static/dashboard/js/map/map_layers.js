@@ -3,8 +3,9 @@
 // Load order: time_utils.js → map_init.js → map_layers.js → data_loader.js → map_controls.js
 // ──────────────────────────────────────────────────────────────────────────────
 
-// ── COLOR SCALES ──────────────────────────────────────────────────────────────
-// Clarity color scale – linear, ppb (0–50)
+// ─── COLOR SCALES ───
+
+// Clarity color scale → linear, ppb (0–50)
 function getColorClarity(no2) {
     if (no2 === null || no2 === undefined || isNaN(no2)) return "gray";
     if (CLARITY_GLOBAL_MAX === CLARITY_GLOBAL_MIN) return "blue";
@@ -16,7 +17,7 @@ function getColorClarity(no2) {
     return `rgb(${r}, ${g}, ${b})`;
 }
 
-// TEMPO color scale – sqrt-based, molecules/cm² (1e9 – 5e16)
+// TEMPO color scale → sqrt-based, molecules/cm² (1e9 – 5e16)
 function getColorTempo(no2) {
     if (no2 === null || no2 === undefined || isNaN(no2)) return "gray";
     if (TEMPO_GLOBAL_MAX === TEMPO_GLOBAL_MIN) return "blue";
@@ -31,7 +32,7 @@ function getColorTempo(no2) {
     return `rgb(${r}, ${g}, ${b})`;
 }
 
-// Unified getColor – delegates to the correct scale based on current data product
+// Unified getColor → delegates to the correct scale based on current data product
 function getColor(no2) {
     if (currentDataProduct === "tempo") {
         return getColorTempo(no2);
@@ -39,7 +40,9 @@ function getColor(no2) {
     return getColorClarity(no2);
 }
 
-// ── V4 RENDER FEATURES (Clarity Sensors) ─────────────────────────────────────
+// ─── CLARITY LAYER ───
+
+// Render Clarity Features
 function renderFeatures(filteredFeatures, date) {
     filteredFeatures = filteredFeatures || [];
     let grouped = {};
@@ -132,7 +135,7 @@ function renderFeatures(filteredFeatures, date) {
     hideLoading();
 }
 
-// ── V4 COMMUNITY AREA RENDERING (Clarity) ────────────────────────────────────
+// Draw Clarity Community Areas
 function drawCommunityAreas(filteredFeatures) {
     if (!communityData) {
         console.warn("Community data not loaded");
@@ -207,7 +210,9 @@ function drawCommunityAreas(filteredFeatures) {
     hideLoading();
 }
 
-// ── TEMPO COMMUNITY AREAS (hourly) ───────────────────────────────────────────
+// ─── TEMPO LAYER ───
+
+// Draw TEMPO Community Areas
 function drawTempoCommunityAreas(filteredFeatures) {
     filteredFeatures = filteredFeatures || [];
     if (!canRenderTempo("drawTempoCommunityAreas")) return;
@@ -287,7 +292,7 @@ function drawTempoCommunityAreas(filteredFeatures) {
     hideLoading();
 }
 
-// ── TEMPO RENDER FEATURES (hourly grid cells) ────────────────────────────────
+// Render Hourly TEMPO Features
 function renderTempoFeatures(filteredFeatures, date) {
     filteredFeatures = filteredFeatures || [];
     if (!canRenderTempo("renderTempoFeatures")) return;
@@ -325,7 +330,7 @@ function renderTempoFeatures(filteredFeatures, date) {
     hideLoading();
 }
 
-// ── TEMPO DAILY RENDER ───────────────────────────────────────────────────────
+// Render Daily TEMPO Features
 function renderDailyTempoData(data) {
     if (!canRenderTempo("renderDailyTempoData")) return;
     const newLayer = L.layerGroup();
@@ -356,7 +361,7 @@ function renderDailyTempoData(data) {
     hideLoading();
 }
 
-// ── TEMPO MONTHLY RENDER ─────────────────────────────────────────────────────
+// Render Monthly TEMPO Features
 function renderMonthlyTempoData(data, load) {
     if (!isActiveLoad(load)) {
         console.log("Blocked stale TEMPO monthly render");
@@ -394,7 +399,9 @@ function renderMonthlyTempoData(data, load) {
     hideLoading();
 }
 
-// ── FUSION HELPERS ───────────────────────────────────────────────────────────
+// ─── FUSION LAYER ───
+
+// Fusion Value Helpers
 function getFusionValue(properties) {
     if (!properties) {
         return NaN;
@@ -402,6 +409,7 @@ function getFusionValue(properties) {
     return Number(properties.no2_estimate);
 }
 
+// Render Fusion Helpers
 function renderFusionFeatures(features, labelText) {
     features = features || [];
 
@@ -489,6 +497,7 @@ function renderFusionFeatures(features, labelText) {
     return true;
 }
 
+// Draw Fusion Community Areas
 function renderFusionCommunityAreas(rows, labelText) {
     rows = rows || [];
 
@@ -599,7 +608,9 @@ function renderFusionCommunityAreas(rows, labelText) {
     return true;
 }
 
-// ── LEGEND ───────────────────────────────────────────────────────────────────
+// ─── UPDATE WIDGETS ───
+
+// Update Legend for each Data Product
 function updateLegend() {
     const legendOverlay = document.getElementById('map-legend-overlay');
     if (!legendOverlay) return;
@@ -625,6 +636,7 @@ function updateLegend() {
     }
 }
 
+// Update 'Aggregation Level' Section in Map Sidebar for each Data Product
 function updateIndividualModeLabel() {
     const label = document.getElementById('individual-mode-label');
     if (!label) {

@@ -3,8 +3,7 @@
 // Load order: time_utils.js → map_init.js → map_layers.js → data_loader.js → map_controls.js
 // ──────────────────────────────────────────────────────────────────────────────
 
-// ── UI HELPERS ───────────────────────────────────────────────────────────────
-
+// UI Helpers
 function showLoading(message) {
     hideNoDataNotice();
     const overlay = document.getElementById("map-loading-overlay");
@@ -20,6 +19,7 @@ function hideLoading() {
     if (overlay) overlay.classList.remove("visible");
 }
 
+// 'No Data' Buttons and Warnings
 function showNoDataNotice(title, detailText) {
     const notice = document.getElementById("map-no-data-notice");
     const textEl = document.getElementById("map-no-data-text");
@@ -77,8 +77,7 @@ function showToast(message, level) {
 }
 window.showToast = showToast;
 
-// ── EXPORT MAP AS PNG ────────────────────────────────────────────────────────
-
+// Export Map as PNG Button
 async function exportMapAsPNG() {
     const btn = document.getElementById('export-png-btn');
     btn.disabled = true; btn.textContent = 'Capturing...';
@@ -110,8 +109,7 @@ async function exportMapAsPNG() {
     }
 }
 
-// ── SCALEBAR ─────────────────────────────────────────────────────────────────
-
+// Dynamic Scalebar Functions
 function updateScaleBar() {
     const ruler = document.getElementById('scalebar-ruler');
     const ticksContainer = document.getElementById('scalebar-ticks');
@@ -146,6 +144,7 @@ function updateScaleBar() {
     }
 }
 
+// Play and Pause Buttons are not Active at the Same Time
 function resetPlaybackUI() {
     const playBtn = document.getElementById("playBtn"); const pauseBtn = document.getElementById("pauseBtn");
     const dateSlider = document.getElementById("dateSlider"); const timeSlider = document.getElementById("timeSlider");
@@ -155,11 +154,13 @@ function resetPlaybackUI() {
     if (timeSlider) timeSlider.disabled = false;
 }
 
+// Refresh Map after New Product is Selected
 function refreshMap() {
     if (dates.length === 0) return;
     loadDate(dates[Number(document.getElementById("dateSlider").value)]);
 }
 
+// 'Select Date' and 'Load' Functions
 function updateDateAndTimeLabels(date) {
     const dateLabel = document.getElementById("dateLabel"); const timeLabel = document.getElementById("timeLabel");
     if (!date) return;
@@ -168,6 +169,7 @@ function updateDateAndTimeLabels(date) {
     if (timeLabel && TIME_SCALE === "hourly") timeLabel.innerHTML = `Time: ${formatHourForDisplay(date, selectedHour)}`;
 }
 
+//'Hourly', 'Daily', or 'Monthly' Map Type Buttons
 let currentMapType = TIME_SCALE;
 
 function selectMapType(type) {
@@ -190,6 +192,7 @@ function handleMapTypeClick(event, type) {
 }
 window.handleMapTypeClick = handleMapTypeClick;
 
+// 'Individual' or 'Community' Aggregation Radio Buttons
 function changeAggregation(type) {
     if (type !== TIME_SCALE && ["hourly","daily","monthly"].includes(type)) return;
     TIME_SCALE = type;
@@ -209,6 +212,7 @@ function changeAggregation(type) {
     loadClarityDates();
 }
 
+// Date Selection from 'Load' and Time Slider
 function getCurrentSelectedDateFromSlider() {
     const ds = document.getElementById("dateSlider"); if (!ds || !dates || dates.length === 0) return null; return dates[Number(ds.value)] || null;
 }
@@ -256,7 +260,7 @@ function applyPreferredDateAndHourAfterDateLoad(load) {
     loadDate(selDate, load);
 }
 
-// ── PAGE INIT (inside setTimeout) ───────────────────────────────────────────
+// Page Init (inside setTimeout) for All Widgets
 
 setTimeout(() => {
     var dateSlider = document.getElementById("dateSlider"); var dateLabel = document.getElementById("dateLabel");
@@ -405,10 +409,12 @@ setTimeout(() => {
         map.removeLayer(tempoLayerGroup); map.removeLayer(openaqLayerGroup); map.removeLayer(fusionLayerGroup);
 
         if (currentDataProduct === "tempo") {
-            displayMode = "sensor"; document.querySelectorAll('input[name="displayMode"]').forEach(r => r.checked = (r.value === "sensor"));
+            displayMode = document.querySelector('input[name="displayMode"]:checked')?.value || displayMode || "sensor";
+            document.querySelectorAll('input[name="displayMode"]').forEach(r => r.checked = (r.value === displayMode));
             updateLegend(); loadTempoDates(); showToast("TEMPO data product selected");
         } else if (currentDataProduct === "clarity") {
-            displayMode = "sensor"; document.querySelectorAll('input[name="displayMode"]').forEach(r => r.checked = (r.value === "sensor"));
+            displayMode = document.querySelector('input[name="displayMode"]:checked')?.value || displayMode || "sensor";
+            document.querySelectorAll('input[name="displayMode"]').forEach(r => r.checked = (r.value === displayMode));
             updateLegend(); loadClarityDates(); showToast("Open Air Chicago (Clarity) data product selected");
         } else if (currentDataProduct === "fusion") {
             displayMode = document.querySelector('input[name="displayMode"]:checked')?.value || displayMode || "sensor";
@@ -417,7 +423,7 @@ setTimeout(() => {
         cachedDate = null; cachedFeatures = null; cachedHourBuckets = null; nextCachedDate = null; nextCachedHourBuckets = null;
     }));
 
-    // Coords bar
+    // Coordinates bar
     map.on('mousemove', e => { document.getElementById('coords-text').textContent = `Lat: ${e.latlng.lat.toFixed(5)}  Lng: ${e.latlng.lng.toFixed(5)}`; });
     map.on('zoomend', () => { document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`; });
     document.getElementById('zoom-text').textContent = `Zoom: ${map.getZoom()}`;

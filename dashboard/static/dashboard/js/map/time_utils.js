@@ -1,7 +1,7 @@
-/**
- * Time Utilities Module
- * Consolidated time conversion and formatting functions for Chicago timezone handling
- */
+// ──────────────────────────────────────────────────────────────────────────────
+// time_utils.js — Consolidated time conversion and formatting functions for Chicago timezone handling
+// Load order: time_utils.js → map_init.js → map_layers.js → data_loader.js → map_controls.js
+// ──────────────────────────────────────────────────────────────────────────────
 
 const TimeUtils = (function() {
     // Timezone formatters

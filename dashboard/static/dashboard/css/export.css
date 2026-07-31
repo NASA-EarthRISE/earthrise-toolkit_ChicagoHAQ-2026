@@ -1,16 +1,15 @@
-/* ── GLOBAL FONT ── */
 .export-layout,
 .export-layout * {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
 }
 
-/* EXPORT PAGE LAYOUT */
 .export-layout {
   display: flex;
   gap: 1.5rem;
   min-height: calc(100vh - var(--nav-height) - 80px);
 }
 
+/* Export Filters Sidebar */
 .export-controls {
   width: 320px;
   flex-shrink: 0;
@@ -22,24 +21,6 @@
   overflow: visible;
   display: flex;
   flex-direction: column;
-}
-
-.export-tab-content {
-  display: none;
-  padding: 1.25rem;
-  overflow: visible;
-  flex: 1;
-}
-
-.export-tab-content.active {
-  display: block;
-}
-
-.export-preview {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
 }
 
 .export-controls h2 {
@@ -61,7 +42,26 @@
   margin-bottom: 0.5rem;
 }
 
-/* Map type selector buttons */
+.export-tab-content {
+  display: none;
+  padding: 1.25rem;
+  overflow: visible;
+  flex: 1;
+}
+
+.export-tab-content.active {
+  display: block;
+}
+
+/* Data File Container */
+.export-preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Data Source Filter */
 .map-type-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -98,7 +98,7 @@
   color: #ffffff;
 }
 
-/* ── FORM GROUPS (Export) ─────────────────── */
+/* Date Filters */
 .form-group {
   margin-bottom: 0.75rem;
 }
@@ -216,7 +216,7 @@
   border: 1px solid #fed7d7;
 }
 
-/* ── DATA FILE EXPORT PANEL ── */
+/* Data File List */
 .data-export-preview {
   flex: 1;
   background: var(--bg-card);
