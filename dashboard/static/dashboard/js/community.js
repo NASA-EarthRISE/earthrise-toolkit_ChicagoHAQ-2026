@@ -598,11 +598,11 @@ function renderPercentileGraph(communityName) {
    // Check if percentile data is available for this community
    if (communityPercentile === null || communityPercentile === undefined) {
     const noDataMsg =
-      metric === 'ground'
-        ? 'No Open Air Chicago sensors available for this community. Percentile ranking cannot be calculated.'
-        : metric === 'tempo'
-          ? 'No TEMPO data available for this community. Percentile ranking cannot be calculated.'
-          : 'No Fused data available for this community. Percentile ranking cannot be calculated.';
+       metric === 'ground'
+         ? 'No Open Air Chicago sensors available for this community.'
+         : metric === 'tempo'
+           ? 'No TEMPO data available for this community.'
+           : 'No Fused data available for this community.';
 
     const oldChart = container.querySelector('.plotly-chart');
     if (oldChart) oldChart.remove();
@@ -762,10 +762,13 @@ const sourceLabel =
 
       if (filteredData.length === 0) {
         if (loadingEl) loadingEl.classList.remove('visible');
-        showNoData(
-          container,
-          `${sourceLabel} NO₂ data not available.`
-        );
+        const noDataMsg =
+          source === 'ground'
+            ? 'No Open Air Chicago sensors available for this community.'
+            : source === 'tempo'
+              ? 'No TEMPO data available for this community.'
+              : 'No Fused data available for this community.';
+        showNoData(container, noDataMsg);
         return;
       }
 
@@ -945,10 +948,13 @@ const sourceLabel =
 
       if (filteredData.length === 0) {
         if (loadingEl) loadingEl.classList.remove('visible');
-        showNoData(
-          container,
-          `${sourceLabel} NO₂ data not available.`
-        );
+        const noDataMsg =
+          source === 'ground'
+            ? 'No Open Air Chicago sensors available for this community.'
+            : source === 'tempo'
+              ? 'No TEMPO data available for this community.'
+              : 'No Fused data available for this community.';
+        showNoData(container, noDataMsg);
         return;
       }
 
