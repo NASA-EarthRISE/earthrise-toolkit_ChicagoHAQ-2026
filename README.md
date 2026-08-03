@@ -37,11 +37,12 @@ This dashboard was built by the **Summer 2026 NASA EarthRISE Developers Academy*
 | | |
 |---|---|
 | **Anya Desai** | **Margot Langenbach** |
-| Team Member | Team Member |
+| Team Member (@anyadesai) | Team Member (@mlangenbach) |
 | **Caitlyn McClanahan** | **Kathryn Phung** |
-| Team Member | Team Member |
+| Team Member (@mcclancait10) | Team Member (@kathrynphung) |
 | **Noah Ring** | **Kristina Glass** |
-| Team Member | Project Coordinator |
+| Team Member (@noah-ring) | Project Coordinator (@kristinaglass) |
+
 
 ### Our Partners
 
