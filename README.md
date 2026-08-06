@@ -26,7 +26,7 @@ The project is built with Django and uses a file-based data architecture, as dat
 
 ## This Project
 
-Tropospheric ozone is a major public health concern in the Chicago metropolitan area, with nitrogen dioxide (NO<sub>2</sub>) serving as a practical proxy for understanding spatiotemporal patterns of pollution. The NASA EarthRISE Developers Academy Summer 2026 Chicago Health & Air Quality research team worked with partners from the Lake Michigan Air Directors Consortium (LADCO) on a project that aimed to assess regional air quality concerns from potential sources of NO<sub>2</sub> pollution across Chicago and the broader Cook County, Illinois, area. Utilizing TEMPO satellite data and Open Air Chicago ground sensor data collected from September 2025 to June 2026, the team created a fused data product that estimates surface-level NO<sub>2</sub> concentrations using a collection of data sources and estimating parameters. This dashboard visualizes those spatiotemporal trends of NO<sub>2</sub> pollution across Chicago and its community areas.
+Tropospheric ozone is a major public health concern in the Chicago metropolitan area, with nitrogen dioxide (NO<sub>2</sub>) serving as a practical proxy for understanding spatiotemporal patterns of pollution. The NASA EarthRISE Developers Academy Summer 2026 Chicago Health & Air Quality research team worked with partners from the Lake Michigan Air Directors Consortium (LADCO) on a project that aimed to assess regional air quality concerns from potential sources of NO<sub>2</sub> pollution across Chicago and the broader Cook County, Illinois, area. Using TEMPO satellite data and Open Air Chicago ground sensor data collected from September 2025 to June 2026, the team created a fused data product that estimates surface-level NO<sub>2</sub> concentrations from a combination of data sources and estimated parameters. This dashboard visualizes those spatiotemporal trends of NO<sub>2</sub> pollution across Chicago and its community areas.
 
 ---
 
@@ -34,19 +34,15 @@ Tropospheric ozone is a major public health concern in the Chicago metropolitan 
 
 This dashboard was built by the **Summer 2026 NASA EarthRISE Developers Academy** Chicago Health & Air Quality research team in collaboration with NASA Langley Research Center and the Lake Michigan Air Directors Consortium (LADCO).
 
-| | |
-|---|---|
-| **Anya Desai** | **Margot Langenbach** |
-| Team Member (@anyadesai) | Team Member (@mlangenbach) |
-| **Caitlyn McClanahan** | **Kathryn Phung** |
-| Team Member (@mcclancait10) | Team Member (@kathrynphung) |
-| **Noah Ring** | **Kristina Glass** |
-| Team Member (@noah-ring) | Project Coordinator (@kristinaglass) |
+| Team Member | Team Member | Team Member | Team Member | Team Member | Project Coordinator |
+|---|---|---|---|---|---|
+| **Anya Desai** | **Caitlyn McClanahan** | **Margot Langenbach** | **Kathryn Phung** | **Noah Ring** | **Kristina Glass** |
+| @anyadesai | @mcclancait10 | @mlangenbach | @kathrynphung | @noah-ring | @kristinaglass |
 
 
 ### Our Partners
 
-We'd like to thank **Zac Adelman**, **Angie Dickens**, and **Grant Coleman** from [LADCO](https://www.ladco.org/) for their valuable insights and collaboration throughout this project.
+We want to thank **Zac Adelman**, **Angie Dickens**, and **Grant Coleman** from [LADCO](https://www.ladco.org/) for their valuable insights and collaboration throughout this project.
 
 ---
 
@@ -65,19 +61,19 @@ We'd like to thank **Zac Adelman**, **Angie Dickens**, and **Grant Coleman** fro
   - [3. A terminal](#3-a-terminal)
   - [4. A code editor (recommended)](#4-a-code-editor-recommended)
 - [Local Setup](#local-setup)
-  - [Step 1: Clone the repository](#step-1--clone-the-repository)
-  - [Step 2: Create a virtual environment](#step-2--create-a-virtual-environment)
-  - [Step 3: Install dependencies](#step-3--install-dependencies)
-  - [Step 4: Run database migrations](#step-4--run-database-migrations)
-  - [Step 5: (Optional) Create a superuser](#step-5--optional-create-a-superuser)
-  - [Step 6: Start the development server](#step-6--start-the-development-server)
+  - [Step 1. Clone the repository](#step-1-clone-the-repository)
+  - [Step 2. Create a virtual environment](#step-2-create-a-virtual-environment)
+  - [Step 3. Install dependencies](#step-3-install-dependencies)
+  - [Step 4. Run database migrations](#step-4-run-database-migrations)
+  - [Step 5. (Optional) Create a superuser](#step-5-optional-create-a-superuser)
+  - [Step 6. Start the development server](#step-6-start-the-development-server)
 - [Project Structure](#project-structure)
 - [Running the Dashboard](#running-the-dashboard)
   - [Start the server](#start-the-server)
   - [Run on a different port](#run-on-a-different-port-if-8000-is-in-use)
   - [Run accessible on local network](#run-accessible-to-other-devices-on-your-local-network)
   - [Check for configuration errors](#check-for-configuration-errors-without-starting-the-server)
-  - [Create migrations after editing models](#create-new-migration-files-after-editing-models)
+  - [Create migrations after editing models](#create-migrations-after-editing-models.py)
 - [Available Routes](#available-routes)
 - [Frontend JavaScript Architecture](#frontend-javascript-architecture)
   - [time_utils.js](#time_utilsjs)
@@ -93,8 +89,8 @@ We'd like to thank **Zac Adelman**, **Angie Dickens**, and **Grant Coleman** fro
   - [ActivityLog](#activitylog)
   - [File-based activity log](#file-based-activity-log)
 - [Database](#database)
-  - [Local development: SQLite](#local-development--sqlite)
-  - [Production: PostgreSQL](#production--postgresql)
+  - [Local development (SQLite)](#local-development-sqlite)
+  - [Production (PostgreSQL)](#production-postgresql)
 - [Processing Raw Data](#processing-raw-data)
   - [Available scripts](#available-scripts)
   - [Data pipeline overview](#data-pipeline-overview)
@@ -109,16 +105,16 @@ We'd like to thank **Zac Adelman**, **Angie Dickens**, and **Grant Coleman** fro
   - [Date index files (dates.json)](#date-index-files-datesjson)
   - [Automatic file discovery](#automatic-file-discovery)
 - [Setting Up a New API Endpoint](#setting-up-a-new-api-endpoint)
-  - [Step 1: Write the view function](#step-1--write-the-view-function)
-  - [Step 2: Register the URL pattern](#step-2--register-the-url-pattern)
-  - [Step 3: Call from the frontend](#step-3--call-from-the-frontend)
+  - [Step 1. Write the view function](#step-1-write-the-view-function)
+  - [Step 2. Register the URL pattern](#step-2-register-the-url-pattern)
+  - [Step 3. Call from the frontend](#step-3-call-from-the-frontend)
   - [Query parameter filtering](#query-parameter-filtering)
   - [Complete example](#complete-example)
 - [Adding a New Page](#adding-a-new-page)
-  - [Step 1: Create the template](#step-1--create-the-template)
-  - [Step 2: Add the view function](#step-2--add-the-view-function)
-  - [Step 3: Register the URL](#step-3--register-the-url)
-  - [Step 4: Add nav link](#step-4--add-nav-link)
+  - [Step 1. Create the template](#step-1-create-the-template)
+  - [Step 2. Add the view function](#step-2-add-the-view-function)
+  - [Step 3. Register the URL](#step-3-register-the-url)
+  - [Step 4. Add nav link](#step-4-add-nav-link)
 - [Configuration & Environment Variables](#configuration--environment-variables)
   - [Local development settings](#local-development-settings)
   - [Production environment variables](#production-environment-variables)
@@ -127,7 +123,7 @@ We'd like to thank **Zac Adelman**, **Angie Dickens**, and **Grant Coleman** fro
   - [Virtual environment not active](#venv-is-not-showing-in-my-prompt)
   - [ModuleNotFoundError](#modulenotfounderror-no-module-named-)
   - [Port 8000 already in use](#port-8000-already-in-use)
-  - [TemplateDoesNotExist](#templatedoesnotexist)
+  - [TemplateDoesNotExist](#templatedoesnotexist--dashboard/my_page.html)
   - [Database table errors](#djangodbutilsoperationerror-no-such-table)
   - [Data file 404 errors](#data-file-not-found-404-errors)
   - [Dashboard webpage not updating after saved changes](#dashboard-webpage-not-updating-after-saved-changes)
@@ -173,7 +169,7 @@ We'd like to thank **Zac Adelman**, **Angie Dickens**, and **Grant Coleman** fro
 
 ## Prerequisites
 
-Complete every item here before touching any project code. This is a true cold-start list for a machine that has nothing installed.
+Complete every item here before touching any project code. This is a true cold start list for a desktop that has nothing installed.
 
 ### 1. Python 3.14
 
@@ -216,9 +212,9 @@ If not, download from https://git-scm.com/downloads and install with default set
 
 ## Local Setup
 
-Follow these steps in order. Do not skip steps. Type and 'Enter' each line one-by-one.
+Follow these steps in order. Do not skip steps. Type each command line in the terminal one-by-one.
 
-### Step 1 — Clone the repository
+### Step 1. Clone the repository
 
 ```bash
 git clone https://github.com/NASA-EarthRISE-DevelopersAcademy/develop-AQ_LaRC_2026.git
@@ -227,7 +223,7 @@ cd develop-AQ_LaRC_2026
 
 You are now inside the project root. All remaining commands run from this directory unless noted otherwise.
 
-### Step 2 — Create a virtual environment
+### Step 2. Create a virtual environment
 
 A virtual environment isolates this project's Python packages from everything else on your machine. You only do this once.
 
@@ -250,7 +246,7 @@ To deactivate the virtual environment when you're done working:
 deactivate
 ```
 
-### Step 3 — Install dependencies
+### Step 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -264,7 +260,7 @@ python -m django --version
 # Expected: 6.0.x
 ```
 
-### Step 4 — Run database migrations
+### Step 4. Run database migrations
 
 Django uses migrations to create and update database tables. Run this once on first setup, and again any time someone adds new migrations to the repo.
 
@@ -272,7 +268,7 @@ Django uses migrations to create and update database tables. Run this once on fi
 python manage.py migrate
 ```
 
-Expected output — you should see a list of migrations each ending in `OK`:
+Expected output -> you should see a list of migrations each ending in `OK`:
 ```
 Operations to perform:
   Apply all migrations: admin, auth, contenttypes, dashboard, sessions
@@ -284,7 +280,7 @@ Running migrations:
 
 If you see `OK` for all items, the database is ready.
 
-### Step 5 — (Optional) Create a superuser
+### Step 5. (Optional) Create a superuser
 
 If you want to access the Django admin panel at `/admin/`, create an admin account:
 
@@ -294,7 +290,7 @@ python manage.py createsuperuser
 
 You'll be prompted for a username, email, and password. The email can be left blank. Use any password you like for local development.
 
-### Step 6 — Start the development server
+### Step 6. Start the development server
 
 ```bash
 python manage.py runserver
@@ -323,6 +319,9 @@ Open your browser and go to:
 
 To stop the server press `CTRL + C`.
 
+Note: These are not the only URLs available through the dashboard. For more URLs, visit the [Available Routes](#available-routes) section. 
+
+
 ---
 
 ## Project Structure
@@ -346,6 +345,7 @@ develop-AQ_LaRC_2026/
 │   │   └── activity_log.json   # File-based activity log (auto-created at runtime)
 │   ├── templates/
 │   │   └── dashboard/
+│   │       ├── layout.html     # Root layout HTML
 │   │       ├── includes/       # Reusable HTML fragments (navbar, map sidebar)
 │   │       └── pages/          # Web page templates
 │   │           ├── about.html
@@ -357,28 +357,28 @@ develop-AQ_LaRC_2026/
 │   │           └── userguide.html    # Dashboard tutorial
 │   ├── static/
 │   │   └── dashboard/
-│   │       ├── css/            # Stylesheet files (one per page/feature)
+│   │       ├── css/                # Stylesheet files (one per page/feature)
 │   │       │   ├── layout.css      # Base layout -> nav, footer, body, toast
 │   │       │   ├── map.css         # Map page -> container, overlays, legends
 │   │       │   ├── map_sidebar.css # Map sidebar -> controls, sliders, playback
 │   │       │   ├── community.css   # Community statistics page
 │   │       │   └── export.css      # Data export page
-│   │       ├── images/         # Logos, gradients, team photos, compass SVG
-│   │       ├── js/             # Application JavaScript
+│   │       ├── images/             # Logos, gradients, team photos, compass SVG
+│   │       ├── js/                 # Application JavaScript
 │   │       │   ├── navbar.js
 │   │       │   ├── export.js
 │   │       │   ├── home.js
 │   │       │   ├── community.js
-│   │       │   └── map/        # Map-related JS modules
+│   │       │   └── map/                  # Map-related JS modules
 │   │       │       ├── time_utils.js     # Shared time/date conversion utilities
 │   │       │       ├── map_init.js       # Map configuration, global state, initialization
 │   │       │       ├── map_layers.js     # Color scales, layer rendering, legends
 │   │       │       ├── data_loader.js    # Data fetching, date loading, caching
 │   │       │       └── map_controls.js   # UI controls, events, notices, initialization
-│   │       └── layers/         # Chicago boundary GeoJSON files
+│   │       └── layers/                   # Chicago boundary GeoJSON files
 │   │           ├── Chicago.geojson
 │   │           ├── ChicagoCommunityAreas.geojson
-│   │           └── oacd.geojson
+│   │           └── Sensors.geojson
 │   ├── views.py                # Request handlers and API endpoints
 │   ├── urls.py                 # URL patterns for this app
 │   ├── models.py               # Database models (LogMessage, ActivityLog)
@@ -386,15 +386,18 @@ develop-AQ_LaRC_2026/
 │   └── apps.py                 # App configuration
 │
 ├── processing-scripts/         # Data processing notebooks and scripts
-│   ├── clarity-tempo-aggregation.ipynb
-│   ├── clarity-tempo-fusion.ipynb
+│   ├── data-aggregation.py
+│   ├── merge_fusion_by_community.py
 │   └── ...
-│
+│ 
+├── docs/                       # ReadME.md screenshots and images
+│   └── ...
+│ 
 ├── manage.py                   # Django CLI entry point
 ├── requirements.txt            # Python package dependencies
 ├── Procfile                    # Heroku/Render process definition
 ├── runtime.txt                 # Python version for hosting platforms
-└── db.sqlite3                  # Local SQLite database (auto-created)
+└── db.sqlite3                  # Local SQLite database (auto created)
 ```
 
 ---
@@ -421,7 +424,7 @@ python manage.py runserver 0.0.0.0:8000
 python manage.py check
 ```
 
-### Create new migration files after editing `models.py`
+### Create migrations after editing `models.py`
 ```bash
 python manage.py makemigrations
 python manage.py migrate
@@ -460,41 +463,41 @@ python manage.py migrate
 
 The dashboard's frontend is split into modular JavaScript files under `dashboard/static/dashboard/js/`. Understanding this structure helps when customizing maps, controls, or export behavior.
 
+Note: Pollution Map JS load order: `time_utils.js` → `map_init.js` → `map_layers.js` → `data_loader.js` → `map_controls.js`
+
 ### time_utils.js
 
 **Purpose:** Shared time/date conversion and formatting utilities, exported as a `TimeUtils` namespace (IIFE module). Loaded first in the map JS chain.
 
-**Load order:** `time_utils.js` → `map_init.js` → `map_layers.js` → `data_loader.js` → `map_controls.js`
-
 Key responsibilities:
-- `parseUTCString()` — parses UTC date strings (with or without timezone indicator) into JavaScript `Date` objects
-- `getChicagoParts()` — returns an object with year, month, day, hour, and timeZoneName for a given Date in Chicago time using `Intl.DateTimeFormat`
-- `getChicagoDateString()` — extracts a Chicago `YYYY-MM-DD` string from a UTC string
-- `formatCentralTime()` — formats a UTC timestamp to a readable Central Time string (e.g., "09:30:45 CDT")
-- `formatCentralDate()` — formats a UTC string to a human-readable Chicago date (e.g., "Sep 15, 2025")
-- `isDailyDate()` / `isMonthlyDate()` — regex checks for `YYYY-MM-DD` and `YYYY-MM` formats
-- `toMonthKey()` / `toDailyKey()` — normalize date strings to month or daily keys
-- `formatMonthForDisplay()` — converts a `YYYY-MM` key to a localized month name (e.g., "September 2025")
-- `formatDailyForDisplay()` — converts a `YYYY-MM-DD` key to a localized date string (e.g., "September 1, 2025")
-- `formatDateForDisplay()` — universal formatter that dispatches to monthly or daily based on input
-- `formatHourForDisplay()` — converts a slider hour (0–23) and date to a human-readable label (e.g., "2 PM CDT"), with DST gap handling
-- `getPreviousDay()` — returns the day before a given `YYYY-MM-DD` string
-- `extractChicagoDateHour()` — parses a feature's `time` property and returns `{ date, hour }` in Chicago timezone
+- `parseUTCString()`: parses UTC date strings (with or without timezone indicator) into JavaScript `Date` objects
+- `getChicagoParts()`: returns an object with year, month, day, hour, and timeZoneName for a given Date in Chicago time using `Intl.DateTimeFormat`
+- `getChicagoDateString()`: extracts a Chicago `YYYY-MM-DD` string from a UTC string
+- `formatCentralTime()`: formats a UTC timestamp to a readable Central Time string (ex. "09:30:45 CDT")
+- `formatCentralDate()`: formats a UTC string to a readable Chicago date (ex. "Sep 15, 2025")
+- `isDailyDate()` / `isMonthlyDate()`: regex checks for `YYYY-MM-DD` and `YYYY-MM` formats
+- `toMonthKey()` / `toDailyKey()`: normalize date strings to month or daily keys
+- `formatMonthForDisplay()`: converts a `YYYY-MM` key to a localized month name (ex. "September 2025")
+- `formatDailyForDisplay()`: converts a `YYYY-MM-DD` key to a localized date string (ex. "September 1, 2025")
+- `formatDateForDisplay()`: universal formatter that dispatches to monthly or daily based on input
+- `formatHourForDisplay()`: converts a slider hour (0–23) and date to a human-readable label (ex. "2 PM CDT"), with DST gap handling
+- `getPreviousDay()`: returns the day before a given `YYYY-MM-DD` string
+- `extractChicagoDateHour()`: parses a feature's `time` property and returns `{ date, hour }` in Chicago timezone
 
 ### map_init.js
 
-**Purpose:** Map configuration, global state, backward-compatibility wrappers, and initialization. Second in the load chain.
+**Purpose:** Map configuration, global state, backward compatibility wrappers, and initialization. Second in the load chain.
 
 Key responsibilities:
 - Creates the `L.map()` instance centered on Chicago `[41.8, -87.629]` with Esri basemap tiles
 - Adds the home/reset button control (inline SVG house icon)
 - Defines backward-compatibility wrapper functions (`formatCentralTime`, `formatHourForDisplay`, `formatMonthForDisplay`, etc.) that delegate to `TimeUtils`
 - Sets global state variables: color scale constants (`CLARITY_GLOBAL_MAX/MIN`, `TEMPO_GLOBAL_MAX/MIN`, `FUSION_GLOBAL_MAX/MIN`), `selectedHour`, `displayMode`, `currentDataProduct`, `dates`, `allDates`, caching vars, layer groups
-- `normalizeDataProduct()` — maps user-facing product names ("openaq", "openair") to internal keys ("clarity")
-- `startNewLoad()` / `isActiveLoad()` — load token system to prevent stale async renders
-- `canRenderTempo()` — guard to block TEMPO renders when product has switched
-- `clearDataLayers()` — removes all data layers, community layers, and heat layers from the map
-- `updateBottomControlVisibility()` — shows/hides hour controls based on `TIME_SCALE`
+- `normalizeDataProduct()`: maps user-facing product names ("openaq", "openair") to internal keys ("clarity")
+- `startNewLoad()` / `isActiveLoad()`: load token system to prevent stale async renders
+- `canRenderTempo()`: guard to block TEMPO renders when product has switched
+- `clearDataLayers()`: removes all data layers, community layers, and heat layers from the map
+- `updateBottomControlVisibility()`: shows/hides hour controls based on `TIME_SCALE`
 
 ### map_layers.js
 
@@ -505,14 +508,14 @@ Key responsibilities:
   - Clarity: linear 0–50 ppb (`getColorClarity`)
   - TEMPO: sqrt-based 1e9–5e16 molecules/cm² (`getColorTempo`)
   - Unified `getColor()` delegates to the correct scale based on `currentDataProduct`
-- Clarity rendering: `renderFeatures()` — groups sensor readings by name, creates circle markers sized by average NO₂
-- Community area rendering: `drawCommunityAreas()` — computes per-community averages using Turf.js point-in-polygon
+- Clarity rendering: `renderFeatures()`: groups sensor readings by name, creates circle markers sized by average NO₂
+- Community area rendering: `drawCommunityAreas()` : computes per-community averages using Turf.js point-in-polygon
 - TEMPO rendering: `renderTempoFeatures()` (hourly grid cells), `renderDailyTempoData()`, `renderMonthlyTempoData()`
 - TEMPO community areas: `drawTempoCommunityAreas()`
 - Fusion rendering: `renderFusionFeatures()` (grid cells), `renderFusionCommunityAreas()` (weighted community averages)
-- `getFusionValue()` — extracts `no2_estimate` from fusion feature properties
-- Legend: `updateLegend()` — updates legend title and numbers based on active data product
-- `updateIndividualModeLabel()` — changes "Individual Sensor" / "Individual Pixel" / "Individual Grid Cell" label text
+- `getFusionValue()`: extracts `no2_estimate` from fusion feature properties
+- Legend: `updateLegend()`: updates legend title and numbers based on active data product
+- `updateIndividualModeLabel()`: changes "Individual Sensor" / "Individual Pixel" / "Individual Grid Cell" label text
 
 ### data_loader.js
 
@@ -520,14 +523,14 @@ Key responsibilities:
 
 Key responsibilities:
 - CSV parsing and community helpers: `parseSimpleCSV()`, `normalizeCommunityName()`, `getCommunityFeatureName()`
-- Fusion community CSV loader: `loadFusionCommunityCSV()` — loads and caches `/data/fused/fused_hourly_by_community.csv`
+- Fusion community CSV loader: `loadFusionCommunityCSV()`: loads and caches `/data/fused/fused_hourly_by_community.csv`
 - Hour bucket builders and prefetching: `buildHourBuckets()`, `prefetchNextDay()`, `prefetchTempoNextDay()`
 - Fusion data loaders: `loadFusionHourly()`, `loadFusionDaily()`, `loadFusionMonthly()`, `loadFusionCommunities()`
 - Clarity data loaders: `loadDailySensors()`, `loadMonthlySensors()`, `loadDailyCommunities()`, `loadMonthlyCommunities()`, `loadDateRange()`, `renderCommunityRange()`
 - TEMPO data loaders: `loadDailyTempo()`, `loadMonthlyTempo()`, `loadTempoDailyCommunities()`, `loadTempoMonthlyCommunities()`, `loadTempoDateRange()`, `loadTempoCommunityDateRange()`
-- Invalid date handling: `removeInvalidHourlyDate()` — removes dates with no valid hourly data from the slider
+- Invalid date handling: `removeInvalidHourlyDate()` : removes dates with no valid hourly data from the slider
 - Fusion no-data messages: `showFusionNoDataMessage()`
-- Unified router: `loadDate()` — dispatches to the correct loader based on product, time scale, and display mode
+- Unified router: `loadDate()`: dispatches to the correct loader based on product, time scale, and display mode
 
 ### map_controls.js
 
@@ -535,12 +538,12 @@ Key responsibilities:
 
 Key responsibilities:
 - Loading and notice UI: `showLoading()`, `hideLoading()`, `showNoDataNotice()`, `hideNoDataNotice()`, `showMapWarningNotice()`, `hideMapWarningNotice()`
-- Toast notifications: `showToast()` — displays temporary messages on the map
-- PNG export: `exportMapAsPNG()` — captures map container as PNG via html2canvas
-- Scalebar: `updateScaleBar()` — draws dynamic scalebar ruler with proper units (ft/mi) based on zoom level
-- Playback: `resetPlaybackUI()` — resets play/pause button states
+- Toast notifications: `showToast()` : displays temporary messages on the map
+- PNG export: `exportMapAsPNG()` : captures map container as PNG via html2canvas
+- Scalebar: `updateScaleBar()` : draws dynamic scalebar ruler with proper units (ft/mi) based on zoom level
+- Playback: `resetPlaybackUI()` : resets play/pause button states
 - Map navigation: `refreshMap()`, `updateDateAndTimeLabels()`, `selectMapType()`, `handleMapTypeClick()`
-- Aggregation changes: `changeAggregation()` — switches TIME_SCALE, updates UI, reloads dates
+- Aggregation changes: `changeAggregation()` : switches TIME_SCALE, updates UI, reloads dates
 - Date/hour preference capture: `captureCurrentDateHourPreference()`, `findBestDateIndex()`, `applyPreferredDateAndHourAfterDateLoad()`
 - Page init (inside `setTimeout`): binds all event listeners for sliders, play/pause, data product radios, display mode radios, sidebar toggle, help panel, region dropdown, load buttons, and coordinate/zoom display
 
@@ -602,10 +605,10 @@ Tracks system events and user interactions for the "Recent Activity" feed on the
 | `timestamp` | `DateTimeField` | When the event occurred |
 
 **Activity types:**
-- `server_start` — Server started/restarted
-- `data_ingestion` — Data ingestion completed
-- `system_status` — Health check or status change
-- `notification` — General notification
+- `server_start` : Server started/restarted
+- `data_ingestion` : Data ingestion completed
+- `system_status` : Health check or status change
+- `notification` : General notification
 
 ### File-based activity log
 
@@ -615,7 +618,7 @@ In addition to the database model, `views.py` implements a **file-based activity
 ACTIVITY_FILE = os.path.join(settings.BASE_DIR, 'dashboard', 'data', 'activity_log.json')
 ```
 
-This provides a lightweight, no-database alternative for tracking:
+This provides a lightweight, no database alternative for tracking:
 
 - Server starts
 - Page refreshes
@@ -630,7 +633,7 @@ The log keeps the most recent 50 entries.
 
 ## Database
 
-### Local development — SQLite
+### Local development (SQLite)
 
 SQLite requires no setup. The file `db.sqlite3` is created automatically when you run `python manage.py migrate`. It lives in the project root and stores:
 - Django auth users (superuser accounts)
@@ -638,7 +641,7 @@ SQLite requires no setup. The file `db.sqlite3` is created automatically when yo
 
 This is fine for development and testing. The pollution data (GeoJSON, parquet, CSV) is stored as files on disk, not in the database.
 
-### Production — PostgreSQL
+### Production (PostgreSQL)
 
 When deploying to Heroku or Render, add a **PostgreSQL** database service. The platform will automatically inject a `DATABASE_URL` environment variable. The project already has `dj-database-url` and `psycopg2-binary` installed to handle this connection.
 
@@ -725,10 +728,10 @@ The general data processing flow from raw satellite/sensor data to dashboard-rea
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  STEP 6: PLACE FILES IN DASHBOARD DATA FOLDERS                              │
 │  Copy output files into the correct subdirectories:                         │
-│    • dashboard/data/clarity/     — Open Air sensor GeoJSON                  │
-│    • dashboard/data/tempo/       — TEMPO satellite GeoJSON                  │
-│    • dashboard/data/fused/       — Fused GeoJSON                            │
-│    • dashboard/data/community_statistics/  — CSV and parquet files          │
+│    • dashboard/data/clarity/     - Open Air sensor GeoJSON                  │
+│    • dashboard/data/tempo/       - TEMPO satellite GeoJSON                  │
+│    • dashboard/data/fused/       - Fused GeoJSON                            │
+│    • dashboard/data/community_statistics/  - CSV and parquet files          │
 │  Don't forget to update dates.json index files!                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -749,7 +752,7 @@ The general data processing flow from raw satellite/sensor data to dashboard-rea
 
 ## Adding Data Files
 
-The dashboard serves data files directly from the `dashboard/data/` directory. **No code changes are needed** to add new data files — the backend automatically discovers new files through the `_scan_data_files()` function in `views.py`, and the frontend fetches them via `fetch()` calls.
+The dashboard serves data files directly from the `dashboard/data/` directory. **No code changes are needed** to add new data files. The backend automatically discovers new files through the `_scan_data_files()` function in `views.py`, and the frontend fetches them via `fetch()` calls.
 
 ### Directory structure
 
@@ -810,7 +813,7 @@ Place Open Air Chicago sensor GeoJSON files in `dashboard/data/clarity/`. The fr
 1. Save your GeoJSON as `daily_sensor_YYYY-MM-DD.geojson` (e.g., `daily_sensor_2025-09-15.geojson`)
 2. Place it in `dashboard/data/clarity/`
 3. Add the date to `dashboard/data/clarity/dates.json`
-4. Restart the server — the file will be automatically available
+4. Restart the server, the file will be automatically available
 5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/clarity/daily_sensor_2025-09-15.geojson` to confirm the file is served correctly. If you see a 404 error or the file is not found, see the [Data file not found (404 errors)](#data-file-not-found-404-errors) section below.
 
 **To add a new daily community file:**
@@ -876,7 +879,7 @@ Place fused (TEMPO + ground sensor) GeoJSON files in `dashboard/data/fused/`. Th
 1. Save your GeoJSON as `YYYY-MM-DD.geojson` (e.g., `2025-09-15.geojson`)
 2. Place it in `dashboard/data/fused/`
 3. Add the date to `dashboard/data/fused/dates.json`
-4. Restart the server — the file will be automatically available
+4. Restart the server, the file will be automatically available
 5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/fused/2025-09-15.geojson` to confirm the file is served correctly. If you see a 404 error or the file is not found, see the [Data file not found (404 errors)](#data-file-not-found-404-errors) section below.
 
 **To add a new fused daily file:**
@@ -923,7 +926,7 @@ After adding new data files, update the corresponding `dates.json` to include th
 
 ### Automatic file discovery
 
-The `list_data_files_api()` view endpoint (`/api/list-data-files/`) automatically scans the data directories and returns a list of all files, optionally filtered by source, type, and date. This powers the export page's file browser. No manual configuration is needed — just drop files into the correct directory.
+The `list_data_files_api()` view endpoint (`/api/list-data-files/`) automatically scans the data directories and returns a list of all files, optionally filtered by source, type, and date. This powers the export page's file browser. No manual configuration is needed, just drop files into the correct directory.
 
 ---
 
@@ -935,7 +938,7 @@ The dashboard uses Django **view functions** that return `JsonResponse` for API 
 
 Adding a new endpoint is a three-step process: **write the function** → **register the URL** → **call it from the frontend**.
 
-### Step 1 — Write the view function
+### Step 1. Write the view function
 
 A view function is a regular Python function that takes an HTTP `request` as its input and returns an HTTP response. Open `dashboard/views.py` and add a new function:
 
@@ -943,7 +946,7 @@ A view function is a regular Python function that takes an HTTP `request` as its
 from django.http import JsonResponse
 
 def my_new_api(request):
-    """GET /api/my-data/ — Returns custom data."""
+    """GET /api/my-data/ - Returns custom data."""
     # Access query parameters from the URL
     # Example URL: /api/my-data/?community=Hyde+Park
     community = request.GET.get('community', '').strip()
@@ -959,11 +962,11 @@ def my_new_api(request):
 ```
 
 **What this does:**
-- `request` — contains all the information about the incoming HTTP request (URL, query parameters, headers, etc.).
-- `request.GET.get('community', '')` — reads the `community` parameter from the URL query string. If it's not present, it defaults to an empty string.
-- `JsonResponse(data)` — converts the Python dictionary `data` into a JSON object and returns it with the correct `application/json` content type header.
+- `request` : contains all the information about the incoming HTTP request (URL, query parameters, headers, etc.).
+- `request.GET.get('community', '')` : reads the `community` parameter from the URL query string. If it's not present, it defaults to an empty string.
+- `JsonResponse(data)` : converts the Python dictionary `data` into a JSON object and returns it with the correct `application/json` content type header.
 
-### Step 2 — Register the URL pattern
+### Step 2. Register the URL pattern
 
 Django doesn't automatically know about your new function. You need to tell Django which URL should trigger which view function. This mapping is done in `dashboard/urls.py`.
 
@@ -977,15 +980,15 @@ urlpatterns = [
 ```
 
 **What each part means:**
-- `"api/my-data/"` — the URL path (relative to the domain). When someone visits `http://127.0.0.1:8000/api/my-data/`, Django matches this pattern.
-- `views.my_new_api` — the function to call. Django automatically passes the `request` object as the first argument.
-- `name="my_new_api"` — a human-readable name you can reference in templates and other parts of the code (e.g., `{% url 'my_new_api' %}` in templates).
+- `"api/my-data/"`: the URL path (relative to the domain). When someone visits `http://127.0.0.1:8000/api/my-data/`, Django matches this pattern.
+- `views.my_new_api`: the function to call. Django automatically passes the `request` object as the first argument.
+- `name="my_new_api"`: a human-readable name you can reference in templates and other parts of the code (e.g., `{% url 'my_new_api' %}` in templates).
 
-### Step 3 — Call from the frontend
+### Step 3. Call from the frontend
 
 Now that your endpoint is live, you can call it from JavaScript (in a template or a static JS file) or test it directly in your browser.
 
-**Test in browser:** Open `http://127.0.0.1:8000/api/my-data/?community=Hyde+Park` — you should see the JSON response.
+**Test in browser:** Open `http://127.0.0.1:8000/api/my-data/?community=Hyde+Park`. You should see the JSON response.
 
 **Call from JavaScript:** Use the `fetch()` API to make an HTTP request and process the JSON response:
 
@@ -996,9 +999,9 @@ fetch('/api/my-data/?community=Hyde%20Park')
 ```
 
 **What this does:**
-- `fetch('/api/my-data/?community=Hyde%20Park')` — sends a GET request to the endpoint.
-- `.then(response => response.json())` — converts the raw HTTP response into a JavaScript object.
-- `.then(data => ...)` — now you can use `data.source`, `data.count`, etc., in your JavaScript code.
+- `fetch('/api/my-data/?community=Hyde%20Park')`: sends a GET request to the endpoint.
+- `.then(response => response.json())`: converts the raw HTTP response into a JavaScript object.
+- `.then(data => ...)`: now you can use `data.source`, `data.count`, etc., in your JavaScript code.
 
 ### Query parameter filtering
 
@@ -1089,7 +1092,7 @@ path("api/sensor-readings/", views.sensor_readings_api, name="sensor_readings_ap
 
 Adding a new page to the dashboard follows a consistent four-step pattern.
 
-### Step 1 — Create the template
+### Step 1. Create the template
 
 Create a new HTML file in `dashboard/templates/dashboard/pages/`. Name the file to match the purpose of the page (e.g., `my_page.html`).
 
@@ -1124,13 +1127,13 @@ Copy-paste the following code into your new template file:
 ```
 
 **Explanation of the template blocks:**
-- `{% extends "dashboard/layout.html" %}` — inherits the shared layout (navbar, footer, base CSS (static/site.css)) used by all pages.
-- `{% block title %}` — sets the browser tab title for this page.
-- `{% block extra_css %}` — page-unique CSS/styling goes between this block and its `{% endblock %}`. These styles only apply to this page.
-- `{% block content %}` — the main HTML body of your page goes here. This is where you add headings, paragraphs, charts, tables, etc.
-- `{% block extra_js %}` — page-unique JavaScript goes between this block and its `{% endblock %}`. Use this for interactive behavior specific to this page.
+- `{% extends "dashboard/layout.html" %}`: inherits the shared layout (navbar, footer, base CSS (static/site.css)) used by all pages.
+- `{% block title %}`: sets the browser tab title for this page.
+- `{% block extra_css %}`: page-unique CSS/styling goes between this block and its `{% endblock %}`. These styles only apply to this page.
+- `{% block content %}`: the main HTML body of your page goes here. This is where you add headings, paragraphs, charts, tables, etc.
+- `{% block extra_js %}`: page-unique JavaScript goes between this block and its `{% endblock %}`. Use this for interactive behavior specific to this page.
 
-### Step 2 — Add the view function
+### Step 2. Add the view function
 
 Open `dashboard/views.py` and add a new view function. The view function is the Python handler that Django calls when someone requests the page URL. It renders your HTML template and optionally passes data (context variables) from the backend to the template.
 
@@ -1146,11 +1149,11 @@ def my_page(request):
 ```
 
 **Explanation:**
-- `request` — the HTTP request object passed automatically by Django.
-- `'dashboard/pages/my_page.html'` — the path to your template file relative to the `templates/` directory. Make sure this matches the filename you created in Step 1.
+- `request`: the HTTP request object passed automatically by Django.
+- `'dashboard/pages/my_page.html'`: the path to your template file relative to the `templates/` directory. Make sure this matches the filename you created in Step 1.
 - The dictionary `{}` allows you to pass variables from Python to the template. For a static page with no backend data, leave it empty.
 
-### Step 3 — Register the URL
+### Step 3. Register the URL
 
 Open `dashboard/urls.py` and add a new `path()` entry to the `urlpatterns` list. This step tells Django which URL triggers your new view function.
 
@@ -1161,13 +1164,13 @@ path("my-page/", views.my_page, name="my_page"),
 ```
 
 **Explanation:**
-- `"my-page/"` — the URL path users will visit (e.g., `http://127.0.0.1:8000/my-page/`).
-- `views.my_page` — the view function defined in Step 2 that handles the request.
-- `name="my_page"` — a unique identifier for this URL, used to reference it in templates (e.g., `{% url 'my_page' %}`) and other Python code.
+- `"my-page/"`: the URL path users will visit (e.g., `http://127.0.0.1:8000/my-page/`).
+- `views.my_page`: the view function defined in Step 2 that handles the request.
+- `name="my_page"`: a unique identifier for this URL, used to reference it in templates (e.g., `{% url 'my_page' %}`) and other Python code.
 
 After adding the route, test it by navigating to `http://127.0.0.1:8000/my-page/` in your browser. You should see your new page rendered.
 
-### Step 4 — Add nav link
+### Step 4. Add nav link
 
 So users can discover your new page, add a link to the top navigation bar. Open `dashboard/templates/dashboard/includes/navbar.html` and add a new `<a>` tag among the existing nav links:
 
@@ -1176,9 +1179,9 @@ So users can discover your new page, add a link to the top navigation bar. Open 
 ```
 
 **Explanation:**
-- `{% url 'my_page' %}` — uses the `name` you defined in Step 3 to generate the correct URL. This is preferred over hard-coding `/my-page/` because if the URL ever changes, the link updates automatically.
-- `class="nav-link"` — applies the shared navbar styling used by all navigation links.
-- `My Page` — the display text users will see and click in the navigation bar.
+- `{% url 'my_page' %}` : uses the `name` you defined in Step 3 to generate the correct URL. This is preferred over hard-coding `/my-page/` because if the URL ever changes, the link updates automatically.
+- `class="nav-link"` : applies the shared navbar styling used by all navigation links.
+- `My Page` : the display text users will see and click in the navigation bar.
 
 After saving all files, refresh your browser and you should see the new link in the navbar. Clicking it should navigate to your new page.
 
@@ -1222,14 +1225,14 @@ python -c "from django.core.management.utils import get_random_secret_key; print
 
 ### `(venv)` is not showing in my prompt
 
-Your virtual environment is not active. Run the activate command for your OS (see [Step 2 — Create a virtual environment](#step-2--create-a-virtual-environment)). You need to do this every time you open a new terminal window.
+Your virtual environment is not active. Run the activate command for your OS (see [Step 2. Create a virtual environment](#step-2--create-a-virtual-environment)). You need to do this every time you open a new terminal window.
 
 ### `ModuleNotFoundError: No module named '...'`
 
 This error can occur for **any Python library** (django, pandas, numpy, pyarrow, etc.) when the required package is not installed in the active virtual environment. The error message will indicate which module is missing (e.g., `No module named 'pandas'`, `No module named 'numpy'`).
 
 **Solution:**
-1. Make sure your virtual environment is active — your prompt should show `(venv)` at the start.
+1. Make sure your virtual environment is active -> your prompt should show `(venv)` at the start.
    - **Windows (PowerShell):** Run `venv\Scripts\activate`
    - **Mac/Linux:** Run `source venv/bin/activate`
 2. Re-install all project dependencies:
@@ -1251,7 +1254,7 @@ Another process is using port 8000. Either stop it or use a different port:
 python manage.py runserver 8001
 ```
 
-### `TemplateDoesNotExist: dashboard/my_page.html`
+### `TemplateDoesNotExist: dashboard/my_page.html'
 
 The template file is missing or `settings.py` doesn't point to the correct directory. Confirm the file exists:
 ```bash
@@ -1290,7 +1293,7 @@ If you save changes to the dashboard (especially updated images, CSS, or JavaScr
 1. Open DevTools (`F12` in Chrome/Edge, `F12` in Firefox)
 2. Go to the **Network** tab
 3. Check the **"Disable cache"** option
-4. Keep DevTools open while working — cache will be disabled as long as the DevTools window remains open
+4. Keep DevTools open while working (cache will be disabled as long as the DevTools window remains open)
 
 ---
 
@@ -1368,7 +1371,7 @@ cd develop-AQ_LaRC_2026
 # Then follow Local Setup steps above
 ```
 
-`git clone` downloads the entire project from GitHub — including all files, commit history, and branches — to your local machine. After cloning, your local copy is synchronized with the remote repository.
+`git clone` downloads the entire project from GitHub including all files, commit history, and branches to your local machine. After cloning, your local copy is synchronized with the remote repository.
 
 ### Daily workflow
 ```bash
@@ -1380,12 +1383,12 @@ git push                          # Upload your commits to GitHub so other devel
 ```
 
 **Explanation of each step:**
-- **`git pull`** — Always start by pulling the latest changes from GitHub. This ensures you are building on top of what your teammates have already pushed, reducing the chance of merge conflicts.
-- **`git add .`** — Stages all your modified, new, or deleted files. Think of this as selecting which files should be included in your next commit.
-- **`git commit -m "..."`** — Saves a named snapshot of your staged changes. Write clear, descriptive commit messages (e.g., "add community ranking chart to stats page" instead of "update stuff").
-- **`git push`** — Uploads your commits to the remote GitHub repository. **This is the step that makes your changes available to other developers.** Until you push, your work stays local.
+- **`git pull`**: Always start by pulling the latest changes from GitHub. This ensures you are building on top of what your teammates have already pushed, reducing the chance of merge conflicts.
+- **`git add .`**: Stages all your modified, new, or deleted files. Think of this as selecting which files should be included in your next commit.
+- **`git commit -m "..."`**: Saves a named snapshot of your staged changes. Write clear, descriptive commit messages (e.g., "add community ranking chart to stats page" instead of "update stuff").
+- **`git push`**: Uploads your commits to the remote GitHub repository. **This is the step that makes your changes available to other developers.** Until you push, your work stays local.
 
-### Creating a feature branch (recommended for larger changes)
+### Creating a feature branch
 
 Feature branches isolate your work from the main codebase, allowing you to develop and test changes without affecting the shared `main` branch until you are ready.
 
@@ -1411,8 +1414,6 @@ git push -u origin feature/my-feature-name  # Push the branch to GitHub
 
 For any questions about the framework, codebase, data pipeline, or dashboard functionality, please reach out to:
 
-**Team Contact:** Caitlyn McClanahan
-**Email:** mcclan.caitlyn@gmail.com
 **Project Coordinator:** Kristina Glass
 **Email:** kristina.glass@ama-inc.com
 
@@ -1424,6 +1425,4 @@ For a detailed scientific analysis of the data processing methods, statistical a
 
 ### Dashboard Tutorial
 
-For a step-by-step guide on how to navigate and use the dashboard web application, visit the **User Guide** built into the dashboard:
-
-**Tutorial URL:** `/tutorial/` in the app (or navigate to **User Guide** from the navbar)
+For a step-by-step guide on how to navigate and use the dashboard web application, visit the **User Guide** page (accessed by the `/tutorial/` URL) built into the dashboard. 
