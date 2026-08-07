@@ -1425,7 +1425,7 @@ For any questions about the framework, codebase, data pipeline, or dashboard fun
 
 For a detailed scientific analysis of the data processing methods, statistical approaches, and fusion techniques used in this dashboard, see the accompanying technical paper:
 
-**[Insert Technical Paper Title/Link]**
+Desai, Anya et al. (August 7, 2026) "Assessing Regional Air Quality Concerns from Potential Sources of Nitrogen Dioxide Pollution" **[Insert Technical Paper Link]**
 
 ### Dashboard Tutorial
 
