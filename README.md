@@ -20,7 +20,7 @@ This interactive web application visualizes nitrogen dioxide (NO₂) pollution a
 - **Data export tools** for GeoJSON, CSV, and PNG map screenshots
 - **File-based activity logging** that tracks server starts, page refreshes, data exports, and map views.
 
-The project is built with Django and uses a file-based data architecture, as data files (GeoJSON, parquet, CSV) are stored on disk and served directly through API endpoints, with no intermediate database required for the pollution data.
+The project is built with Django and uses a file-based data architecture, as data files (GeoJSON, parquet, CSV) are stored locally on disk and served directly through API endpoints, with no intermediate database required for the pollution data.
 
 ---
 
@@ -32,7 +32,7 @@ Tropospheric ozone is a major public health concern in the Chicago metropolitan 
 
 ## Meet the Team
 
-This dashboard was built by the **Summer 2026 NASA EarthRISE Developers Academy** Chicago Health & Air Quality research team in collaboration with NASA Langley Research Center and the Lake Michigan Air Directors Consortium (LADCO).
+This dashboard was built by the **Summer 2026 NASA EarthRISE Developers Academy Chicago Health & Air Quality** research team in collaboration with NASA Langley Research Center and the Lake Michigan Air Directors Consortium (LADCO).
 
 | Team Member | Team Member | Team Member | Team Member | Team Member | Project Coordinator |
 |---|---|---|---|---|---|
