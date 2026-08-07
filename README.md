@@ -664,7 +664,7 @@ if not DEBUG:
 
 The `processing-scripts/` directory contains Jupyter notebooks and Python scripts that transform raw satellite and ground sensor data into the dashboard-ready data products (GeoJSON, parquet, CSV) stored in `dashboard/data/`.
 
-> **Note:** These scripts are still being organized. Not all processing steps are fully documented yet. Use these as a starting point and reach out to the team for the latest data pipeline details.
+> **Note:** These scripts are still being organized. Not all data processing steps are fully automated or documented. If you're unsure which script to run for a particular transformation, use these as a starting point and reach out to the [team](#contact) for the latest data pipeline details.
 
 ### Available scripts
 
@@ -683,7 +683,7 @@ The `processing-scripts/` directory contains Jupyter notebooks and Python script
 
 ### Data pipeline overview
 
-The general data processing flow from raw satellite/sensor data to dashboard-ready products:
+The general data processing flow from raw satellite/sensor data to dashboard ready products:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -739,8 +739,6 @@ The general data processing flow from raw satellite/sensor data to dashboard-rea
 │  Don't forget to update dates.json index files!                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
-
-> **Note:** This pipeline is still being refined. Not every step is fully automated or documented. If you're unsure which script to run for a particular transformation, reach out to the team for the latest workflow details.
 
 ### Adding new processing scripts
 
