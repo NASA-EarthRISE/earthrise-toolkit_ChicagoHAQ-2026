@@ -673,9 +673,13 @@ The `processing-scripts/` directory contains Jupyter notebooks and Python script
 | `clarity-prelim.ipynb` | Preliminary cleaning and exploration of Open Air Chicago (Clarity) sensor data |
 | `clarity-tempo-aggregation.ipynb` | Aggregates Clarity and TEMPO data into daily/monthly products |
 | `clarity-tempo-fusion.ipynb` | Fuses TEMPO satellite data with Clarity ground sensor data onto a common scale |
-| `Fused Community Stats Generation.py` | Generates community-level statistics from fused data |
+| `Fused Community Stats Generation.py` | Generates community-level statistics from estimate data |
 | `merge_fusion_by_community.py` | Merges fused data by Chicago community area |
 | `Update Community Percentile CSV.py` | Updates the community percentile ranking CSV |
+| `Unified TEMPO Processing.py` | Cleans TEMPO output files from EarthData and reformats for TEMPO dashboard display  |
+| `Unified Open Air Chicago Processing.py` | Returns files for Open Air Chicago dashboard display when provided data  |
+| `Unified Estimate Processing.py` | Returns files for Estimate dashboard display when provided Estimate data  |
+
 
 ### Data pipeline overview
 
