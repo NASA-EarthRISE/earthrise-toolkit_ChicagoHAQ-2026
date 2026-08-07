@@ -319,7 +319,7 @@ Open your browser and go to:
 
 To stop the server press `CTRL + C`.
 
-Note: These are not the only URLs available through the dashboard. For more URLs, visit the [Available Routes](#available-routes) section. 
+> **Note:** These are not the only URLs available through the dashboard. For more URLs, visit the [Available Routes](#available-routes) section. 
 
 
 ---
@@ -463,7 +463,7 @@ python manage.py migrate
 
 The dashboard's frontend is split into modular JavaScript files under `dashboard/static/dashboard/js/`. Understanding this structure helps when customizing maps, controls, or export behavior.
 
-Note: Pollution Map JS load order: `time_utils.js` → `map_init.js` → `map_layers.js` → `data_loader.js` → `map_controls.js`
+> **Note:** Pollution Map JS load order: `time_utils.js` → `map_init.js` → `map_layers.js` → `data_loader.js` → `map_controls.js`
 
 ### time_utils.js
 
@@ -556,7 +556,7 @@ Key responsibilities:
 - Spatial/temporal scale filter including community averages
 - File list rendering with type badges (geojson, json, csv)
 - Export of GeoJSON/JSON files with optional CSV conversion
-- Direct CSV serving for files already in CSV format (e.g., fused community data)
+- Direct CSV serving for files already in CSV format (ex. fused community data)
 - Select-all, individual selection, and batch download
 
 
@@ -754,6 +754,8 @@ The general data processing flow from raw satellite/sensor data to dashboard-rea
 
 The dashboard serves data files directly from the `dashboard/data/` directory. **No code changes are needed** to add new data files. The backend automatically discovers new files through the `_scan_data_files()` function in `views.py`, and the frontend fetches them via `fetch()` calls.
 
+> **Note:** This code already contains a few data files for user testing purposes. After functionality is tested, you can replace these files with the data files with the full dataset provided. 
+
 ### Directory structure
 
 ```
@@ -810,21 +812,21 @@ Place Open Air Chicago sensor GeoJSON files in `dashboard/data/clarity/`. The fr
 
 
 **To add a new daily sensor file:**
-1. Save your GeoJSON as `daily_sensor_YYYY-MM-DD.geojson` (e.g., `daily_sensor_2025-09-15.geojson`)
+1. Save your GeoJSON as `daily_sensor_YYYY-MM-DD.geojson` (ex. `daily_sensor_2025-09-15.geojson`)
 2. Place it in `dashboard/data/clarity/`
 3. Add the date to `dashboard/data/clarity/dates.json`
 4. Restart the server, the file will be automatically available
 5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/clarity/daily_sensor_2025-09-15.geojson` to confirm the file is served correctly. If you see a 404 error or the file is not found, see the [Data file not found (404 errors)](#data-file-not-found-404-errors) section below.
 
 **To add a new daily community file:**
-1. Save your GeoJSON as `daily_community_YYYY-MM-DD.geojson` (e.g., `daily_community_2025-09-15.geojson`)
+1. Save your GeoJSON as `daily_community_YYYY-MM-DD.geojson` (ex. `daily_community_2025-09-15.geojson`)
 2. Place it in `dashboard/data/clarity/`
 3. Add the date to `dashboard/data/clarity/dates.json`
 4. Restart the server
 5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/clarity/daily_community_2025-09-15.geojson` to confirm the file is served correctly.
 
 **To add a new monthly file:**
-1. Save your GeoJSON as `monthly_sensor_YYYY-MM.geojson` or `monthly_community_YYYY-MM.geojson` (e.g., `monthly_sensor_2025-09.geojson`)
+1. Save your GeoJSON as `monthly_sensor_YYYY-MM.geojson` or `monthly_community_YYYY-MM.geojson` (ex. `monthly_sensor_2025-09.geojson`)
 2. Place it in `dashboard/data/clarity/`
 3. Restart the server
 4. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/clarity/monthly_sensor_2025-09.geojson` to confirm the file is served correctly.
@@ -843,21 +845,21 @@ Place TEMPO satellite GeoJSON files in `dashboard/data/tempo/`. The frontend fet
 | Monthly GeoJSON | `month_YYYY-MM.geojson` | `month_2025-09.geojson` |
 
 **To add a new daily TEMPO file:**
-1. Save your GeoJSON as `day_YYYY-MM-DD.geojson` (e.g., `day_2025-09-15.geojson`)
+1. Save your GeoJSON as `day_YYYY-MM-DD.geojson` (ex. `day_2025-09-15.geojson`)
 2. Place it in `dashboard/data/tempo/`
 3. Add the date to the appropriate TEMPO dates index file (`TEMPOdates.json` or `TEMPOdaily_dates.json`)
 4. Restart the server
 5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/tempo/day_2025-09-15.geojson` to confirm the file is served correctly. If you see a 404 error or the file is not found, see the [Data file not found (404 errors)](#data-file-not-found-404-errors) section below.
 
 **To add a new daily community TEMPO file:**
-1. Save your GeoJSON as `day_community_YYYY-MM-DD.geojson` (e.g., `day_community_2025-09-15.geojson`)
+1. Save your GeoJSON as `day_community_YYYY-MM-DD.geojson` (ex. `day_community_2025-09-15.geojson`)
 2. Place it in `dashboard/data/tempo/`
 3. Add the date to the appropriate TEMPO dates index file
 4. Restart the server
 5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/tempo/day_community_2025-09-15.geojson` to confirm the file is served correctly.
 
 **To add a new monthly TEMPO file:**
-1. Save your GeoJSON as `month_YYYY-MM.geojson` (e.g., `month_2025-09.geojson`)
+1. Save your GeoJSON as `month_YYYY-MM.geojson` (ex. `month_2025-09.geojson`)
 2. Place it in `dashboard/data/tempo/`
 3. Restart the server
 4. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/tempo/month_2025-09.geojson` to confirm the file is served correctly.
@@ -876,21 +878,21 @@ Place fused (TEMPO + ground sensor) GeoJSON files in `dashboard/data/fused/`. Th
 | Community CSV | `fused_hourly_by_community.csv` | (single file, updated in place) |
 
 **To add a new fused hourly file:**
-1. Save your GeoJSON as `YYYY-MM-DD.geojson` (e.g., `2025-09-15.geojson`)
+1. Save your GeoJSON as `YYYY-MM-DD.geojson` (ex. `2025-09-15.geojson`)
 2. Place it in `dashboard/data/fused/`
 3. Add the date to `dashboard/data/fused/dates.json`
 4. Restart the server, the file will be automatically available
 5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/fused/2025-09-15.geojson` to confirm the file is served correctly. If you see a 404 error or the file is not found, see the [Data file not found (404 errors)](#data-file-not-found-404-errors) section below.
 
 **To add a new fused daily file:**
-1. Save your GeoJSON as `day_YYYY-MM-DD.geojson` (e.g., `day_2025-09-15.geojson`)
+1. Save your GeoJSON as `day_YYYY-MM-DD.geojson` (ex. `day_2025-09-15.geojson`)
 2. Place it in `dashboard/data/fused/`
 3. Update the corresponding `dates.json` index file
 4. Restart the server
 5. **Verify in browser:** Navigate to `http://127.0.0.1:8000/data/fused/day_2025-09-15.geojson` to confirm the file is served correctly.
 
 **To add a new fused monthly file:**
-1. Save your GeoJSON as `month_YYYY-MM.geojson` (e.g., `month_2025-09.geojson`)
+1. Save your GeoJSON as `month_YYYY-MM.geojson` (ex. `month_2025-09.geojson`)
 2. Place it in `dashboard/data/fused/`
 3. Update the corresponding `dates.json` index file
 4. Restart the server
@@ -932,11 +934,11 @@ The `list_data_files_api()` view endpoint (`/api/list-data-files/`) automaticall
 
 ## Setting Up a New API Endpoint
 
-An **API endpoint** is a specific URL that, when visited, returns data (usually in JSON format) instead of an HTML web page. The frontend JavaScript uses these endpoints to fetch data dynamically without reloading the page. For example, the map page calls `/api/clarity-dates/` to get the list of available dates for the slider.
+An **API endpoint** is a specific URL that, when visited, returns data (usually in JSON format) instead of an HTML web page. The frontend JavaScript uses these endpoints to fetch data dynamically without reloading the page. For example, the map page calls `/api/clarity-dates/` to get the list of available dates for the time slider.
 
 The dashboard uses Django **view functions** that return `JsonResponse` for API endpoints. Think of a view function as a handler: when someone visits a URL, Django calls the corresponding view function, which processes the request and sends back a response.
 
-Adding a new endpoint is a three-step process: **write the function** → **register the URL** → **call it from the frontend**.
+Adding a new endpoint is a three step process: **write the function** → **register the URL** → **call it from the frontend**.
 
 ### Step 1. Write the view function
 
@@ -946,7 +948,7 @@ A view function is a regular Python function that takes an HTTP `request` as its
 from django.http import JsonResponse
 
 def my_new_api(request):
-    """GET /api/my-data/ - Returns custom data."""
+    """GET /api/my-data/ -> Returns custom data."""
     # Access query parameters from the URL
     # Example URL: /api/my-data/?community=Hyde+Park
     community = request.GET.get('community', '').strip()
@@ -974,7 +976,7 @@ Open `dashboard/urls.py` and add a new `path()` entry to the `urlpatterns` list:
 
 ```python
 urlpatterns = [
-    # ... existing routes ...
+    # ... other existing routes above ...
     path("api/my-data/", views.my_new_api, name="my_new_api"),
 ]
 ```
@@ -982,7 +984,7 @@ urlpatterns = [
 **What each part means:**
 - `"api/my-data/"`: the URL path (relative to the domain). When someone visits `http://127.0.0.1:8000/api/my-data/`, Django matches this pattern.
 - `views.my_new_api`: the function to call. Django automatically passes the `request` object as the first argument.
-- `name="my_new_api"`: a human-readable name you can reference in templates and other parts of the code (e.g., `{% url 'my_new_api' %}` in templates).
+- `name="my_new_api"`: a human-readable name you can reference in templates and other parts of the code (ex. `{% url 'my_new_api' %}` in templates).
 
 ### Step 3. Call from the frontend
 
@@ -995,7 +997,7 @@ Now that your endpoint is live, you can call it from JavaScript (in a template o
 ```javascript
 fetch('/api/my-data/?community=Hyde%20Park')
   .then(response => response.json())  // Parse the JSON response
-  .then(data => console.log(data));   // Use the data (e.g., display it, render a chart)
+  .then(data => console.log(data));   // Use the data (ex. display it, render a chart)
 ```
 
 **What this does:**
@@ -1038,21 +1040,21 @@ def sensor_readings_api(request):
     import os
     import json
 
-    # Step 1: Read query parameters
+    # Step 1. Read query parameters
     date = request.GET.get('date', '').strip()
     community = request.GET.get('community', '').strip()
 
-    # Step 2: Validate required parameters
+    # Step 2. Validate required parameters
     if not date:
         return JsonResponse({"error": "date parameter required"}, status=400)
 
-    # Step 3: Build the file path
+    # Step 3. Build the file path
     file_path = os.path.join(
         settings.BASE_DIR, 'dashboard', 'data', 'clarity',
         f'daily_sensor_{date}.geojson'
     )
 
-    # Step 4: Check if the file exists
+    # Step 4. Check if the file exists
     if not os.path.isfile(file_path):
         return JsonResponse({"error": f"No data for date {date}"}, status=404)
 
@@ -1062,14 +1064,14 @@ def sensor_readings_api(request):
 
     features = data.get('features', [])
 
-    # Step 6: Optionally filter by community name
+    # Step 6. Optionally filter by community name
     if community:
         features = [
             f for f in features
             if community.lower() in str(f.get('properties', {})).lower()
         ]
 
-    # Step 7: Return the filtered data
+    # Step 7. Return the filtered data
     return JsonResponse({
         "date": date,
         "community_filter": community,
@@ -1094,7 +1096,7 @@ Adding a new page to the dashboard follows a consistent four-step pattern.
 
 ### Step 1. Create the template
 
-Create a new HTML file in `dashboard/templates/dashboard/pages/`. Name the file to match the purpose of the page (e.g., `my_page.html`).
+Create a new HTML file in `dashboard/templates/dashboard/pages/`. Name the file to match the purpose of the page (ex. `my_page.html`).
 
 Copy-paste the following code into your new template file:
 
@@ -1108,7 +1110,7 @@ Copy-paste the following code into your new template file:
 {# This endblock is where you put page-unique CSS/styling #}
 {% block extra_css %}
 <style>
-  /* Page-specific styles go here */
+  /* Page specific styles go here */
 </style>
 {% endblock %}
 
@@ -1121,7 +1123,7 @@ Copy-paste the following code into your new template file:
 {# This endblock is where you put page-unique JavaScript #}
 {% block extra_js %}
 <script>
-  // Page-specific JavaScript goes here
+  // Page specific JavaScript goes here
 </script>
 {% endblock %}
 ```
@@ -1164,9 +1166,9 @@ path("my-page/", views.my_page, name="my_page"),
 ```
 
 **Explanation:**
-- `"my-page/"`: the URL path users will visit (e.g., `http://127.0.0.1:8000/my-page/`).
+- `"my-page/"`: the URL path users will visit (ex. `http://127.0.0.1:8000/my-page/`).
 - `views.my_page`: the view function defined in Step 2 that handles the request.
-- `name="my_page"`: a unique identifier for this URL, used to reference it in templates (e.g., `{% url 'my_page' %}`) and other Python code.
+- `name="my_page"`: a unique identifier for this URL, used to reference it in templates (ex. `{% url 'my_page' %}`) and other Python code.
 
 After adding the route, test it by navigating to `http://127.0.0.1:8000/my-page/` in your browser. You should see your new page rendered.
 
@@ -1229,7 +1231,7 @@ Your virtual environment is not active. Run the activate command for your OS (se
 
 ### `ModuleNotFoundError: No module named '...'`
 
-This error can occur for **any Python library** (django, pandas, numpy, pyarrow, etc.) when the required package is not installed in the active virtual environment. The error message will indicate which module is missing (e.g., `No module named 'pandas'`, `No module named 'numpy'`).
+This error can occur for **any Python library** (django, pandas, numpy, pyarrow, etc.) when the required package is not installed in the active virtual environment. The error message will indicate which module is missing (ex. `No module named 'pandas'`, `No module named 'numpy'`).
 
 **Solution:**
 1. Make sure your virtual environment is active -> your prompt should show `(venv)` at the start.
@@ -1383,10 +1385,10 @@ git push                          # Upload your commits to GitHub so other devel
 ```
 
 **Explanation of each step:**
-- **`git pull`**: Always start by pulling the latest changes from GitHub. This ensures you are building on top of what your teammates have already pushed, reducing the chance of merge conflicts.
-- **`git add .`**: Stages all your modified, new, or deleted files. Think of this as selecting which files should be included in your next commit.
-- **`git commit -m "..."`**: Saves a named snapshot of your staged changes. Write clear, descriptive commit messages (e.g., "add community ranking chart to stats page" instead of "update stuff").
-- **`git push`**: Uploads your commits to the remote GitHub repository. **This is the step that makes your changes available to other developers.** Until you push, your work stays local.
+- **`git pull`** : Always start by pulling the latest changes from GitHub. This ensures you are building on top of what your teammates have already pushed, reducing the chance of merge conflicts.
+- **`git add .`** : Stages all your modified, new, or deleted files. Think of this as selecting which files should be included in your next commit.
+- **`git commit -m "..."`** : Saves a named snapshot of your staged changes. Write clear, descriptive commit messages (ex. "add community ranking chart to stats page" instead of "update stuff").
+- **`git push`** : Uploads your commits to the remote GitHub repository. **This is the step that makes your changes available to other developers.** Until you push, your work stays local.
 
 ### Creating a feature branch
 
@@ -1414,7 +1416,7 @@ git push -u origin feature/my-feature-name  # Push the branch to GitHub
 
 For any questions about the framework, codebase, data pipeline, or dashboard functionality, please reach out to:
 
-**Project Coordinator:** Kristina Glass
+**Project Coordinator:** Kristina Glass 
 **Email:** kristina.glass@ama-inc.com
 
 ### Technical Paper
