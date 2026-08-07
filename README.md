@@ -36,8 +36,8 @@ This dashboard was built by the **Summer 2026 NASA EarthRISE Developers Academy 
 
 | Team Member | Team Member | Team Member | Team Member | Team Member | Project Coordinator |
 |---|---|---|---|---|---|
-| **Anya Desai** | **Caitlyn McClanahan** | **Margot Langenbach** | **Kathryn Phung** | **Noah Ring** | **Kristina Glass** |
-| @anyadesai | @mcclancait10 | @mlangenbach | @kathrynphung | @noah-ring | @kristinaglass |
+| **Anya Desai** | **Margot Langenbach** | **Caitlyn McClanahan** | **Kathryn Phung** | **Noah Ring** | **Kristina Glass** |
+| @anyadesai | @mlangenbach | @mcclancait10 | @kathrynphung | @noah-ring | @kristinaglass |
 
 
 ### Our Partners
@@ -1425,7 +1425,7 @@ For any questions about the framework, codebase, data pipeline, or dashboard fun
 
 For a detailed scientific analysis of the data processing methods, statistical approaches, and fusion techniques used in this dashboard, see the accompanying technical paper:
 
-Desai, A. S., Lagenbach, M., McClanahan, C., Phung, K., Ring, N. (2026, August 7). *Assessing Regional Air Quality Concerns from Potential Sources of Nitrogen Dioxide Pollution* **[Insert Technical Paper Link]**
+Desai, A. S., Langenbach, M., McClanahan, C., Phung, K., Ring, N. (2026, August 7). *Assessing Regional Air Quality Concerns from Potential Sources of Nitrogen Dioxide Pollution* **[Insert Technical Paper Link]**
 
 ### Dashboard Tutorial
 
