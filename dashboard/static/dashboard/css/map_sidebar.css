@@ -131,6 +131,7 @@
 
 .date-panel label {
     font-weight: 600;
+    color: #ffffff !important;
 }
 
 /* ── Sidebar Retracted state ────────────────────────────── */
@@ -199,8 +200,8 @@ Moves with sidebar as it opens/closes. Does NOT block map. */
 }
 
 .map-type-btn.active {
-  border-color: var(--accent);
-  background: var(--accent);
+  border-color: var(--primary);
+  background: var(--primary);
   color: #ffffff;
 }
 

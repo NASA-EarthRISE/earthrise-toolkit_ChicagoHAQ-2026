@@ -434,17 +434,17 @@
 .map-export-header .share-label {
   font-size: 0.78rem;
   font-weight: 400;
-  color: #888;
+  color: var(--text-muted);
   white-space: nowrap;
   user-select: none;
 }
 
 .map-export-header .btn-export-png {
   padding: 4px 12px;
-  border: 1px solid #ccc;
+  border: 1px solid #767676;
   border-radius: 4px;
   background: transparent;
-  color: #666;
+  color: var(--text);
   font-size: 0.78rem;
   font-weight: 500;
   cursor: pointer;
@@ -454,8 +454,13 @@
 
 .map-export-header .btn-export-png:hover {
   background: #f0f0f0;
-  border-color: #999;
-  color: #333;
+  border-color: #595959;
+  color: var(--text);
+}
+
+/* WCAG 1.4.1: links in text must be distinguishable beyond color */
+.leaflet-control-attribution a {
+  text-decoration: underline;
 }
 
 .map-export-header .btn-export-png:disabled {
@@ -501,7 +506,7 @@
   height: 32px;
   min-width: 32px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--primary);
   color: #fff;
   border: 2px solid var(--primary-dark);
   font-size: 1rem;

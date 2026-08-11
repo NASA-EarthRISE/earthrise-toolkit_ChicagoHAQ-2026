@@ -355,17 +355,17 @@
 .community-export-header .share-label {
   font-size: 0.78rem;
   font-weight: 400;
-  color: #888;
+  color: var(--text-muted);
   white-space: nowrap;
   user-select: none;
 }
 
 .community-export-header .btn-export-pdf {
   padding: 4px 12px;
-  border: 1px solid #ccc;
+  border: 1px solid #767676;
   border-radius: 4px;
   background: transparent;
-  color: #666;
+  color: var(--text);
   font-size: 0.78rem;
   font-weight: 500;
   cursor: pointer;
@@ -375,8 +375,13 @@
 
 .community-export-header .btn-export-pdf:hover {
   background: #f0f0f0;
-  border-color: #999;
-  color: #333;
+  border-color: #595959;
+  color: var(--text);
+}
+
+/* WCAG 1.4.1: links in text must be distinguishable beyond color */
+.leaflet-control-attribution a {
+  text-decoration: underline;
 }
 
 .community-export-header .btn-export-pdf:disabled {

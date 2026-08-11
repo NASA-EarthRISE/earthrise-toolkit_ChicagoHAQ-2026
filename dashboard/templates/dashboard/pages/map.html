@@ -75,18 +75,18 @@
         <div id="help-panel-body">
         <p>
             <strong>Explore The Map</strong><br/>
-            <span id="help-panel-content">Click and drag to shift your view.</span>
+            <span class="help-panel-content">Click and drag to shift your view.</span>
         </p>
         <p>
             <strong>Display Data</strong><br/>
-            <span id="help-panel-content">Customize the observation window, data products, and spatial scale with the Parameters sidebar to the left.</span>
+            <span class="help-panel-content">Customize the observation window, data products, and spatial scale with the Parameters sidebar to the left.</span>
         </p>
         <p>
             <strong>Playback</strong><br/>
-            <span id="help-panel-content">Click the play button or drag the slider below to view the change of data over time.</span>
+            <span class="help-panel-content">Click the play button or drag the slider below to view the change of data over time.</span>
         </p>
         <p>
-        <span id="help-panel-content">
+        <span class="help-panel-content">
             For an in-depth tutorial on this dashboard, visit the
             <a href="{% url 'tutorial' %}" target="_blank"><strong>User Guide</strong></a>
             page.
@@ -142,7 +142,7 @@
         class="hour-controls"
         {% if time_scale != "hourly" %}style="display:none;"{% endif %}>
         <div class="slider-row">
-          <label>Hour</label>
+          <label for="timeSlider">Hour</label>
           <input type="range" min="0" max="23" step="1" value="0" id="timeSlider">
           <div class="time-label" id="timeLabel"></div>
         </div>
@@ -150,7 +150,7 @@
 
       <!-- Daily & Monthly Date Slider -->
       <div class="slider-row">
-        <label>Date</label>
+        <label for="dateSlider">Date</label>
         <input type="range" min="0" max="0" value="0" id="dateSlider">
         <div class="date-label-display" id="dateLabel"></div>
       </div>
@@ -158,9 +158,9 @@
       <!-- Date Range Controls -->
       <div id="rangeControls" style="display:none;">
         <div class="slider-row">
-          <label>Start</label>
+          <label for="startDate">Start</label>
           <input type="date" id="startDate">
-          <label style="margin-left:10px;">End</label>
+          <label for="endDate" style="margin-left:10px;">End</label>
           <input type="date" id="endDate">
         </div>
       </div>
@@ -251,10 +251,14 @@
       btn.style.boxShadow = '0 1px 5px rgba(0,0,0,0.65)';
       btn.style.borderRadius = '4px';
       btn.title = 'Reset to home view (Chicago)';
+      btn.setAttribute('role', 'button');
+      btn.setAttribute('aria-label', 'Reset to home view (Chicago)');
 
       // inline SVG house icon – no external dependencies
       btn.innerHTML =
+        '<span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;">Reset to home view (Chicago)</span>' +
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" ' +
+        'aria-hidden="true" ' +
         'width="16" height="16" style="vertical-align:middle;display:block;margin:5px auto 0" ' +
         'fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
         '<path d="M3 12L5 10M19 10L21 12M12 2L4 10V20H9V15H15V20H20V10L12 2Z"/>' +

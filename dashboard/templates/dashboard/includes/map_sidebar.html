@@ -4,7 +4,7 @@
 <div class="sidebar-section">
     <h3>Region</h3>
     <div class="form-group" style="margin-bottom:0;">
-      <select id="region-dropdown">
+      <select id="region-dropdown" aria-label="Region">
         <option value="">Select a region...</option>
         <option value="cook_county" selected>Cook County, Chicago</option>
       </select>
@@ -27,7 +27,7 @@
   <div id="single-date-group" style = "display:none;">
     <div class = "form-row">
       <div class = "form-group">
-        <label for="map-date" style="color: var(--bg);">Select Date</label>
+        <label for="map-date" >Select Date</label>
         <input type="date" id="map-date" value="{{ today|date:'Y-m-d' }}" />
       </div>
     </div>
@@ -39,11 +39,11 @@
   <div id="date-range-group" style="display: none;">
     <div class="form-row">
       <div class="form-group">
-        <label for="date-range-start" style="color: var(--bg);">Start Date</label>
+        <label for="date-range-start" >Start Date</label>
         <input type="date" id="date-range-start" value="{{ today|date:'Y-m-d' }}" />
       </div>
       <div class="form-group">
-        <label for="date-range-end" style="color: var(--bg);">End Date</label>
+        <label for="date-range-end" >End Date</label>
         <input type="date" id="date-range-end" value="{{ today|date:'Y-m-d' }}" />
       </div>
     </div>
@@ -55,11 +55,11 @@
   <div id="month-range-group" style="display: none;">
     <div class="form-row">
       <div class="form-group">
-        <label for="month-range-start" style="color: var(--bg);">Start Month</label>
+        <label for="month-range-start" >Start Month</label>
         <input type="month" id="month-range-start" value="{{ today|date:'Y-m' }}" />
       </div>
       <div class="form-group">
-        <label for="month-range-end" style="color: var(--bg);">End Month</label>
+        <label for="month-range-end" >End Month</label>
         <input type="month" id="month-range-end" value="{{ today|date:'Y-m' }}" />
       </div>
     </div>
