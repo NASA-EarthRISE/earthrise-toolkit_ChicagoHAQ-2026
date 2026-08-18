@@ -753,6 +753,9 @@ The general data processing flow from raw satellite/sensor data to dashboard rea
 ---
 
 ## Adding Data Files
+New data can created and formatted for use in the dashboard with the 'Unified [data type] Processing.py' processing scripts. 'Unified' refers to the idea that these scripts perform all the steps our team conducted in a streamlined fashion. There is a separate file for each data type. 
+
+For example, to add new dates of satellite data, a user should download data (TEMPO L3 V4 NO2) with the Harmony subset service from NASA EarthDATA, then reference the resulting folder as 'input' in the command line along with the Unified TEMPO Processing.py script and the Chicago community boundaries file. The script will apply the same cleaning procedures that the original satellite data underwent, aggregate data to the community level, and align the resulting information to the file format the dashboard expects. The other Unified [data type] Processing.py files perform similarly. 
 
 The dashboard serves data files directly from the `dashboard/data/` directory. **No code changes are needed** to add new data files. The backend automatically discovers new files through the `_scan_data_files()` function in `views.py`, and the frontend fetches them via `fetch()` calls.
 
