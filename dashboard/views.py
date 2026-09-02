@@ -7,30 +7,32 @@ import json
 import os
 import csv
 import io
-#import folium
 from django.utils.timezone import datetime, now
 
+# - - - 
+# Create your views here. Views are what the user sees when they interact with buttons and widgets
+# To define a new URL from urls.py, scroll to the "URL View Requests Defined Below" section at line 164
+# Note: Terminal command for running/updating server = python manage.py runserver
+
+# Add link to website to the server terminal output
+print("View site in browser at: http://127.0.0.1:8000/\n")
+
+# - - -
+
+# Home (System Status) Page: 
 # Capture server startup time when the module is first loaded (server starts)
 SERVER_START_TIME = now()
 
-# libraries for message log input
-from django.shortcuts import redirect
-from dashboard.forms import LogMessageForm
-from dashboard.models import LogMessage
 
-# library for lists/tables
-from django.views.generic import ListView
-
-
-# ── LOCAL DATA STATUS CHECK ──────────────────────────────────────────
-# Checks local data directories for TEMPO, Clarity, and wind data files
-# and returns status info for the "Recent Activity" section on home page.
-
+# Local Data Status Check:
+# Checks local data directories for TEMPO, Clarity, and Fused data files
+# and returns status info for the "System Status" section on home page.
 DATA_DIR = os.path.join(settings.BASE_DIR, 'dashboard', 'data')
 
 
-# ── FILE-BASED ACTIVITY LOG ──────────────────────────────────────────
-# Stores recent activities in a simple JSON file (no database needed).
+# File-Based Actitivty Log
+
+# Stores recent activities in activity_log.json
 # Activity types:
 #   server_start       — Server started / restarted
 #   data_ingestion     — TEMPO or OpenAir data ingestion (success/failure)
@@ -41,14 +43,13 @@ DATA_DIR = os.path.join(settings.BASE_DIR, 'dashboard', 'data')
 
 ACTIVITY_FILE = os.path.join(settings.BASE_DIR, 'dashboard', 'data', 'activity_log.json')
 MAX_ACTIVITIES = 50
-NOTIFICATION_LIMIT = 5  # Show the 5 most recent user-facing notifications
+NOTIFICATION_LIMIT = 5  # Show the 5 most recent notifications
 
-# Notification types — these appear in the "Recent Notifications" section
+# Notification types (appear in the activity log)
 NOTIFICATION_TYPES = {'export_completed', 'community_selected', 'new_data_file', 'page_refresh'}
 
-
 def _load_activities():
-    """Load activities from JSON file."""
+    # Load activities from JSON file
     if os.path.exists(ACTIVITY_FILE):
         try:
             with open(ACTIVITY_FILE, 'r') as f:
@@ -57,16 +58,14 @@ def _load_activities():
             return []
     return []
 
-
 def _save_activities(activities):
-    """Save activities to JSON file, keeping only the last MAX_ACTIVITIES."""
+    # Save activities to JSON file, keeping only the last MAX_ACTIVITIES
     activities = activities[:MAX_ACTIVITIES]
     with open(ACTIVITY_FILE, 'w') as f:
         json.dump(activities, f, indent=2)
 
-
 def log_activity(activity_type, title, details=''):
-    """Add an activity entry to the file-based log."""
+    # Add an activity entry to the file-based log
     activities = _load_activities()
     entry = {
         'type': activity_type,
@@ -77,23 +76,20 @@ def log_activity(activity_type, title, details=''):
     activities.insert(0, entry)  # Newest first
     _save_activities(activities)
 
-
 def get_recent_activities(limit=20):
-    """Retrieve recent activities from the file-based log."""
+    # Retrieve recent activities from the file log
     return _load_activities()[:limit]
 
-
 def get_recent_notifications(limit=NOTIFICATION_LIMIT):
-    """Retrieve the most recent user-facing notifications only."""
+    # Retrieve the most recent notifications only
     activities = _load_activities()
     notifications = [a for a in activities if a['type'] in NOTIFICATION_TYPES]
     return notifications[:limit]
 
-
 # Log server start on module load
 log_activity('server_start', 'Dashboard server started')
 
-
+# Checks for data files in each data folder and returns # count
 def check_data_status():
     """Scan local data directories and return status of each data source."""
     status = {
@@ -155,7 +151,7 @@ def check_data_status():
             fused_latest = sorted(fused_files)[-1]
 
     status['sources'].append({
-        'name': 'Fused Data',
+        'name': 'Ground Surface Estimate Data',
         'type': 'fused',
         'exists': fused_exists,
         'file_count': fused_count,
@@ -165,11 +161,11 @@ def check_data_status():
 
     return status
 
-# Terminal command for running/updating server: python manage.py runserver
-# Create your views here.
-# Views are what the user sees when they interact with buttons and widgets
+# - - -
 
+# URL View Requests Defined Below
 
+# Pages:
 def home(request):
     """Home page — logs a page_refresh notification."""
     log_activity('page_refresh', 'Dashboard home page refreshed')
@@ -177,74 +173,63 @@ def home(request):
         'server_start_time': SERVER_START_TIME
     })
 
-
 def about(request):
     return render(request, "dashboard/pages/about.html")
 
-
 def info(request):
     return render(request, "dashboard/pages/info.html")
-
 
 def tutorial(request):
     return render(request, "dashboard/pages/userguide.html")
 
 
-#  MAP VIEWS (hourly, daily, monthly) 
-
+# Maps (hourly, daily, monthly):
+# Shows up in activity_log.json
 def map_view(request):
     """Default map view — redirects to hourly."""
     return render(request, 'dashboard/pages/map.html', {'time_scale': 'hourly'})
 
-
 def map_hourly(request):
-    """Hourly TEMPO data view with time slider."""
     log_activity('map_view', 'User viewed hourly map')
     return render(request, 'dashboard/pages/map.html', {'time_scale': 'hourly'})
 
-
 def map_daily(request):
-    """Daily aggregated/averaged data view."""
     log_activity('map_view', 'User viewed daily map')
     return render(request, 'dashboard/pages/map.html', {'time_scale': 'daily'})
 
-
 def map_monthly(request):
-    """Monthly climatology/averages view."""
     log_activity('map_view', 'User viewed monthly map')
     return render(request, 'dashboard/pages/map.html', {'time_scale': 'monthly'})
 
 
-#  COMMUNITY TOOLS
-
+# Community Statisitics
+# Shows up in activity_log.json
 def community(request):
-    """Community analysis tool."""
     log_activity('community_analysis', 'User opened community analysis tool')
     return render(request, 'dashboard/pages/community.html')
 
 
-#  EXPORT DATA
-
+# Export Files
+# Shows up in activity_log.json
 def export(request):
-    """Export tool — allows users to export maps."""
     log_activity('map_export', 'User opened export tool')
     return render(request, 'dashboard/pages/export.html', {
         'today': datetime.now().date()
     })
 
 
-#  API ENDPOINTS 
-
+# Data Status API:
+# Serves data status JSON from an API endpoint 
 def data_status_api(request):
     """
     API endpoint to return local data file status AND recent notifications.
 
     GET /api/data-status/
     Returns JSON with:
-      - server_start: server start timestamp
-      - sources: list of data source statuses (success/failure, file counts)
-      - recent_activities: all recent log entries (up to 20)
-      - notifications: the 5 most recent user-facing notifications
+      - server_start -> server start timestamp
+      - sources -> list of data source statuses (success/failure, file counts)
+      - recent_activities -> all recent log entries (up to 20)
+      - notifications -> the 5 most recent notifications
     """
     status = check_data_status()
     status['recent_activities'] = get_recent_activities(limit=20)
@@ -252,19 +237,16 @@ def data_status_api(request):
     return JsonResponse(status, content_type='application/json')
 
 
-print("View site in browser at: http://127.0.0.1:8000/\n")
-
-
-# ── DATA SERVING ─────────────────────────────────────────────
-# Serves GeoJSON, JSON, and CSV data files from dashboard/data/{data_type}/
-
+# Data Serving:
+# Serves GeoJSON, JSON, and CSV data files from 
+# dashboard/data/{data_type}/ or from API endpoint
 import mimetypes
 
 mimetypes.add_type('application/json', '.json')
 mimetypes.add_type('application/geo+json', '.geojson')
 mimetypes.add_type('application/csv', '.csv')
 
-
+# Local
 def clarity_data_file(request, filename):
     """
     Serve clarity data files (GeoJSON or JSON) from dashboard/data/clarity/.
@@ -294,7 +276,7 @@ def clarity_data_file(request, filename):
 
     return HttpResponse(content, content_type=content_type)
 
-
+# API
 def clarity_dates_index(request):
     """
     Serve the dates.json index file from dashboard/data/.
@@ -310,7 +292,7 @@ def clarity_dates_index(request):
 
     return JsonResponse(data if isinstance(data, dict) else {"dates": data})
 
-
+# Local
 def tempo_data_file(request, filename):
     """
     Serve TEMPO data files (GeoJSON or JSON) from dashboard/data/tempo/.
@@ -341,7 +323,7 @@ def tempo_data_file(request, filename):
 
     return HttpResponse(content, content_type=content_type)
 
-
+# Local
 def fused_data_file(request, filename):
     """
     Serve fused data files (GeoJSON or JSON) from dashboard/data/fused/.
@@ -371,12 +353,10 @@ def fused_data_file(request, filename):
     return HttpResponse(content, content_type=content_type)
 
 
-# ── DATA FILE EXPORT API ─────────────────────────────────────────────
+# Export Files API:
 # Allows browsing and exporting (GeoJSON/JSON or CSV) of data files from
 # dashboard/data/{tempo,clarity,fused}/ directories.
 # Handles both .geojson (most data files) and .json (e.g. dates.json) extensions.
-
-
 def _scan_data_files(source):
     """
     Scan a data source directory and return a sorted list of file info dicts.
@@ -421,6 +401,10 @@ def _scan_data_files(source):
             ftype = 'monthly_pixel'
         elif re.match(r'^\d{4}-\d{2}-\d{2}', f):
             ftype = 'daily'
+        # Fused community prefix
+        elif f.endswith('.csv'):
+            ftype = 'community'
+            ext = 'csv'
         else:
             ftype = 'other'
 
@@ -432,7 +416,6 @@ def _scan_data_files(source):
         })
 
     return files
-
 
 def list_data_files_api(request):
     """
@@ -451,14 +434,18 @@ def list_data_files_api(request):
 
     # Filter by type
     if file_type:
-        files = [f for f in files if f['type'] == file_type]
+        if file_type in ('daily_community', 'monthly_community') and source == 'fused':
+            # For fused data, community queries also match CSV files classified as 'community'
+            files = [f for f in files if f['type'] == file_type or f['type'] == 'community']
+        else:
+            files = [f for f in files if f['type'] == file_type]
+
 
     # Filter by date (match YYYY-MM or YYYY-MM-DD in filename)
     if date_filter:
         files = [f for f in files if date_filter in f['filename']]
 
     return JsonResponse({'source': source, 'files': files})
-
 
 def _geojson_to_csv(data):
     """
@@ -508,7 +495,66 @@ def _geojson_to_csv(data):
     # Add UTF-8 BOM for Excel compatibility
     return '\ufeff'.encode('utf-8') + output.getvalue().encode('utf-8')
 
+def export_data_file(request):
+    """
+    GET /api/export-data-file/?source=clarity&file=2025-09-01.geojson&format=geojson
+    Downloads a single data file, optionally converted to CSV.
+    Format options: geojson (original), csv (converted from geojson)
+    """
+    source = request.GET.get('source', 'clarity').lower()
+    if source not in ('tempo', 'clarity', 'fused'):
+        return HttpResponseNotFound('Invalid source')
 
+    filename = request.GET.get('file', '').strip()
+    if not filename:
+        return HttpResponseNotFound('No file specified')
+
+    fmt = request.GET.get('format', 'geojson').lower()
+
+    source_dir = os.path.join(DATA_DIR, source)
+    file_path = os.path.join(source_dir, filename)
+
+    # Prevent path traversal
+    if not os.path.abspath(file_path).startswith(os.path.abspath(source_dir)):
+        return HttpResponseNotFound('Invalid file path')
+
+    if not os.path.isfile(file_path):
+        return HttpResponseNotFound(f'File not found: {filename}')
+
+    if filename.endswith('.csv'):
+        with open(file_path, 'rb') as f:
+            csv_bytes = f.read()
+        response = HttpResponse(csv_bytes, content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+    with open(file_path, 'r', encoding='utf-8') as f:
+        raw_content = f.read()
+
+    if fmt == 'csv':
+        try:
+            data = json.loads(raw_content)
+            csv_bytes = _geojson_to_csv(data)
+            response = HttpResponse(csv_bytes, content_type='text/csv; charset=utf-8')
+            # Rename extension to .csv
+            base_name = os.path.splitext(filename)[0]
+            response['Content-Disposition'] = f'attachment; filename="{base_name}.csv"'
+            return response
+        except json.JSONDecodeError:
+            return HttpResponseNotFound('Cannot convert: invalid JSON')
+    else:
+        # Serve as GeoJSON/JSON
+        if filename.endswith('.geojson'):
+            content_type = 'application/geo+json'
+        else:
+            content_type = 'application/json'
+        response = HttpResponse(raw_content, content_type=content_type)
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+
+# Community Statistics API:
+# Serves CSV and Parquet files from dashboard/data/community_statistics directory
 def community_rankings_api(request):
     """
     GET /api/community-rankings/
@@ -532,7 +578,6 @@ def community_rankings_api(request):
             rows.append(converted)
 
     return JsonResponse({"rankings": rows})
-
 
 def _normalize_community_name(name):
     """Normalize community name for case-insensitive, apostrophe-tolerant matching."""
@@ -563,7 +608,7 @@ def community_no2_data_api(request):
         return JsonResponse({"error": f"Failed to read parquet: {str(e)}"}, status=500)
 
     if community_filter:
-        # Normalize both sides for matching (case-insensitive, strip apostrophes)
+        # Normalize both sides for matching (case insensitive, strip apostrophes)
         filter_norm = _normalize_community_name(community_filter)
         df = df[df["community"].apply(_normalize_community_name) == filter_norm]
 
@@ -590,54 +635,3 @@ def community_no2_data_api(request):
         rows.append(converted)
 
     return JsonResponse({"data": rows})
-
-
-def export_data_file(request):
-    """
-    GET /api/export-data-file/?source=clarity&file=2025-09-01.geojson&format=geojson
-    Downloads a single data file, optionally converted to CSV.
-    Format options: geojson (original), csv (converted from geojson)
-    """
-    source = request.GET.get('source', 'clarity').lower()
-    if source not in ('tempo', 'clarity', 'fused'):
-        return HttpResponseNotFound('Invalid source')
-
-    filename = request.GET.get('file', '').strip()
-    if not filename:
-        return HttpResponseNotFound('No file specified')
-
-    fmt = request.GET.get('format', 'geojson').lower()
-
-    source_dir = os.path.join(DATA_DIR, source)
-    file_path = os.path.join(source_dir, filename)
-
-    # Prevent path traversal
-    if not os.path.abspath(file_path).startswith(os.path.abspath(source_dir)):
-        return HttpResponseNotFound('Invalid file path')
-
-    if not os.path.isfile(file_path):
-        return HttpResponseNotFound(f'File not found: {filename}')
-
-    with open(file_path, 'r', encoding='utf-8') as f:
-        raw_content = f.read()
-
-    if fmt == 'csv':
-        try:
-            data = json.loads(raw_content)
-            csv_bytes = _geojson_to_csv(data)
-            response = HttpResponse(csv_bytes, content_type='text/csv; charset=utf-8')
-            # Rename extension to .csv
-            base_name = os.path.splitext(filename)[0]
-            response['Content-Disposition'] = f'attachment; filename="{base_name}.csv"'
-            return response
-        except json.JSONDecodeError:
-            return HttpResponseNotFound('Cannot convert: invalid JSON')
-    else:
-        # Serve as GeoJSON/JSON
-        if filename.endswith('.geojson'):
-            content_type = 'application/geo+json'
-        else:
-            content_type = 'application/json'
-        response = HttpResponse(raw_content, content_type=content_type)
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        return response

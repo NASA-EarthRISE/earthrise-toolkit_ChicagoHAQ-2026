@@ -1,3 +1,6 @@
+#.gitignore
+.gitignore
+
 # Virtual environments
 .venvv/
 .venv django/
@@ -23,6 +26,31 @@ Thumbs.db
 # App-generated files
 activity_log.json
 
-# Data (keep community_statistics for tracking)
+# Data Folder (keep a few testing files available as seen below)
 dashboard/data/*
+
+# Community
 !dashboard/data/community_statistics/
+
+# TEMPO
+!dashboard/data/tempo/dates.json
+!dashboard/data/tempo/2025-09-04.geojson
+!dashboard/data/tempo/day_2025-09-04.geojson
+!dashboard/data/tempo/day_community_2025-09-04.geojson
+!dashboard/data/tempo/month_2025-09.geojson
+!dashboard/data/tempo/monthly_community_2025-09.geojson
+
+# Clarity
+!dashboard/data/clarity/2025-09-01.geojson
+!dashboard/data/clarity/daily_community_2025-09-01.geojson
+!dashboard/data/clarity/daily_sensor_2025-09-01.geojson
+!dashboard/data/clarity/dates.json
+!dashboard/data/clarity/monthly_community_2025-09.geojson
+!dashboard/data/clarity/monthly_sensor_2025-09.geojson
+
+# Fused
+!dashboard/data/fused/dates.json
+!dashboard/data/fused/2025-09-04.geojson
+!dashboard/data/fused/day_2025-09-04.geojson
+!dashboard/data/fused/fused_hourly_by_community.csv
+!dashboard/data/fused/month_2025-09.geojson

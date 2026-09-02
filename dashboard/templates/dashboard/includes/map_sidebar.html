@@ -15,9 +15,9 @@
 <div class="sidebar-section">
     <h3>Observation Window</h3>
     <div class="map-type-grid">
-        <button class="map-type-btn {% if time_scale == 'hourly' %}active{% endif %}" data-type="hourly" data-url="{% url 'map_hourly' %}" onclick="handleMapTypeClick(event, 'hourly');">Hourly</button>
-        <button class="map-type-btn {% if time_scale == 'daily' %}active{% endif %}" data-type="daily" data-url="{% url 'map_daily' %}" onclick="handleMapTypeClick(event, 'daily');">Daily</button>
-        <button class="map-type-btn {% if time_scale == 'monthly' %}active{% endif %}" data-type="monthly" data-url="{% url 'map_monthly' %}" onclick="handleMapTypeClick(event, 'monthly');">Monthly</button>
+        <button class="map-type-btn {% if time_scale == 'hourly' %}active{% endif %}" data-type="hourly" data-url="{% url 'map_hourly' %}" onclick="handleMapTypeClick(event, 'hourly');" aria-label="View Hourly Map" title="View Hourly Map">Hourly</button>
+        <button class="map-type-btn {% if time_scale == 'daily' %}active{% endif %}" data-type="daily" data-url="{% url 'map_daily' %}" onclick="handleMapTypeClick(event, 'daily');" aria-label="View Daily Map" title="View Daily Map">Daily</button>
+        <button class="map-type-btn {% if time_scale == 'monthly' %}active{% endif %}" data-type="monthly" data-url="{% url 'map_monthly' %}" onclick="handleMapTypeClick(event, 'monthly');" aria-label="View Monthly Map" title="View Monthly Map">Monthly</button>
     </div>
 </div>
 
@@ -31,7 +31,7 @@
         <input type="date" id="map-date" value="{{ today|date:'Y-m-d' }}" />
       </div>
     </div>
-      <button class="load-date-btn" id="load-single-date" style="margin-top:0.5rem; width:100%;">Load</button>
+      <button class="load-date-btn" id="load-single-date" style="margin-top:0.5rem; width:100%;" aria-label="Load Data for Specified Date" title="Load Data for Specified Date">Load</button>
       <p class="hint">Note: When selecting a new data product, press load to reload the date selection.</p>
   </div>
 
@@ -47,7 +47,7 @@
         <input type="date" id="date-range-end" value="{{ today|date:'Y-m-d' }}" />
       </div>
     </div>
-    <button class="load-date-btn" id="load-date-range" style="margin-top:0.25rem; width:100%;">Load</button>
+    <button class="load-date-btn" id="load-date-range" style="margin-top:0.25rem; width:100%;" aria-label="Load Data for Specified Date Range" title="Load Data for Specified Date Range">Load</button>
     <p class="hint">Note: When selecting a new data product, press load to reload the date selection.</p>
   </div>
 
@@ -63,7 +63,7 @@
         <input type="month" id="month-range-end" value="{{ today|date:'Y-m' }}" />
       </div>
     </div>
-    <button class="load-date-btn" id="load-month-range" style="margin-top:0.25rem; width:100%;">Load</button>
+    <button class="load-date-btn" id="load-month-range" style="margin-top:0.25rem; width:100%;" aria-label="Load Data for Specified Months" title="Load Data for Specified Months">Load</button>
     <p class ="hint">Note: When selecting a new data product, press load to reload the date selection.</p>
   </div>
 </div>
@@ -79,7 +79,7 @@
             <input type="radio" name="dataProduct" value="openaq" checked /> Open Air Chicago
         </label>
         <label class="layer-item" style="display:block; margin-bottom:.4rem;">
-            <input type="radio" name="dataProduct" value="fusion" /> Fused (TEMPO + Open Air Chicago)
+            <input type="radio" name="dataProduct" value="fusion" /> Ground Surface Estimate
         </label>
     </div>
 </div>

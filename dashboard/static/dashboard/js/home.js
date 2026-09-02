@@ -1,4 +1,4 @@
-// HOME PAGE HELPERS 
+// Home Page Helpers:
 
 // System Status Timestamps
 function formatTimeAgo(timestamp) {
@@ -17,14 +17,14 @@ function renderStatusFeed(data) {
   const feed = document.getElementById('status-feed');
   let html = '';
 
-  // ── Server Started ──
+  // Server Started 
   html += `
     <div style="padding:0.6rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
       <span style="color:var(--text); font-size:0.9rem;">Server Started</span>
       <span style="color:var(--text-muted); font-size:0.82rem; white-space:nowrap;">${formatTimeAgo(data.server_start)}</span>
     </div>`;
 
-  // ── Dashboard Page Reloaded (from most recent page_refresh activity) ──
+  // Dashboard Page Reloaded (from most recent page_refresh activity)
   const activities = data.recent_activities || [];
   const pageRefresh = activities.find(a => a.type === 'page_refresh');
   if (pageRefresh) {
@@ -35,16 +35,16 @@ function renderStatusFeed(data) {
       </div>`;
   }
 
-  // ── Data Source Entries ──
+  // Data Source Entries
   data.sources.forEach((src, idx) => {
     const fileCountText = src.file_count > 0
       ? `${src.file_count} file${src.file_count !== 1 ? 's' : ''} loaded`
       : 'No files loaded';
     const fileColor = src.file_count > 0 ? 'var(--success)' : '#e53e3e';
+
     // Use time ago from server_start as the reference for data sources
     const isLast = idx === data.sources.length - 1;
     const borderBottom = isLast ? '' : 'border-bottom:1px solid var(--border);';
-
     html += `
       <div style="padding:0.6rem 0; ${borderBottom}">
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -58,7 +58,7 @@ function renderStatusFeed(data) {
   feed.innerHTML = html;
 }
 
-// Render Load Data Status (Stat Card)
+// Render 'Data Load Status' (Stat Card)
 function loadDataStatus(data) {
   const valueEl = document.getElementById('data-status-value');
   const subEl = document.getElementById('data-status-sub');
@@ -70,6 +70,7 @@ function loadDataStatus(data) {
     return;
   }
   
+  // Count the amount of files in each data/tempo, data/clarity, and data/fused folder
   const totalFiles = data.sources.reduce((sum, src) => sum + src.file_count, 0);
   const allLoaded = data.sources.every(src => src.file_count > 0);
   const noneLoaded = data.sources.every(src => src.file_count === 0);
@@ -88,7 +89,7 @@ function loadDataStatus(data) {
   subEl.textContent = `Static Files Loaded: ${totalFiles}`;
 }
 
-// Fetch Data Status from "api/data-status/""
+// Fetch Data Status from "api/data-status/"
 function fetchData() {
   fetch('/api/data-status/')
     .then(res => res.json())
@@ -103,7 +104,7 @@ function fetchData() {
     });
 }
 
-// Initialize when DOM is ready
+// Initialize when DOM is Ready
 document.addEventListener('DOMContentLoaded', function() {
   fetchData();
   // Auto-refresh data status fetch every 60 seconds

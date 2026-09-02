@@ -6,7 +6,7 @@
 {% block content %}
 <style>
 
-    /* Background image for about page */
+    /* Background Image for Page */
     main.content {
     background-image: url("{% static 'dashboard/images/esdlogo_white.png' %}");
         background-repeat: no-repeat;
@@ -49,13 +49,13 @@
     <p>
         Tropospheric ozone forms from interactions between gaseous pollutants, including nitrogen oxide (NO<sub>x</sub>) and volatile organic compounds (VOCs) (Nawaz et al., 2025). NO<sub>x</sub> refers to both nitrogen oxide  and nitrogen dioxide (NO<sub>2</sub>). NO<sub>2</sub> is the more stable species of NO<sub>x</sub> and is directly regulated under national air quality standards, making NO<sub>2</sub> a practical proxy for understanding the role of NO<sub>x</sub> in ozone production (Dickens, 2023). 
     </p>
-    <img src = "{% static 'dashboard/images/EPA_AirData_DaysOzoneExceedance_CookCounty.png' %}" class = "EPA-ozone-graph" alt = "Number of Days 8-Hour Ozone Exceeded Healthy Air Quality (2000-2026)"> <br>
+    <img src = "{% static 'dashboard/images/EPA_AirData_DaysOzoneExceedance_CookCounty.png' %}" class = "EPA-ozone-graph" alt = "Number of Days 8-Hour Ozone Exceeded Healthy Air Quality (2000-March 2026)"> <br>
     <a href="https://www.epa.gov/outdoor-air-quality-data/airdata-ozone-exceedances" target="_blank" style="color: var(--text-muted);">
         <p class="image-credit" style="color:var(--text-muted);">
-            Image Credit: U.S. EPA Air Data
+            Image Credit: U.S. EPA Air Data (Last Updated March 25, 2026)
         </p> 
     </a>
-    <p></p>
+    <p><br></p>
 
     <h2>Chicago Community Areas</h2>
     <p>
@@ -75,7 +75,7 @@
     <div class="product-card" id="tempo-product">
         <h3>NASA TEMPO (Tropospheric Emissions: Monitoring of Pollution)</h3>
         <div class="data-content">
-            <img src = "{% static 'dashboard/images/tempo.png' %}" class = "data-image" alt = "TEMPO Satellite">
+            <img src = "{% static 'dashboard/images/tempo.png' %}" class = "data-image" alt = "Image of TEMPO">
             <p class="side-paragraph">
             NASA's Tropospheric Emissions: Monitoring of Pollution (TEMPO) instrument is a revolutionary <strong> geostationary satellite mission</strong> that was launched in April of 2023. TEMPO measures key gases and aerosols that impact air quality, including ozone and NO<sub>2</sub>, across North America. As a geostationary satellite with a fixed position above North America, TEMPO scans the concentrations of air pollutants hourly. This project used the Level 3 Gridded NO<sub>2</sub> <a href="https://www.earthdata.nasa.gov/data/catalog/larc-cloud-tempo-no2-l3-v04" target="_blank" style="color: var(--text-muted);">Tropospheric and Stratospheric Columns Version 04</a> product for the analysis, which was released in September of 2025.
         </p>
@@ -88,12 +88,12 @@
     </div>
 
     <!-- OpenAir Chicago Card -->
-    <div class="product-card clarity" id="openair-product">
+    <div class="product-card openair" id="openair-product">
         <h3>Open Air Chicago (CLARITY Sensor Network)</h3>
         <div class="data-content">
-            <img src = "{% static 'dashboard/images/ClaritySensor.png' %}" class = "data-image" alt = "Clarity's Node-S Sensor">  
+            <img src = "{% static 'dashboard/images/ClaritySensor.png' %}" class = "data-image" alt = "Open Air Chicago Clarity Node-S Sensor">  
             <p class="side-paragraph">
-            Open Air Chicago, part of the Community Logic for Air Quality (CLARITY) initiative, is a dense, community-based air quality monitoring network that launched in September of 2025 (Green, 2026). With 277 of Clarity's low-cost, Node-S sensors deployed in a grid-based pattern across Chicago, Open Air Chicago provides sub-hourly readings of NO<sub>2</sub> and PM2.5 concentrations. All sensors in Chicago are located less than a mile from each other, with at least one sensor in each of Chicago's 77 communities. Open Air Chicago is currently the largest community monitoring network in the United States. This project used the <a href="https://data.cityofchicago.org/Health-Human-Services/Open-Air-Chicago-Individual-Measurements/xfya-dxtq/about_data" target="_blank" style="color: var(--text-muted);">Individual Measurements</a> data product from the City of Chicago Data Portal for the analysis.
+            Open Air Chicago, part of the Community Logic for Air Quality (CLARITY) initiative, is a <b>dense, community-based air quality monitoring network</b> that launched in September of 2025 (Green, 2026). With 277 of Clarity's low-cost, Node-S sensors deployed in a grid-based pattern across Chicago, Open Air Chicago provides sub-hourly readings of NO<sub>2</sub> and PM2.5 concentrations. All sensors in Chicago are located less than a mile from each other, with at least one sensor in each of Chicago's 77 communities. Open Air Chicago is currently the largest community monitoring network in the United States. This project used the <a href="https://data.cityofchicago.org/Health-Human-Services/Open-Air-Chicago-Individual-Measurements/xfya-dxtq/about_data" target="_blank" style="color: var(--text-muted);">Individual Measurements</a> data product from the City of Chicago Data Portal for the analysis.
         </p>
         </div>
         <p class="image-credit"> 
@@ -103,9 +103,9 @@
 
     <!-- Fusion Layer Card -->
     <div class="product-card fused" id="fusion-product">
-        <h3>Fusion Layer (Satellite + Ground Data Integration)</h3>
+        <h3>Ground Surface Estimate Layer (Satellite + Ground Data Integration)</h3>
         <p>
-            The fused data layer provides estimates of ground-level NO<sub>2</sub> concentrations from TEMPO NO<sub>2</sub> tropospheric column retrievals adjusted by meteorological variables. These variables help infer ground-level pollutant concentrations from satellite observations, a complex relationship which common unit conversions cannot adequately represent. With these data layers, users are able to view estimates of NO<sub>2</sub> concentrations across Chicago and the broader Cook County, even if Open Air Chicago sensors go offline. 
+            This fused data layer provides <b>estimates of ground-level NO<sub>2</sub> concentrations</b> from TEMPO NO<sub>2</sub> tropospheric column retrievals adjusted by meteorological variables. These variables help infer ground-level pollutant concentrations from satellite observations, a complex relationship which common unit conversions cannot adequately represent. With these data layers, users are able to view estimates of NO<sub>2</sub> concentrations across Chicago and the broader Cook County, even if Open Air Chicago sensors go offline. 
         </p>
     </div>
 </div>
@@ -131,7 +131,7 @@
     </p>
 
     <p style="padding-left: 36px; text-indent: -36px;">
-        Nawaz, M. O., Huber, D., E., Kerr, G. H., Judd, L. M., Acker, S. J., & Goldberg, D. L. (2025). A comparative analysis of TEMPO NO2 remote sensing with surface-level monitoring through diurnal and seasonal trends, meteorology, and monitor characteristics. <i>Journal of Geophysical Research: Atmospheres</i>, <i>130</i>(20), <a href="https://doi.org/10.1029/2025JD043923" target="_blank" style="color: var(--text-muted);">https://doi.org/10.1029/2025JD043923</a>
+        Nawaz, M. O., Huber, D., E., Kerr, G. H., Judd, L. M., Acker, S. J., & Goldberg, D. L. (2025). A comparative analysis of TEMPO NO<sub>2</sub> remote sensing with surface-level monitoring through diurnal and seasonal trends, meteorology, and monitor characteristics. <i>Journal of Geophysical Research: Atmospheres</i>, <i>130</i>(20), <a href="https://doi.org/10.1029/2025JD043923" target="_blank" style="color: var(--text-muted);">https://doi.org/10.1029/2025JD043923</a>
     </p>
 
     <p style="padding-left: 36px; text-indent: -36px;">

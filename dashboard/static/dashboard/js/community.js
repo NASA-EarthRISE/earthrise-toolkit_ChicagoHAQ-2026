@@ -1,3 +1,4 @@
+// Make 'communnity-left' sticky
 function initManualStickyCommunityPanel() {
   const panel = document.querySelector(".community-left");
   const layout = document.querySelector(".community-layout");
@@ -123,317 +124,322 @@ function initManualStickyCommunityPanel() {
   window.addEventListener("scroll", requestUpdate, { passive: true });
   window.addEventListener("resize", requestUpdate);
 }
-
 initManualStickyCommunityPanel();
-// ── MAP INIT ───────────────────────────────────────────────────────────────
-  const map = L.map('community-map', {
-    center: [41.83772083187901, -87.68664593458594], //chicago boundary centroid
-    zoom: 10,
-    zoomControl: true,
-    scrollWheelZoom:false //disable zoom when scrolling down the page
-  });
 
-  map.on('click', function() { //enable zoom when clicking map
-    if (!map.scrollWheelZoom.enabled()) {
-        map.scrollWheelZoom.enabled();
+// Community Map Initialization
+const map = L.map('community-map', {
+  center: [41.83772083187901, -87.68664593458594], //chicago boundary centroid
+  zoom: 10,
+  zoomControl: true,
+  scrollWheelZoom:false //disable zoom when scrolling down the page
+});
+
+// Enable zoom when clicking map
+map.on('click', function() { 
+  if (!map.scrollWheelZoom.enabled()) {
+      map.scrollWheelZoom.enabled();
+    }
+});
+
+// Disable zooming in after mouse leaves map
+map.on('mouseout', function() {
+  map.scrollWheelZoom.disable();
+});
+
+// Home Button (reset view to Chicago) 
+const homeCoords = [41.83772083187901, -87.68664593458594];
+const homeZoom = 10;
+
+var HomeButton = L.Control.extend({
+  options: { position: 'topleft' },
+  onAdd: function (map) {
+    var btn = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+          btn.style.backgroundColor = 'white';
+          btn.style.width = '30px';
+          btn.style.height = '30px';
+          btn.style.cursor = 'pointer';
+          btn.title = 'Zoom to Home';
+
+    // inline SVG house icon – no external dependencies
+    btn.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" ' +
+      'width="16" height="16" style="vertical-align:middle;display:block;margin:5px auto 0" ' +
+      'fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M3 12L5 10M19 10L21 12M12 2L4 10V20H9V15H15V20H20V10L12 2Z"/>' +
+      '</svg>';
+
+    L.DomEvent.disableClickPropagation(btn);
+    L.DomEvent.disableScrollPropagation(btn);
+
+    L.DomEvent.on(btn, 'click', L.DomEvent.preventDefault);
+    L.DomEvent.on(btn, 'click', function () {
+      map.flyTo(homeCoords, homeZoom, { duration: 0.5 });
+    });
+
+    return btn;
+  }
+});
+
+map.addControl(new HomeButton());
+
+// Legend Toggle Button
+let legendVisible = true; // track legend state
+var LegendToggleControl = L.Control.extend({
+  options: { position: 'topleft' },
+  onAdd: function (map) {
+    var btn = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+    btn.style.backgroundColor = 'white';
+    btn.style.width = '30px';
+    btn.style.height = '30px';
+    btn.style.cursor = 'pointer';
+    btn.innerHTML = '<span style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; font-size: 16px; font-family: \'Material Icons\', sans-serif; color: #333;">&#xe53b;</span>';
+    btn.title = 'Toggle Legend';
+
+    L.DomEvent.disableClickPropagation(btn);
+    L.DomEvent.disableScrollPropagation(btn);
+
+    L.DomEvent.on(btn, 'click', L.DomEvent.preventDefault);
+    L.DomEvent.on(btn, 'click', function () {
+      if (legendVisible) {
+        map.removeControl(legendControl);
+        legendVisible = false;
+      } else {
+        map.addControl(legendControl);
+        legendVisible = true;
       }
     });
-  map.on('mouseout', function() { //disable zooming in after mouse leaves map
-    map.scrollWheelZoom.disable();
+
+    return btn;
+  }
+});
+map.addControl(new LegendToggleControl());
+
+// Map Legend
+var LegendControl = L.Control.extend({
+  options: { position: 'bottomleft' },
+  onAdd: function (map) {
+    var btn = L.DomUtil.create('div', 'map-legend');
+    btn.innerHTML =
+      '<div class="legend-title">Legend</div>' +
+      '<div class="legend-item">' +
+        '<span class="legend-symbol">&#9673;</span>' +
+        '<span class="legend-label">Open Air Chicago Sensor</span>' +
+      '</div>';
+    L.DomEvent.disableClickPropagation(btn);
+    L.DomEvent.disableScrollPropagation(btn);
+    return btn;
+  }
+});
+var legendControl = new LegendControl();
+map.addControl(legendControl);
+
+// Basemap
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Tiles &copy; Esri',
+  maxZoom: 15
+}).addTo(map);
+
+
+// Sensors, Chicago Borders & Communities Layers
+
+// Load Sensors
+fetch("/static/dashboard/layers/Sensors.geojson") 
+.then(response => response.json())
+.then(data => {
+  var sensorMarker = L.divIcon({
+    className: 'custom-point-marker', 
+    html: '<div style="font-size: 15px; color: #624786;">◉</div>',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10]
   });
 
-    // ── HOME BUTTON (reset view to Chicago) ──────────────────────────────────
-  const homeCoords = [41.83772083187901, -87.68664593458594];
-  const homeZoom = 10;
+      var Sensors = L.geoJSON(data, {
+        pointToLayer: function (feature, latlng) {
+          return L.marker(latlng, {icon: sensorMarker, interactive: false});
+        }
+        }).addTo(map);
+})
 
-  var HomeButton = L.Control.extend({
-    options: { position: 'topleft' },
-    onAdd: function (map) {
-      var btn = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-            btn.style.backgroundColor = 'white';
-            btn.style.width = '30px';
-            btn.style.height = '30px';
-            btn.style.cursor = 'pointer';
-            btn.title = 'Zoom to Home';
+let ChicagoBounds = null;
 
-      // inline SVG house icon – no external dependencies
-      btn.innerHTML =
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" ' +
-        'width="16" height="16" style="vertical-align:middle;display:block;margin:5px auto 0" ' +
-        'fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-        '<path d="M3 12L5 10M19 10L21 12M12 2L4 10V20H9V15H15V20H20V10L12 2Z"/>' +
-        '</svg>';
-
-      L.DomEvent.disableClickPropagation(btn);
-      L.DomEvent.disableScrollPropagation(btn);
-
-      L.DomEvent.on(btn, 'click', L.DomEvent.preventDefault);
-      L.DomEvent.on(btn, 'click', function () {
-        map.flyTo(homeCoords, homeZoom, { duration: 0.5 });
-      });
-
-      return btn;
+// Load Chicago Borders
+fetch("/static/dashboard/layers/Chicago.geojson")
+.then(response => {
+  if (!response.ok) {
+    throw new Error("Could not load Chicago.geojson");
+  }
+  return response.json();
+})
+.then(data => {
+  ChicagoBounds = L.geoJSON(data, {
+    style: {
+      color: "#636363",
+      weight: 1.75,
+      fillColor: "#00000000"
     }
-  });
-
-   map.addControl(new HomeButton());
-
-   // ── LEGEND TOGGLE BUTTON (below home button) ────────────────────────────
-   let legendVisible = true; // track legend state
-
-   var LegendToggleControl = L.Control.extend({
-     options: { position: 'topleft' },
-     onAdd: function (map) {
-       var btn = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-       btn.style.backgroundColor = 'white';
-       btn.style.width = '30px';
-       btn.style.height = '30px';
-       btn.style.cursor = 'pointer';
-       btn.innerHTML = '<span style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; font-size: 16px; font-family: \'Material Icons\', sans-serif; color: #333;">&#xe53b;</span>';
-       btn.title = 'Toggle Legend';
-
-       L.DomEvent.disableClickPropagation(btn);
-       L.DomEvent.disableScrollPropagation(btn);
-
-       L.DomEvent.on(btn, 'click', L.DomEvent.preventDefault);
-       L.DomEvent.on(btn, 'click', function () {
-         if (legendVisible) {
-           map.removeControl(legendControl);
-           legendVisible = false;
-         } else {
-           map.addControl(legendControl);
-           legendVisible = true;
-         }
-       });
-
-       return btn;
-     }
-   });
-
-   map.addControl(new LegendToggleControl());
-
-   // ── MAP LEGEND (sensor symbol) ──────────────────────────────────────────
-   var LegendControl = L.Control.extend({
-     options: { position: 'bottomleft' },
-     onAdd: function (map) {
-       var btn = L.DomUtil.create('div', 'map-legend');
-       btn.innerHTML =
-         '<div class="legend-title">Legend</div>' +
-         '<div class="legend-item">' +
-           '<span class="legend-symbol">&#9673;</span>' +
-           '<span class="legend-label">Clarity Sensor</span>' +
-         '</div>';
-       L.DomEvent.disableClickPropagation(btn);
-       L.DomEvent.disableScrollPropagation(btn);
-       return btn;
-     }
-   });
-
-   var legendControl = new LegendControl();
-   map.addControl(legendControl);
-
-  // Basemap
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles &copy; Esri',
-    maxZoom: 15
   }).addTo(map);
 
-  // ── SENSORS, CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
-  fetch("/static/dashboard/layers/oacd.geojson") //load sensors
-  .then(response => response.json())
-  .then(data => {
-    var sensorMarker = L.divIcon({
-      className: 'custom-point-marker', 
-      html: '<div style="font-size: 15px; color: #624786;">◉</div>',
-      iconSize: [20, 20],
-      iconAnchor: [10, 10]
-    });
+})
+.catch(err => {
+  console.error("Chicago boundary load failed:", err);
+});
 
-       var Sensors = L.geoJSON(data, {
-          pointToLayer: function (feature, latlng) {
-           return L.marker(latlng, {icon: sensorMarker, interactive: false});
-         }
-         }).addTo(map);
-    })
+//Highlight and Border Style
+const defaultStyle = {color: "#636363", weight: 1, fillColor: "#00000066"}
+const highlightStyle = {color: "#000000", weight: 2.5, fillColor: "#fbf719"}
+
+var selectedCommunity = null //keep track of clicked community
+let CommunityAreasLayer = null    //keep reference to community layer for dropdown zoom and go button
+
+let selectedLayer = null;
+let hoveredLayer = null;
 
 
-  let ChicagoBounds = null;
+// Load Dropdown
+var dropdownCommunity = document.getElementById('community-dropdown');
 
-fetch("/static/dashboard/layers/Chicago.geojson") // load Chicago boundary
-  .then(response => {
-    if (!response.ok) {
-      throw new Error("Could not load Chicago.geojson");
-    }
-    return response.json();
-  })
-  .then(data => {
-    ChicagoBounds = L.geoJSON(data, {
-      style: {
-        color: "#636363",
-        weight: 1.75,
-        fillColor: "#00000000"
-      }
-    }).addTo(map);
-
-  })
-  .catch(err => {
-    console.error("Chicago boundary load failed:", err);
-  });
-
-  //set styles
-  const defaultStyle = {color: "#636363", weight: 1, fillColor: "#00000066"}
-  const highlightStyle = {color: "#000000", weight: 2.5, fillColor: "#fbf719"}
-
-  var selectedCommunity = null //keep track of clicked community
-  let CommunityAreasLayer = null    //keep reference to community layer for dropdown zoom and go button
-
-  let selectedLayer = null;
-  let hoveredLayer = null;
-
-
-  //load dropdown
-  var dropdownCommunity = document.getElementById('community-dropdown');
-
-  function selectCommunityArea(selectedArea, options = {}) {
-  if (!selectedArea || !CommunityAreasLayer) {
-    return;
-  }
-
-  // Reset all community styles
-  CommunityAreasLayer.eachLayer(function(layer) {
-    layer.setStyle(defaultStyle);
-  });
-
-  // Close any community popup that might still be open
-  map.closePopup();
-
-  selectedLayer = null;
-
-  const shouldZoom = options.zoom !== false;
-  const shouldOpenPopup = options.popup !== false;
-  const shouldRenderGraphs = options.renderGraphs === true;
-  selectedCommunity = selectedArea;
-  dropdownCommunity.value = selectedArea;
-
-  CommunityAreasLayer.eachLayer(function(layer) {
-    const communityName = layer.feature.properties.community;
-
-    if (communityName === selectedArea) {
-      selectedLayer = layer;
-      layer.setStyle(highlightStyle);
-
-      if (shouldZoom) {
-        map.flyToBounds(layer.getBounds(), {
-          padding: [20, 20],
-          duration: 0.6,
-          maxZoom: 12
-        });
-      }
-
-      if (shouldOpenPopup) {
-        const center = layer.getBounds().getCenter();
-        layer.bindPopup("<b>" + communityName + "</b>");
-        layer.openPopup(center);
-      }
-    } else {
-      layer.setStyle(defaultStyle);
-    }
-  });
-
-  if (shouldRenderGraphs) {
-    renderGraphs(selectedArea);
-  }
+function selectCommunityArea(selectedArea, options = {}) {
+if (!selectedArea || !CommunityAreasLayer) {
+  return;
 }
 
-  fetch("/static/dashboard/layers/ChicagoCommunityAreas.geojson")
-    .then(response => response.json())
-    .then(data => {
-        CommunityAreasLayer = L.geoJSON(data, {
-            style: defaultStyle,
-            onEachFeature: function(feature, layer) {
-              //create dropdown option for each feature
-              var option = document.createElement('option');
-              option.value = feature.properties.community;
-              option.textContent = feature.properties.community;
-              option.idNumber = feature.properties.area_num_1;
-              dropdownCommunity.appendChild(option);
-              
-              // add pop-up with name for community in bold
-              layer.bindPopup("<b>" + feature.properties.community + "</b>")
-              
-              layer.on('click', function(e) {
-                selectCommunityArea(feature.properties.community, {
-                  zoom: true,
-                  popup: true,
-                  renderGraphs: true
-                });
-              });
+// Reset all community styles
+CommunityAreasLayer.eachLayer(function(layer) {
+  layer.setStyle(defaultStyle);
+});
 
-                
-              
-            //highlight on hover
-              layer.on({
-                mouseover: function(e) {
-                  const layer = e.target;
+// Close any community popup that might still be open
+map.closePopup();
 
-                  hoveredLayer = layer;
+selectedLayer = null;
 
-                  if (layer !== selectedLayer) {
-                    layer.setStyle(highlightStyle);
-                  }
-                },
+const shouldZoom = options.zoom !== false;
+const shouldOpenPopup = options.popup !== false;
+const shouldRenderGraphs = options.renderGraphs === true;
+selectedCommunity = selectedArea;
+dropdownCommunity.value = selectedArea;
 
-                mouseout: function(e) {
-                  const layer = e.target;
+CommunityAreasLayer.eachLayer(function(layer) {
+  const communityName = layer.feature.properties.community;
 
-                  if (layer !== selectedLayer) {
-                    layer.setStyle(defaultStyle);
-                  }
+  if (communityName === selectedArea) {
+    selectedLayer = layer;
+    layer.setStyle(highlightStyle);
 
-                  if (hoveredLayer === layer) {
-                    hoveredLayer = null;
-                  }
-                }
-              });
-      }}).addTo(map)
-        
-      // Sort dropdown alphabetically
-      const options = Array.from(dropdownCommunity.options).slice(1); // skip placeholder
-
-      options.sort((a, b) =>
-        a.text.localeCompare(b.text)
-      );
-
-      // Remove existing community options
-      dropdownCommunity.length = 1;
-
-      // Re-add in sorted order
-      options.forEach(option => dropdownCommunity.add(option));
-      //choose name from dropdown and zoom in on map
-      dropdownCommunity.addEventListener('change', function(e) {
-        selectCommunityArea(e.target.value, {
-          zoom: true,
-          popup: true,
-          renderGraphs: true
-        });
+    if (shouldZoom) {
+      map.flyToBounds(layer.getBounds(), {
+        padding: [20, 20],
+        duration: 0.6,
+        maxZoom: 12
       });
-    })
+    }
+
+    if (shouldOpenPopup) {
+      const center = layer.getBounds().getCenter();
+      layer.bindPopup("<b>" + communityName + "</b>");
+      layer.openPopup(center);
+    }
+  } else {
+    layer.setStyle(defaultStyle);
+  }
+});
+
+if (shouldRenderGraphs) {
+  renderGraphs(selectedArea);
+}
+}
+
+// Load Community Areas
+fetch("/static/dashboard/layers/ChicagoCommunityAreas.geojson")
+.then(response => response.json())
+.then(data => {
+    CommunityAreasLayer = L.geoJSON(data, {
+        style: defaultStyle,
+        onEachFeature: function(feature, layer) {
+          //create dropdown option for each feature
+          var option = document.createElement('option');
+          option.value = feature.properties.community;
+          option.textContent = feature.properties.community;
+          option.idNumber = feature.properties.area_num_1;
+          dropdownCommunity.appendChild(option);
+          
+          // add pop-up with name for community in bold
+          layer.bindPopup("<b>" + feature.properties.community + "</b>")
+          
+          layer.on('click', function(e) {
+            selectCommunityArea(feature.properties.community, {
+              zoom: true,
+              popup: true,
+              renderGraphs: true
+            });
+          });
+
+            
+          
+        //highlight on hover
+          layer.on({
+            mouseover: function(e) {
+              const layer = e.target;
+
+              hoveredLayer = layer;
+
+              if (layer !== selectedLayer) {
+                layer.setStyle(highlightStyle);
+              }
+            },
+
+            mouseout: function(e) {
+              const layer = e.target;
+
+              if (layer !== selectedLayer) {
+                layer.setStyle(defaultStyle);
+              }
+
+              if (hoveredLayer === layer) {
+                hoveredLayer = null;
+              }
+            }
+          });
+  }}).addTo(map)
+    
+  // Sort dropdown alphabetically
+  const options = Array.from(dropdownCommunity.options).slice(1); // skip placeholder
+
+  options.sort((a, b) =>
+    a.text.localeCompare(b.text)
+  );
+
+  // Remove existing community options
+  dropdownCommunity.length = 1;
+
+  // Re-add in sorted order
+  options.forEach(option => dropdownCommunity.add(option));
+  //choose name from dropdown and zoom in on map
+  dropdownCommunity.addEventListener('change', function(e) {
+    selectCommunityArea(e.target.value, {
+      zoom: true,
+      popup: true,
+      renderGraphs: true
+    });
+  });
+})
 
 
-// ── GRAPH RENDERING ────────────────────────────────────────────────────────────────────────
+// Graph Rendering
+
 let rankingsData = null; // cached rankings data
 
 function getActivePercentileMetric() {
   return document.querySelector('input[name="percentile-metric"]:checked').value;
 }
 
-// Fetch rankings data from API
+// Fetch ranking data from "/api/community-rankings"
 fetch('/api/community-rankings/')
-  .then(response => response.json())
-  .then(data => {
-    rankingsData = data.rankings;
-  })
-  .catch(err => console.error('Failed to load community rankings:', err));
+.then(response => response.json())
+.then(data => {
+  rankingsData = data.rankings;
+})
+.catch(err => console.error('Failed to load community rankings:', err));
 
 // Listen for toggle changes to re-render all graphs based on selected source
 document.querySelectorAll('input[name="percentile-metric"]').forEach(radio => {
@@ -449,6 +455,7 @@ document.querySelectorAll('input[name="percentile-metric"]').forEach(radio => {
   });
 });
 
+// Update Graph Titles based on percentile metric
 function updateGraphTitles() {
   const source = getActivePercentileMetric();
 
@@ -468,9 +475,9 @@ function updateGraphTitles() {
 
   if (source === 'ground') {
     groundTitle.textContent =
-      'Ground NO₂ by Day of Week (ppb)';
+      'Open Air Chicago NO₂ by Day of Week (ppb)';
     tempoTitle.textContent =
-      'Ground NO₂ Distribution (ppb)';
+      'Open Air Chicago NO₂ Distribution (ppb)';
   }
 
   else if (source === 'tempo') {
@@ -506,6 +513,7 @@ function renderGraphs(communityName) {
   }
 }
 
+// Draw Graphs
 function drawGraphs(communityName) {
   const source = getActivePercentileMetric(); // "ground" or "tempo"
   updateGraphTitles();
@@ -520,7 +528,7 @@ function ordinal(n) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-// Percentile with Tempo and Clarity selection
+// Percentile Graph with TEMPO, Open Air, and Fused Selection
 function renderPercentileGraph(communityName) {
   const container = document.getElementById('graph-percentile');
   // Remove old chart div if exists
@@ -590,11 +598,11 @@ function renderPercentileGraph(communityName) {
    // Check if percentile data is available for this community
    if (communityPercentile === null || communityPercentile === undefined) {
     const noDataMsg =
-      metric === 'ground'
-        ? 'No Ground (OpenAir) sensors available for this community. Percentile ranking cannot be calculated.'
-        : metric === 'tempo'
-          ? 'No TEMPO data available for this community. Percentile ranking cannot be calculated.'
-          : 'No Fused data available for this community. Percentile ranking cannot be calculated.';
+       metric === 'ground'
+         ? 'No Open Air Chicago sensors available for this community.'
+         : metric === 'tempo'
+           ? 'No TEMPO data available for this community.'
+           : 'No Fused data available for this community.';
 
     const oldChart = container.querySelector('.plotly-chart');
     if (oldChart) oldChart.remove();
@@ -694,8 +702,7 @@ function renderPercentileGraph(communityName) {
   setupZoomNotification(chartDiv, 'zoom-notify-percentile');
 }
 
-// Weekday box plot for selected source (Ground or TEMPO) based on radio toggle
-// Replicates the Python seaborn boxplot: boxes for each day-of-week showing NO2 distribution
+// Weekday Boxplot with TEMPO, Open Air, and Fused Selection
 function renderWeekdayBoxPlot(communityName, source) {
    const container = document.getElementById('graph-ground');
    const oldChart = container.querySelector('.plotly-chart');
@@ -736,11 +743,12 @@ const yLabel =
 
 const sourceLabel =
   source === 'ground'
-    ? 'Open Air Chicago'
+    ? 'Ground'
     : source === 'tempo'
       ? 'TEMPO'
       : 'Fused';
 
+  // Fetch data from "/api/community-no2-data"
   fetch(`/api/community-no2-data/?community=${encodeURIComponent(communityName)}`)
     .then(response => response.json())
     .then(result => {
@@ -754,10 +762,13 @@ const sourceLabel =
 
       if (filteredData.length === 0) {
         if (loadingEl) loadingEl.classList.remove('visible');
-        showNoData(
-          container,
-          `${sourceLabel} NO₂ data not available.`
-        );
+        const noDataMsg =
+          source === 'ground'
+            ? 'No Open Air Chicago sensors available for this community.'
+            : source === 'tempo'
+              ? 'No TEMPO data available for this community.'
+              : 'No Fused data available for this community.';
+        showNoData(container, noDataMsg);
         return;
       }
 
@@ -875,8 +886,7 @@ const sourceLabel =
     });
 }
 
-// Distribution (KDE) plot for selected source (Ground or TEMPO) based on radio toggle
-// Replicates the Python seaborn kdeplot: density curve with IQR shading, median and mean lines
+// Distribution (KDE) plot with TEMPO, Open Air, and Fused Selection
 function renderDistributionPlot(communityName, source) {
    const container = document.getElementById('graph-tempo');
    const oldChart = container.querySelector('.plotly-chart');
@@ -919,11 +929,12 @@ const yLabel =
 
 const sourceLabel =
   source === 'ground'
-    ? 'Open Air Chicago'
+    ? 'Ground'
     : source === 'tempo'
       ? 'TEMPO'
       : 'Fused';
 
+  // Fetch data from "/api/community-no2-data"
   fetch(`/api/community-no2-data/?community=${encodeURIComponent(communityName)}`)
     .then(response => response.json())
     .then(result => {
@@ -937,10 +948,13 @@ const sourceLabel =
 
       if (filteredData.length === 0) {
         if (loadingEl) loadingEl.classList.remove('visible');
-        showNoData(
-          container,
-          `${sourceLabel} NO₂ data not available.`
-        );
+        const noDataMsg =
+          source === 'ground'
+            ? 'No Open Air Chicago sensors available for this community.'
+            : source === 'tempo'
+              ? 'No TEMPO data available for this community.'
+              : 'No Fused data available for this community.';
+        showNoData(container, noDataMsg);
         return;
       }
 
@@ -1078,6 +1092,7 @@ const sourceLabel =
      });
 }
 
+// Show Placeholders when no Data Product has been Selected
 function showNoData(container, message) {
   const oldChart = container.querySelector('.plotly-chart');
   if (oldChart) oldChart.remove();
@@ -1094,7 +1109,6 @@ function showNoData(container, message) {
   placeholder.style.display = 'block';
 }
 
-// ── ZOOM NOTIFICATION ──────────────────────────────────────────────────────────────────────
 // Listen for Plotly relayout events (zoom, pan, reset) and show/hide notification
 function setupZoomNotification(chartDiv, notificationId) {
   const notification = document.getElementById(notificationId);
@@ -1113,7 +1127,7 @@ function setupZoomNotification(chartDiv, notificationId) {
   });
 }
 
-// ── PDF EXPORT ─────────────────────────────────────────────────────────────────────────────
+// Export Page as PDF
 // Captures the entire community page content (hero + layout) as a PDF using html2canvas + jsPDF
 function exportCommunityAsPDF() {
   const btn = document.getElementById('export-pdf-btn');
@@ -1187,7 +1201,7 @@ function exportCommunityAsPDF() {
   }, 300);
 }
 
-// ── SCALEBAR: update on zoom/pan ──────────────────────────────────────────────
+// Scalebar: Update on Zoom
 function updateScaleBar() {
     const ruler = document.getElementById('scalebar-ruler');
     const ticksContainer = document.getElementById('scalebar-ticks');

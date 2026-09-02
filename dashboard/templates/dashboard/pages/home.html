@@ -5,7 +5,7 @@
 
 {% block extra_css %}
 <style> 
-  /* Background image for page */
+  /* Background Image for Page */
   main.content {
     background-image: url("{% static 'dashboard/images/esdlogo_white.png' %}");
     background-repeat: no-repeat;
@@ -23,7 +23,7 @@
 <div class="hero">
     <h1>Welcome to the Regional Ozone Precursor Dashboard</h1>
     <p class="subtitle">
-      The Regional Ozone Precoursor Dashboard is a visualization tool for TEMPO satellite, Open Air Chicago ground sensor, and a fused product NO₂ data, developed by the Summer 2026 EarthRISE Developers Academy's Chicago Health & Air Quality Team.
+      The Regional Ozone Precursor Dashboard is a visualization tool for TEMPO satellite, Open Air Chicago ground sensor, and a fused surface estimate product NO₂ data, developed by the Summer 2026 EarthRISE Developers Academy's Chicago Health & Air Quality Team.
     </p>
 </div>
 
@@ -119,13 +119,15 @@
 <div class="dashboard-section">
   <h2>Data Sources</h2>
   <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
+    <!-- TEMPO -->
     <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid; border-left-color: #4cbdb2;">
         <strong style="color: var(--text);">NASA TEMPO</strong>
         <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
-            Tropospheric Emissions: Monitoring of Pollution (TEMPO). Geostationary satellite providing hourly NO<sub>2</sub>, O<sub>3</sub>, and formaldehyde (HCHO) measurements over North America.
+            Tropospheric Emissions: Monitoring of Pollution (TEMPO). Geostationary satellite providing hourly NO<sub>2</sub> , O<sub>3</sub> , and formaldehyde (HCHO) measurements over North America.
         </p>
         <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted);">Learn More</a>
     </div>
+    <!-- Open Air Chicago -->
     <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid; border-left-color: #81a24f;">
         <strong style="color: var(--text);">Open Air Chicago</strong>
         <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
@@ -133,8 +135,9 @@
         </p>
         <a href="{% url 'info' %}#data-products" style="font-size:0.82rem; font-family:sans-serif; font-style:italic; color:var(--text-muted);">Learn More</a>
     </div>
+    <!-- Fused -->
     <div style="padding:1rem; background:var(--bg); border-radius:8px; border-left:4px solid; border-left-color: #baa7d5;">
-        <strong style="color: var(--text);">Fusion Layer</strong>
+        <strong style="color: var(--text);">Ground Surface Estimate Layer</strong>
         <p style="font-size:0.82rem; color:var(--text-muted); margin-top:0.35rem;">
             Combined TEMPO satellite + Open Air Chicago ground sensor data for higher resolution air quality estimates.
         </p>

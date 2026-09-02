@@ -1,8 +1,9 @@
-// ── DATA FILE EXPORT STATE ─────────────────────────────────────────────────
+//  Export Files and Filters JS 
 let currentDataSource = 'clarity';
 let currentExportFormat = 'geojson';
 let availableFiles = [];
 
+// Note Data Source
 function selectDataSource(source) {
   currentDataSource = source;
   document.querySelectorAll('#tab-data .map-type-btn[data-source]').forEach(btn => {
@@ -11,6 +12,7 @@ function selectDataSource(source) {
   loadDataFiles();
 }
 
+// Note Export Format
 function selectExportFormat(format) {
   currentExportFormat = format;
   document.querySelectorAll('#tab-data .map-type-btn[data-format]').forEach(btn => {
@@ -18,12 +20,14 @@ function selectExportFormat(format) {
   });
 }
 
+// Note File Size
 function formatFileSize(bytes) {
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
+// Find Data Files from "/api/list-data-files/"
 async function loadDataFiles() {
   const tbody = document.getElementById('file-list-body');
   if (!tbody) return; // not on export page
@@ -66,6 +70,7 @@ async function loadDataFiles() {
   }
 }
 
+// Render Data File List
 function renderFileList(files) {
   const tbody = document.getElementById('file-list-body');
   tbody.innerHTML = '';
@@ -86,6 +91,7 @@ function renderFileList(files) {
   updateSelectionCount();
 }
 
+// 'Select all' Checkbox
 function toggleSelectAll() {
   const selectAll = document.getElementById('select-all-files').checked;
   document.querySelectorAll('.file-checkbox').forEach(cb => {
@@ -94,6 +100,7 @@ function toggleSelectAll() {
   updateSelectionCount();
 }
 
+// Update Selected Files
 function updateSelectionCount() {
   const checked = document.querySelectorAll('.file-checkbox:checked').length;
   const total = document.querySelectorAll('.file-checkbox').length;
@@ -104,6 +111,7 @@ function updateSelectionCount() {
   }
 }
 
+// Get & Export Checked Files
 function getSelectedFiles() {
   const selected = [];
   document.querySelectorAll('.file-checkbox:checked').forEach(cb => {
@@ -129,7 +137,10 @@ async function exportSelectedFiles() {
     const filename = selectedFiles[i];
     showDataExportStatus(`Downloading ${i + 1}/${selectedFiles.length}: ${filename}`, 'info');
 
-    const downloadUrl = `/api/export-data-file/?source=${currentDataSource}&file=${encodeURIComponent(filename)}&format=${currentExportFormat}`;
+    // For original CSV files, skip the format parameter and serve as is
+    const fmt = filename.endsWith('.csv') ? 'geojson' : currentExportFormat;
+
+    const downloadUrl = `/api/export-data-file/?source=${currentDataSource}&file=${encodeURIComponent(filename)}&format=${fmt}`;
 
     const a = document.createElement('a');
     a.href = downloadUrl;
@@ -148,6 +159,7 @@ async function exportSelectedFiles() {
   showDataExportStatus(`${selectedFiles.length} file(s) exported successfully!`, 'success');
 }
 
+// Export Status
 function showDataExportStatus(message, type) {
   const el = document.getElementById('data-export-status');
   if (el) {
@@ -156,14 +168,14 @@ function showDataExportStatus(message, type) {
   }
 }
 
-// ── UTILITY ────────────────────────────────────────────────────────────────
+// Utility 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// ── INIT: load data files on page load if on export page ───────────────────
+//  Initilization (load data files on page load if on export page)
 document.addEventListener('DOMContentLoaded', () => {
-  // Only auto-load if we're on the export page (has the file list table body)
+  // Only auto-load if on the export page (has the file list table body)
   if (document.getElementById('file-list-body')) {
     loadDataFiles();
   }

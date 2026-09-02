@@ -1,6 +1,6 @@
 
 :root {
-  /* ESD Color Palette*/
+  /* NASA Earth Science Directorate Color Palette */
   --primary: #005a9e;
   --primary-dark: #263766;
   --primary-light: #1096fd;
@@ -16,12 +16,11 @@
   --border: #d1d1d1;
   --border-dark: #959599;
 
-  /* Status colors */
   --success: #5b7b2e;
   --warning: #f3b44e;
   --danger: #c33c27;
 
-  /* Spacing */
+  /* Widget Spacing */
   --nav-height: 56px;
   --sidebar-width: 280px;
   --map-export-height: 38px;
@@ -35,7 +34,6 @@
   padding: 0;
 }
 
-/* Smooth scrolling for anchor links */
 html {
   scroll-behavior: smooth;
 }
@@ -56,8 +54,7 @@ body {
   margin-top: 0.2rem;
 }
 
-/* ── NAV BAR ─────────────────────────────────────────── */
-
+/* Navigation Bar */
 nav {
   display: flex;
   align-items: center;
@@ -118,7 +115,7 @@ nav {
   margin-left: 0.75rem;
 }
 
-/* Atmosphere logo */
+/* Earth Science Directorate Atmosphere logo */
 .logo-atmosphere {
   padding-top: 6px;
   height: 48px;
@@ -138,7 +135,7 @@ nav {
   padding-bottom: 0;
 }
 
-/* ── NAV BAR MOBILE MENU ARROW ─────────────────────────── */
+/* Arrow for Navigation Bar */
 
 .mobile-menu-container {
   display: none;
@@ -162,12 +159,11 @@ nav {
   transition: transform 0.3s ease;
 }
 
-/* When menu is open, rotate arrow 90° counter-clockwise (▼ becomes ►) */
 .mobile-menu-container.change .mobile-menu-arrow {
   transform: rotate(-180deg);
 }
 
-/* ── MAIN LAYOUT ─────────────────────────────────── */
+/* Main Layout */
 
 .app-body {
   display: flex;
@@ -184,6 +180,7 @@ nav {
 }
 
 /* Hero (Heading) banner (Home, Community Statisitics, Info, User Guide, About) */
+
 .hero {
   text-align: center;
   padding: 2rem 1rem;
@@ -205,9 +202,7 @@ nav {
   line-height: 1.6;
 }
 
-
-
-/* ── Quick Actions (Info, User Guide) ─────────────────────────── */
+/* Quick Actions (Info, User Guide) */
 
 .quick-actions-nav {
   display: flex;
@@ -334,7 +329,7 @@ nav {
 .content-section ol ol li::marker,
 .content-section ul ol li::marker,
 .content-section ol ul li::marker {
-    color: var(--primary-light);
+    color: var(--primary-dark);
 }
 
 .content-section ul ul ul li::marker,
@@ -362,7 +357,7 @@ nav {
     color: var(--text-muted);
 }
 
-/* ── Homepage Widgets (Home) ──────────────── */
+/* Homepage Widgets (Home) */
 
 .dashboard-grid {
   display: grid;
@@ -424,7 +419,7 @@ nav {
   border-bottom: 2px solid var(--border);
 }
 
-/* ── Portrait Cards (About) ───────────────────────────────────────── */
+/* Portrait Cards (About) */
 
   .portrait-grid {
     display: grid;
@@ -433,7 +428,6 @@ nav {
     justify-items: center;
   }
 
-  /* Individual portrait card */
   .portrait-card {
     display: flex;
     flex-direction: column;
@@ -453,7 +447,7 @@ nav {
     background: var(--bg);
     margin-bottom: 0.75rem;
     object-fit: cover;
-    object-position: center top; /*our faces are slightly off center of the entire image*/
+    object-position: center top;
   }
 
   .portrait-card .portrait-name {
@@ -469,7 +463,7 @@ nav {
     line-height: 1.4;
   }
 
-/* ── Product Cards (Info) ───────────────────────────────────────── */
+/* Product Cards (Info) */
 
   .product-card { /*card for tempo*/
     background: var(--bg);
@@ -480,7 +474,7 @@ nav {
     color: #4cbdb2;
   }
 
-  .product-card.clarity { /*card for ground sensors*/
+  .product-card.openair { /*card for ground sensors*/
     border-left-color: #81a24f;
   }
 
@@ -503,24 +497,25 @@ nav {
 
   .data-content {
     display: flex;
-    align-items: center; /* aligns text and image vertically */
+    align-items: center;
     gap: 20px; 
   }
 
   .data-image {
-    width: 200px; /*image will be 200 pixels wide */
-    height: auto; /* automatically adjusts height */
+    width: 200px;
+    height: auto;
   }
 
   .side-paragraph {
-    flex: 1; /* Tells the paragraph to fill up the rest of the empty space */
+    flex: 1;
     margin: 0; 
   }
 
-  .image-credit { /*this doesnt work*/
+  .image-credit {
     font-size: 6;
   }
-/* ── TOAST ───────────────────────────────────────── */
+
+/* Toast Notifications */
 
 #toast {
   position: fixed;
@@ -545,7 +540,7 @@ nav {
   transform: translateX(-50%) translateY(0);
 }
 
-/* ── FOOTER ──────────────────────────────────────── */
+/* Footer */
 
 footer {
   padding: 1rem 1.5rem;
@@ -560,7 +555,7 @@ footer {
   background-position: center center;
 }
 
-/* ── MOBILE DISCLAIMER OVERLAY ────────────────────── */
+/* Small Screen Size Disclaimer */
 
 .mobile-disclaimer {
   display: none;
@@ -599,10 +594,9 @@ footer {
   background: var(--primary-dark);
 }
 
-/* ── SCREEN-SIZE RESPONSIVE ──────────────────────────────────── */
+/* Screen Size Responsive */
 
 @media (max-width: 992px) {
-  /* Show mobile menu arrow and switch nav to dropdown */
   nav {
     z-index: 10000;
     justify-content: flex-start;
@@ -640,7 +634,6 @@ footer {
 
 @media (max-width: 768px) {
 
-  /* Keep nav and its dropdown above the disclaimer */
   nav {
     z-index: 10000;
   }
@@ -660,7 +653,6 @@ footer {
 }
 
 @media (max-width: 600px) {
-  /* Show mobile disclaimer overlay on small screens */
   .mobile-disclaimer {
     display: flex;
     position: fixed;

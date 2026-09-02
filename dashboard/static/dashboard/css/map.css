@@ -1,4 +1,3 @@
-/* ── MAP LAYOUT ──────────────────────────────────── */
 
 .map-layout {
   display: flex !important;
@@ -20,7 +19,7 @@
   overflow: hidden !important;
 }
 
-/* Bottom slider bar – positioned over the bottom of the map */
+/* Time Slider */
 .bottom-slider-bar {
   position: absolute;
   bottom: 40px;
@@ -102,8 +101,6 @@
   gap: 2px;
 }
 
-/* ── LEAFLET POPUP THEME ─────────────────────────── */
-
 .leaflet-popup-content-wrapper {
   background: var(--bg-card) !important;
   color: var(--text) !important;
@@ -140,7 +137,7 @@
   margin-top: .25rem;
 }
 
-/* Legend overlay — bottom left of map container, above timeslider */
+/* Legend */
 .map-legend-overlay {
   position: absolute;
   bottom: 150px;
@@ -267,7 +264,7 @@
     -1px 0 0 #fff;
 }
 
-/* Map loading spinner */
+/* Loading Pop-up */
 .map-loading-overlay {
   position: absolute;
   top: 50%;
@@ -312,7 +309,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* Pollution Map Warnings */
+/* 'No Data' Warning */
 .map-warning-notice {
   position: absolute;
   top: 12px;
@@ -421,7 +418,7 @@
   min-height: 0 !important;
 }
 
-/* ── Share / Export PNG header ── */
+/* Export Map as PNG Heading */
 .map-export-header {
   display: flex;
   justify-content: flex-end;
@@ -468,7 +465,7 @@
   cursor: not-allowed;
 }
 
-/* Coords bar */
+/* Coordinates Bar */
 #coords-bar {
   position: absolute;
   bottom: 0;
@@ -485,7 +482,7 @@
   justify-content: space-between;
 }
 
-/* Explore panel — retractable overlay on map */
+/* Help Button ("?" Circular Button) */
 #help-panel {
   position: absolute;
   top: 1rem;
@@ -497,7 +494,6 @@
   transition: all 0.3s ease;
 }
 
-/* Toggle button — circular "?" button */
 .help-panel-toggle {
   display: flex;
   align-items: center;
@@ -551,7 +547,6 @@
   margin-bottom: 0;
 }
 
-/* Retracted state — only show the circle button */
 #help-panel.retracted #help-panel-body {
   opacity: 0;
   transform: translateX(-10px) scale(0.95);
@@ -564,7 +559,6 @@
   pointer-events: none;
 }
 
-/* Expanded state — show full panel */
 #help-panel.expanded #help-panel-body {
   opacity: 1;
   transform: translateX(0) scale(1);
@@ -573,7 +567,6 @@
   margin-right: .5rem;
 }
 
-/* When explore panel is expanded, push no-data notice downward so it's readable */
 #help-panel.expanded ~ .map-no-data-notice {
   top: 325px;
 }

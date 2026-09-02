@@ -1,32 +1,19 @@
-# Create your models here.
+# Note: Write/change models here, then run "python manage.py makemigrations"
+# and "python manage.py migrate" to update data to form correct model
 
-# Write/change models here, then run "python manage.py makemigrations" the "python manage.py migrate" to update data to form correct model
 from django.db import models
 from django.utils import timezone
 
 
-class LogMessage(models.Model):
-    message = models.CharField(max_length=300)
-    log_date = models.DateTimeField("date logged")
+# ACTIVITY LOG 
+# Tracks recent system and user activity for the home dashboard "System Status" feed.
 
-    def __str__(self):
-        """Returns a string representation of a message."""
-        date = timezone.localtime(self.log_date)
-        return f"'{self.message}' logged on {date.strftime('%A, %d %B, %Y at %X')}"
-
-
-# ── ACTIVITY LOG ──────────────────────────────────────────────────────────────
-# Tracks recent system and user activity for the home dashboard "Recent Activity" feed.
-#
 # Activity types tracked:
-#   server_start       — Server started / restarted
-#   data_ingestion     — TEMPO or OpenAir data ingestion completed (success or failure)
-#   system_status      — System health check or status change
-#   map_export         — User exported a map from export.html
-#   map_view           — User visited a map view (hourly/daily/monthly)
-#   community_analysis — User ran a community analysis
-#   notification       — General notification/message
-#
+#   server_start       -> Server started/restarted
+#   data_ingestion     -> TEMPO or OpenAir data ingestion completed (success or failure)
+#   system_status      -> System health check or status change
+#   notification       -> General notification/message
+
 
 ACTIVITY_TYPES = [
     ('server_start', 'Server Start'),
@@ -35,11 +22,10 @@ ACTIVITY_TYPES = [
     ('notification', 'Notification'),
 ]
 
-
 class ActivityLog(models.Model):
     activity_type = models.CharField(max_length=30, choices=ACTIVITY_TYPES, db_index=True)
     title = models.CharField(max_length=200)       # Short summary shown in the feed
-    details = models.TextField(blank=True, default='')  # Optional longer detail
+    details = models.TextField(blank=True, default='')
     timestamp = models.DateTimeField(default=timezone.now, db_index=True)
 
     class Meta:
@@ -47,7 +33,6 @@ class ActivityLog(models.Model):
 
     def __str__(self):
         return f"[{self.activity_type}] {self.title} — {self.timestamp}"
-
 
 def log_activity(activity_type, title, details=''):
     """Convenience function to record an activity from anywhere in the app."""
