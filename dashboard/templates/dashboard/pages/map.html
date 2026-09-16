@@ -75,18 +75,18 @@
         <div id="help-panel-body">
         <p>
             <strong>Explore The Map</strong><br/>
-            <span id="help-panel-content">Click and drag to shift your view.</span>
+            <span class="help-panel-content">Click and drag to shift your view.</span>
         </p>
         <p>
             <strong>Display Data</strong><br/>
-            <span id="help-panel-content">Customize the observation window, data products, and spatial scale with the Parameters sidebar to the left.</span>
+            <span class="help-panel-content">Customize the observation window, data products, and spatial scale with the Parameters sidebar to the left.</span>
         </p>
         <p>
             <strong>Playback</strong><br/>
-            <span id="help-panel-content">Click the play button or drag the slider below to view the change of data over time.</span>
+            <span class="help-panel-content">Click the play button or drag the slider below to view the change of data over time.</span>
         </p>
         <p>
-        <span id="help-panel-content">
+        <span class="help-panel-content">
             For an in-depth tutorial on this dashboard, visit the
             <a href="{% url 'tutorial' %}" target="_blank"><strong>User Guide</strong></a>
             page.
@@ -142,7 +142,7 @@
         class="hour-controls"
         {% if time_scale != "hourly" %}style="display:none;"{% endif %}>
         <div class="slider-row">
-          <label>Hour</label>
+          <label for="timeSlider">Hour</label>
           <input type="range" min="0" max="23" step="1" value="0" id="timeSlider">
           <div class="time-label" id="timeLabel"></div>
         </div>
@@ -150,7 +150,7 @@
 
       <!-- Daily & Monthly Date Slider -->
       <div class="slider-row">
-        <label>Date</label>
+        <label for="dateSlider">Date</label>
         <input type="range" min="0" max="0" value="0" id="dateSlider">
         <div class="date-label-display" id="dateLabel"></div>
       </div>
@@ -158,9 +158,9 @@
       <!-- Date Range Controls -->
       <div id="rangeControls" style="display:none;">
         <div class="slider-row">
-          <label>Start</label>
+          <label for="startDate">Start</label>
           <input type="date" id="startDate">
-          <label style="margin-left:10px;">End</label>
+          <label for="endDate" style="margin-left:10px;">End</label>
           <input type="date" id="endDate">
         </div>
       </div>
@@ -229,9 +229,1064 @@
   <!-- Chicago Border & Communities Layers Below -->
   <script>
 
+<<<<<<< HEAD
+  // EDIT for TEMPO & Clarity Data Sources── CONFIGURATION ──────────────────────────────────────────────────────────
+  let TIME_SCALE = '{{ time_scale|default:"hourly" }}';  // hourly, daily, monthly
+
+  // ── BASEMAP LAYERS ────────────────────────────────────────────────────
+    const tileLayers = {
+    osm: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri',
+        maxZoom: 19
+    }),
+    };
+
+
+  // ── MAP INIT ───────────────────────────────────────────────────────────────
+    var map = L.map('map', {
+    center: [41.8, -87.629],  // Chicago, IL default
+    zoom: 10,
+    layers: [tileLayers.osm],
+    zoomControl: true,
+    preferCanvas: true
+    });
+
+  // ── HOME BUTTON (reset view to Chicago) ──────────────────────────────────
+  const homeCoords = [41.8, -87.629];
+  const homeZoom = 10;
+
+  var HomeButton = L.Control.extend({
+    options: { position: 'topleft' },
+    onAdd: function (map) {
+      var btn = L.DomUtil.create('a', 'leaflet-bar leaflet-control leaflet-control-home');
+      btn.style.backgroundColor = '#fff';
+      btn.style.width = '26px';
+      btn.style.height = '26px';
+      btn.style.lineHeight = '26px';
+      btn.style.textAlign = 'center';
+      btn.style.cursor = 'pointer';
+      btn.style.boxShadow = '0 1px 5px rgba(0,0,0,0.65)';
+      btn.style.borderRadius = '4px';
+      btn.title = 'Reset to home view (Chicago)';
+      btn.setAttribute('role', 'button');
+      btn.setAttribute('aria-label', 'Reset to home view (Chicago)');
+
+      // inline SVG house icon – no external dependencies
+      btn.innerHTML =
+        '<span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;">Reset to home view (Chicago)</span>' +
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" ' +
+        'aria-hidden="true" ' +
+        'width="16" height="16" style="vertical-align:middle;display:block;margin:5px auto 0" ' +
+        'fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M3 12L5 10M19 10L21 12M12 2L4 10V20H9V15H15V20H20V10L12 2Z"/>' +
+        '</svg>';
+
+      L.DomEvent.disableClickPropagation(btn);
+      L.DomEvent.disableScrollPropagation(btn);
+
+      L.DomEvent.on(btn, 'click', L.DomEvent.preventDefault);
+      L.DomEvent.on(btn, 'click', function () {
+        map.flyTo(homeCoords, homeZoom, { duration: 1.5 });
+      });
+
+      return btn;
+    }
+  });
+
+  map.addControl(new HomeButton());
+
+  // ── GLOBAL VARIABLES (from V4) ──────────────────────────────────────────────────────────
+  var currentLayer = null;
+
+  // Clarity (Open Air) color scale – linear, ppb
+  const CLARITY_GLOBAL_MAX = 50;
+  const CLARITY_GLOBAL_MIN = 0;
+
+  // TEMPO color scale – sqrt-based, molecules/cm²
+  const TEMPO_GLOBAL_MAX = 5e16;
+  const TEMPO_GLOBAL_MIN = 1e9;
+
+  // Fusion color scale – same linear ppb scale as Clarity
+  const FUSION_GLOBAL_MAX = 50;
+  const FUSION_GLOBAL_MIN = 0;
+
+   let selectedHour = 0;
+   let communityData = null;
+   let ChicagoCommunityAreas = null;
+   
+   let displayMode = "sensor";
+
+function normalizeDataProduct(value) {
+    if (
+        value === "openaq" ||
+        value === "clarity" ||
+        value === "openair" ||
+        value === "open_air"
+    ) {
+        return "clarity";
+    }
+
+    if (value === "tempo") {
+        return "tempo";
+    }
+
+    if (value === "fusion") {
+        return "fusion";
+    }
+
+    return "clarity";
+}
+
+const urlProduct =
+    new URLSearchParams(window.location.search).get("product");
+
+let currentDataProduct = normalizeDataProduct(
+    urlProduct || localStorage.getItem("selectedDataProduct") || "openaq"
+);
+
+let appInitialized = false;
+
+// Prevent stale async fetches from rendering old products
+let activeLoadToken = 0;
+
+function startNewLoad(product) {
+    activeLoadToken += 1;
+    return {
+        id: activeLoadToken,
+        product: product
+    };
+}
+
+function isMonthlyDate(value) {
+    return TimeUtils.isMonthlyDate(value);
+}
+
+function isActiveLoad(load) {
+    return (
+        load &&
+        load.id === activeLoadToken &&
+        load.product === currentDataProduct
+    );
+}
+
+function canRenderTempo(label) {
+    if (currentDataProduct !== "tempo") {
+        console.log(`Blocked TEMPO render from ${label}; current product is ${currentDataProduct}`);
+        return false;
+    }
+
+    return true;
+}
+
+function clearDataLayers() {
+    hideNoDataNotice();
+    hideLoading();
+
+    if (currentLayer) {
+        map.removeLayer(currentLayer);
+        currentLayer = null;
+    }
+
+    if (communityLayer) {
+        map.removeLayer(communityLayer);
+        communityLayer = null;
+    }
+
+    tempoLayerGroup.clearLayers();
+    openaqLayerGroup.clearLayers();
+    fusionLayerGroup.clearLayers();
+
+    if (heatLayer) {
+        map.removeLayer(heatLayer);
+        heatLayer = null;
+    }
+}
+
+function updateBottomControlVisibility() {
+    const hourControls = document.getElementById("hourControls");
+    const timeLabel = document.getElementById("timeLabel");
+
+    if (hourControls) {
+        hourControls.style.display = TIME_SCALE === "hourly" ? "block" : "none";
+    }
+
+    if (timeLabel && TIME_SCALE !== "hourly") {
+        timeLabel.innerHTML = "";
+    }
+}
+
+  let rangeStartDate = null;
+  let rangeEndDate = null;
+  let rangeCurrentEndDate = null;
+
+  let dates = [];
+  let allDates = [];       // unfiltered copy — kept in sync by each date loader
+  let rangeDates = [];
+  let pendingPreferredDate = null;
+  let pendingPreferredHour = null;
+  let invalidClarityHourlyDates = new Set();
+
+  let tempoHourlyDates = [];
+  let tempoDailyDates = [];
+  let communityHourLookup = null;  
+  let communityLayer = null;     
+  
+  let cachedDate = null;
+  let cachedFeatures = null;
+  let cachedHourBuckets = null;
+
+  let nextCachedDate = null;
+  let nextCachedHourBuckets = null;
+
+  let timeInterval = null;
+  let isPlaying = false;
+  const tempoDailyCache = {};
+  const tempoMonthlyCache = {};
+  let communityIndexCache = {};
+
+function removeInvalidHourlyDate(date, reason) {
+    if (!date || TIME_SCALE !== "hourly" || currentDataProduct !== "clarity") {
+        return;
+    }
+
+    if (invalidClarityHourlyDates.has(date)) {
+        return;
+    }
+
+    invalidClarityHourlyDates.add(date);
+
+    console.warn("Removing invalid hourly Clarity date from slider:", {
+        date: date,
+        reason: reason
+    });
+
+    const oldIndex = dates.indexOf(date);
+
+    dates = dates.filter(d => d !== date);
+    allDates = allDates.filter(d => d !== date);
+
+    const dateSlider = document.getElementById("dateSlider");
+
+    if (!dateSlider) {
+        return;
+    }
+
+    if (!dates || dates.length === 0) {
+        dateSlider.min = 0;
+        dateSlider.max = 0;
+        dateSlider.value = 0;
+
+        const dateLabel = document.getElementById("dateLabel");
+        const timeLabel = document.getElementById("timeLabel");
+
+        if (dateLabel) {
+            dateLabel.innerHTML = "No valid dates available";
+        }
+
+        if (timeLabel) {
+            timeLabel.innerHTML = "";
+        }
+
+        hideLoading();
+        return;
+    }
+
+    const nextIndex = Math.min(
+        Math.max(oldIndex, 0),
+        dates.length - 1
+    );
+
+    dateSlider.min = 0;
+    dateSlider.max = dates.length - 1;
+    dateSlider.value = nextIndex;
+
+    const nextDate = dates[nextIndex];
+
+    updateDateAndTimeLabels(nextDate);
+
+    cachedDate = null;
+    cachedFeatures = null;
+    cachedHourBuckets = null;
+    nextCachedDate = null;
+    nextCachedHourBuckets = null;
+
+    loadDate(nextDate);
+}
+  // ── CHICAGO BORDERS & COMMUNITIES LAYERS ───────────────────────────────────────────────────────────────
+    function loadChicagoBorder(){
+        fetch("{% static 'dashboard/layers/Chicago.geojson' %}")
+        .then(response => response.json())
+        .then(data => {
+            var ChicagoBounds = L.geoJSON(data, {
+                style:{
+                color: "#636363", // Outline color
+                weight: 1.5,
+                fillColor: "#00000000" //make fill transparent
+                }
+            }).addTo(map);
+   //         map.fitBounds(ChicagoBounds.getBounds())
+        })
+    }
+
+    function loadCommunityAreas() {
+    fetch("{% static 'dashboard/layers/ChicagoCommunityAreas.geojson' %}")
+        .then(response => response.json())
+        .then(data => {
+            communityData = data;
+            ChicagoCommunityAreas = L.geoJSON(data, {
+
+                style: function(feature) {
+                return {
+                    color: "#636363", 
+                    weight: 1, 
+                    fillOpacity: 0,
+                    opacity: 0.8
+                };
+            },
+                onEachFeature: function(feature, layer) {
+
+                    // Display whatever property exists
+                    let props = feature.properties;
+
+                    let label =
+                        props.community ||
+                        props.COMMUNITY ||
+                        props.community_name ||
+                        props.name ||
+                        "Community Area";
+
+                    layer.bindTooltip(label);
+                }
+
+            });
+
+            ChicagoCommunityAreas.addTo(map);
+
+            // Keep boundaries behind sensor markers
+            ChicagoCommunityAreas.bringToBack();
+        })
+        .catch(err => {
+            console.error("Could not load community boundaries:", err);
+        });
+    }
+
+    // ── LAYER GROUPS ───────────────────────────────────────────────────────────
+    const tempoLayerGroup = L.layerGroup().addTo(map);
+    const openaqLayerGroup = L.layerGroup();
+    const fusionLayerGroup = L.layerGroup();
+    let heatLayer = null;
+    let savedMarkers = [];
+    let markerIdSeq = 0;
+
+
+  // ── COLOR SCALES ──────────────────────────────────────────────────────────────────────────────
+  // Clarity color scale – linear, ppb (0–50)
+  function getColorClarity(no2) {
+    if (no2 === null || no2 === undefined || isNaN(no2)) return "gray";
+    if (CLARITY_GLOBAL_MAX === CLARITY_GLOBAL_MIN) return "blue";
+    let t = (no2 - CLARITY_GLOBAL_MIN) / (CLARITY_GLOBAL_MAX - CLARITY_GLOBAL_MIN);
+    t = Math.max(0, Math.min(1, t));
+    let r = Math.floor(255 * t);
+    let g = Math.floor(255 * (1 - Math.abs(t - 0.5) * 2));
+    let b = Math.floor(255 * (1 - t));
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  // TEMPO color scale – sqrt-based, molecules/cm² (1e9 – 5e16)
+  function getColorTempo(no2) {
+    if (no2 === null || no2 === undefined || isNaN(no2)) return "gray";
+    if (TEMPO_GLOBAL_MAX === TEMPO_GLOBAL_MIN) return "blue";
+    let Min = Math.sqrt(TEMPO_GLOBAL_MIN);
+    let Max = Math.sqrt(TEMPO_GLOBAL_MAX);
+    let Value = Math.sqrt(no2);
+    let t = (Value - Min) / (Max - Min);
+    t = Math.max(0, Math.min(1, t));
+    let r = Math.floor(255 * t);
+    let g = Math.floor(255 * (1 - Math.abs(t - 0.5) * 2));
+    let b = Math.floor(255 * (1 - t));
+
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  // Unified getColor – delegates to the correct scale based on current data product
+  function getColor(no2) {
+    if (currentDataProduct === "tempo") {
+        return getColorTempo(no2);
+    }
+    return getColorClarity(no2);
+  }
+
+
+  // ── HELPER FUNCTIONS ─────────────────────────────────────────────────────────────────────────────
+
+  function buildHourBuckets(features) {
+      let buckets = {};
+      for (let h = 0; h < 24; h++) {
+          buckets[h] = [];
+      }
+      features.forEach(f => {
+          buckets[f._chicagoHour].push(f);
+      });
+      return buckets;
+  }
+
+  function prefetchNextDay(date) {
+      let currentIndex = dates.indexOf(date);
+      if (currentIndex < 0 || currentIndex >= dates.length - 1) {
+          return;
+      }
+
+      let nextDate = dates[currentIndex + 1];
+      if (nextCachedDate === nextDate) {
+          return;
+      }
+
+      let prevDate = currentIndex >= 0 ? dates[currentIndex] : null;
+      let afterNextDate = currentIndex < dates.length - 2 ? dates[currentIndex + 2] : null;
+
+      let requests = [];
+      if (prevDate) {
+          requests.push(
+              fetch(`/data/clarity/${prevDate}.geojson`)
+                  .then(r => r.ok ? r.json() : null)
+          );
+      }
+      requests.push(
+          fetch(`/data/clarity/${nextDate}.geojson`)
+              .then(r => r.ok ? r.json() : null)
+      );
+      if (afterNextDate) {
+          requests.push(
+              fetch(`/data/clarity/${afterNextDate}.geojson`)
+                  .then(r => r.ok ? r.json() : null)
+          );
+      }
+
+      Promise.all(requests)
+      .then(files => {
+        if (currentDataProduct !== "clarity" || TIME_SCALE !== "hourly") {
+            return;
+        }
+
+        let combinedFeatures = [];
+        
+        files.forEach(data => {
+            if (data) {
+                combinedFeatures.push(...data.features);
+            }
+        });
+
+        let filteredFeatures = combinedFeatures.filter(f => {
+            const dateHour = TimeUtils.extractChicagoDateHour(f.properties);
+            if (!dateHour) return false;
+            
+            f._chicagoHour = dateHour.hour;
+            return dateHour.date === nextDate;
+        });
+
+        nextCachedDate = nextDate;
+        nextCachedHourBuckets = buildHourBuckets(filteredFeatures);
+        console.log("Prefetched:", nextDate);
+    });
+  }
+
+  function formatCentralTime(utcString) {
+    return TimeUtils.formatCentralTime(utcString);
+}
+
+  function updateDateAndTimeLabels(date) {
+    const dateLabel = document.getElementById("dateLabel");
+    const timeLabel = document.getElementById("timeLabel");
+
+    if (!date) {
+        return;
+    }
+
+    if (TIME_SCALE === "monthly") {
+        if (dateLabel) {
+            dateLabel.innerHTML = formatMonthForDisplay(date);
+        }
+    } else {
+        if (dateLabel) {
+            dateLabel.innerHTML = utcDateToCentralPretty(date);
+        }
+    }
+
+    if (timeLabel && TIME_SCALE === "hourly") {
+        timeLabel.innerHTML = `Time: ${formatHourForDisplay(date, selectedHour)}`;
+    }
+}
+
+
+function getChicagoParts(date){
+    return TimeUtils.getChicagoParts(date);
+}
+
+function formatHourForDisplay(dateStr, selectedHour) {
+    return TimeUtils.formatHourForDisplay(dateStr, selectedHour);
+}
+
+  function formatMonthForDisplay(dateStr) {
+    return TimeUtils.formatMonthForDisplay(dateStr);
+}
+
+function utcDateToCentralPretty(dateStr) {
+    return TimeUtils.formatDateForDisplay(dateStr);
+}
+
+function toMonthKey(value) {
+    return TimeUtils.toMonthKey(value);
+}
+
+function toDailyKey(value) {
+    return TimeUtils.toDailyKey(value);
+}
+
+function getCurrentSelectedDateFromSlider() {
+    const dateSlider = document.getElementById("dateSlider");
+
+    if (!dateSlider || !dates || dates.length === 0) {
+        return null;
+    }
+
+    const index = Number(dateSlider.value);
+    return dates[index] || null;
+}
+
+function captureCurrentDateHourPreference() {
+    pendingPreferredDate = getCurrentSelectedDateFromSlider();
+
+    const timeSlider = document.getElementById("timeSlider");
+
+    if (timeSlider) {
+        pendingPreferredHour = Number(timeSlider.value || selectedHour || 0);
+    } else {
+        pendingPreferredHour = selectedHour || 0;
+    }
+
+    console.log("Captured preferred date/hour:", {
+        pendingPreferredDate,
+        pendingPreferredHour,
+        timeScale: TIME_SCALE,
+        product: currentDataProduct
+    });
+}
+
+function findBestDateIndex(loadedDates, preferredDate) {
+    if (!loadedDates || loadedDates.length === 0) {
+        return {
+            index: 0,
+            adjusted: false,
+            requestedDate: preferredDate,
+            selectedDate: null
+        };
+    }
+
+    if (!preferredDate) {
+        return {
+            index: 0,
+            adjusted: false,
+            requestedDate: preferredDate,
+            selectedDate: loadedDates[0]
+        };
+    }
+
+    const exactIndex = loadedDates.indexOf(preferredDate);
+
+    if (exactIndex !== -1) {
+        return {
+            index: exactIndex,
+            adjusted: false,
+            requestedDate: preferredDate,
+            selectedDate: loadedDates[exactIndex]
+        };
+    }
+
+    if (TIME_SCALE === "monthly") {
+        const preferredMonth = preferredDate.substring(0, 7);
+        const monthIndex = loadedDates.indexOf(preferredMonth);
+
+        if (monthIndex !== -1) {
+            return {
+                index: monthIndex,
+                adjusted: preferredMonth !== preferredDate,
+                requestedDate: preferredDate,
+                selectedDate: loadedDates[monthIndex]
+            };
+        }
+    }
+
+    let bestIndex = 0;
+    let bestDistance = Infinity;
+
+    loadedDates.forEach((dateValue, index) => {
+        let availableTime;
+        let preferredTime;
+
+        if (TIME_SCALE === "monthly") {
+            availableTime = new Date(dateValue + "-01T00:00:00Z").getTime();
+            preferredTime = new Date(preferredDate.substring(0, 7) + "-01T00:00:00Z").getTime();
+        } else {
+            availableTime = new Date(dateValue + "T00:00:00Z").getTime();
+            preferredTime = new Date(preferredDate + "T00:00:00Z").getTime();
+        }
+
+        const distance = Math.abs(availableTime - preferredTime);
+
+        if (!isNaN(distance) && distance < bestDistance) {
+            bestDistance = distance;
+            bestIndex = index;
+        }
+    });
+
+    return {
+        index: bestIndex,
+        adjusted: true,
+        requestedDate: preferredDate,
+        selectedDate: loadedDates[bestIndex]
+    };
+}
+
+function applyPreferredDateAndHourAfterDateLoad(load) {
+    if (!dates || dates.length === 0) {
+        return;
+    }
+
+    const dateSlider = document.getElementById("dateSlider");
+    const timeSlider = document.getElementById("timeSlider");
+
+    const match = findBestDateIndex(
+        dates,
+        pendingPreferredDate
+    );
+
+    const preferredIndex = match.index;
+    const selectedDate = dates[preferredIndex];
+
+    if (dateSlider) {
+        dateSlider.min = 0;
+        dateSlider.max = dates.length - 1;
+        dateSlider.value = preferredIndex;
+    }
+
+    if (TIME_SCALE === "hourly") {
+        selectedHour = pendingPreferredHour !== null
+            ? Number(pendingPreferredHour)
+            : selectedHour;
+
+        selectedHour = Math.max(0, Math.min(23, selectedHour));
+
+        if (timeSlider) {
+            timeSlider.value = selectedHour;
+        }
+    }
+
+    updateDateAndTimeLabels(selectedDate);
+
+    if (match.adjusted && match.requestedDate && match.selectedDate) {
+        const requestedLabel =
+            TIME_SCALE === "monthly"
+                ? formatMonthForDisplay(match.requestedDate.substring(0, 7))
+                : utcDateToCentralPretty(match.requestedDate);
+
+        const selectedLabel =
+            TIME_SCALE === "monthly"
+                ? formatMonthForDisplay(match.selectedDate)
+                : utcDateToCentralPretty(match.selectedDate);
+
+        const hourText =
+            TIME_SCALE === "hourly"
+                ? ` Hour preserved: ${formatHourForDisplay(match.selectedDate, selectedHour)}.`
+                : "";
+
+        showMapWarningNotice(
+            "Selected date unavailable",
+            `This data product does not include ${requestedLabel}. Showing nearest available date: ${selectedLabel}.${hourText}`
+        );
+    }
+
+    console.log("Applying preferred date/hour after product switch:", {
+        selectedDate,
+        selectedHour,
+        preferredIndex,
+        requestedDate: match.requestedDate,
+        adjusted: match.adjusted,
+        product: currentDataProduct
+    });
+
+    pendingPreferredDate = null;
+    pendingPreferredHour = null;
+
+    loadDate(selectedDate, load);
+}
+
+function showLoading(message){
+    hideNoDataNotice();
+
+    const overlay = document.getElementById("map-loading-overlay");
+    const textEl = document.getElementById("map-loading-text");
+
+    if (overlay) {
+        if (textEl && message) {
+            textEl.textContent = message;
+        }
+
+        overlay.classList.add("visible");
+    }
+}
+
+
+
+function hideLoading() {
+    const overlay = document.getElementById("map-loading-overlay");
+    if (overlay) {
+        overlay.classList.remove("visible");
+    }
+}
+
+function showNoDataNotice(title, detailText) {
+    const notice = document.getElementById("map-no-data-notice");
+    const textEl = document.getElementById("map-no-data-text");
+
+    if (!notice) {
+        return;
+    }
+
+    const strongEl = notice.querySelector("strong");
+
+    if (strongEl) {
+        strongEl.textContent = title || "No data available";
+    }
+
+    if (textEl) {
+        textEl.textContent = detailText || "";
+    }
+
+    notice.classList.add("visible");
+}
+
+function hideNoDataNotice() {
+    const notice = document.getElementById("map-no-data-notice");
+
+    if (notice) {
+        notice.classList.remove("visible");
+    }
+}
+
+function showMapWarningNotice(title, detailText, autoHideMs = 6500) {
+    const notice = document.getElementById("map-warning-notice");
+    const textEl = document.getElementById("map-warning-text");
+
+    if (!notice) {
+        return;
+    }
+
+    const strongEl = notice.querySelector("strong");
+
+    if (strongEl) {
+        strongEl.textContent = title || "Notice";
+    }
+
+    if (textEl) {
+        textEl.textContent = detailText || "";
+    }
+
+    notice.classList.add("visible");
+
+    if (autoHideMs && autoHideMs > 0) {
+        window.clearTimeout(notice._autoHideTimer);
+
+        notice._autoHideTimer = window.setTimeout(() => {
+            notice.classList.remove("visible");
+        }, autoHideMs);
+    }
+}
+
+function hideMapWarningNotice() {
+    const notice = document.getElementById("map-warning-notice");
+
+    if (notice) {
+        window.clearTimeout(notice._autoHideTimer);
+        notice.classList.remove("visible");
+    }
+}
+
+async function exportMapAsPNG() {
+      const btn = document.getElementById('export-png-btn');
+      btn.disabled = true;
+      btn.textContent = 'Capturing...';
+
+      // Elements to hide during capture (legend and scalebar stay visible)
+      const coordsBar = document.getElementById('coords-bar');
+      const shareHeader = document.querySelector('.map-export-header');
+      const helpPanel = document.getElementById('help-panel');
+      const bottomSlider = document.getElementById('bottom-slider-bar');
+      const loadingOverlay = document.getElementById('map-loading-overlay');
+      const leafletControls = document.querySelectorAll('.leaflet-control-zoom, .leaflet-control');
+      const homeControl = document.querySelector('.leaflet-control-home');
+
+      // Hide UI elements (keep legend and scalebar visible)
+      if (coordsBar) coordsBar.style.display = 'none';
+      if (shareHeader) shareHeader.style.display = 'none';
+      if (helpPanel) helpPanel.style.display = 'none';
+      if (bottomSlider) bottomSlider.style.display = 'none';
+      if (loadingOverlay) loadingOverlay.style.display = 'none';
+      leafletControls.forEach(el => { el.style.display = 'none'; });
+      if (homeControl) homeControl.style.display = 'none';
+
+      // Disable map interaction during capture
+      map.dragging.disable();
+      map.touchZoom.disable();
+      map.doubleClickZoom.disable();
+      map.scrollWheelZoom.disable();
+      map.boxZoom.disable();
+
+      // Wait for tiles to render
+      await new Promise(r => setTimeout(r, 300));
+
+      try {
+          const mapContainer = document.querySelector('.map-container');
+          const canvas = await html2canvas(mapContainer, {
+              useCORS: true,
+              allowTaint: false,
+              scale: 2,
+              backgroundColor: '#ffffff',
+              logging: false,
+              width: mapContainer.scrollWidth,
+              height: mapContainer.scrollHeight
+          });
+
+          // Trigger download
+          const link = document.createElement('a');
+          const now = new Date();
+          const timestamp = now.getFullYear() +
+              String(now.getMonth() + 1).padStart(2, '0') +
+              String(now.getDate()).padStart(2, '0') + '_' +
+              String(now.getHours()).padStart(2, '0') +
+              String(now.getMinutes()).padStart(2, '0');
+          link.download = `no2_map_${timestamp}.png`;
+          link.href = canvas.toDataURL('image/png', 1.0);
+          link.click();
+      } catch (err) {
+          console.error('PNG export failed:', err);
+          alert('Failed to export map as PNG. Please try again.');
+      } finally {
+          // Restore UI elements
+          if (coordsBar) coordsBar.style.display = '';
+          if (shareHeader) shareHeader.style.display = '';
+          if (helpPanel) helpPanel.style.display = '';
+          if (bottomSlider) bottomSlider.style.display = '';
+          if (loadingOverlay) loadingOverlay.style.display = '';
+          leafletControls.forEach(el => { el.style.display = ''; });
+          if (homeControl) homeControl.style.display = '';
+
+          // Re-enable map interaction
+          map.dragging.enable();
+          map.touchZoom.enable();
+          map.doubleClickZoom.enable();
+          map.scrollWheelZoom.enable();
+          map.boxZoom.enable();
+
+          btn.disabled = false;
+          btn.textContent = 'Export as PNG';
+      }
+  }
+
+function updateScaleBar() {
+      const ruler = document.getElementById('scalebar-ruler');
+      const ticksContainer = document.getElementById('scalebar-ticks');
+      const labelsContainer = document.getElementById('scalebar-labels');
+      if (!ruler || !ticksContainer || !labelsContainer) return;
+
+      const center = map.getCenter();
+      const zoom = map.getZoom();
+
+      // miles per pixel at this zoom / latitude (Web Mercator)
+      // corrected: divide by tile size (256) to get proper miles-per-pixel
+      const milesPerPixel = (2 * Math.PI * 6378137) /
+          (Math.pow(2, zoom) * 256 * Math.cos(center.lat * Math.PI / 180));
+
+      const totalPixels = 200;  // fixed ruler width
+      const distanceMiles = milesPerPixel * totalPixels;
+
+       // Pick a nice round total distance
+       let value, units;
+       if (distanceMiles >= 1609.344) {
+           const distMiles = distanceMiles / 1609.344;
+           const mag = Math.pow(10, Math.floor(Math.log10(distMiles)));
+           const norm = distMiles / mag;
+           value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
+           units = 'mi';
+       } else {
+           const mag = Math.pow(10, Math.floor(Math.log10(distanceMiles || 1)));
+           const norm = distanceMiles / mag;
+           value = (norm <= 1.5 ? 1 : norm <= 3 ? 2 : norm <= 7 ? 5 : 10) * mag;
+           units = 'ft';
+       }
+
+       const totalMeters = (units === 'mi' ? value * 1609.344 : value * 0.3048);
+      const majorSegments = 4;   // 5 major ticks: 0, 1/4, 2/4, 3/4, 1
+      const minorPerMajor = 4;   // 4 minor ticks between each major → 5 sub-segments
+      const minorSegmentMeters = totalMeters / (majorSegments * minorPerMajor);
+      const minorSegmentPixels = totalPixels / (majorSegments * minorPerMajor);
+
+      // Build ticks
+      ticksContainer.innerHTML = '';
+      labelsContainer.innerHTML = '';
+      labelsContainer.style.width = totalPixels + 'px';
+
+      const totalMinorTicks = majorSegments * minorPerMajor + 1;
+      for (let i = 0; i < totalMinorTicks; i++) {
+          const isMajor = (i % minorPerMajor === 0);
+          const tick = document.createElement('div');
+          tick.className = 'scalebar-tick ' + (isMajor ? 'major' : 'minor');
+          tick.style.left = (i * minorSegmentPixels) + 'px';
+          ticksContainer.appendChild(tick);
+
+           if (isMajor) {
+               const label = document.createElement('span');
+               label.className = 'scalebar-label';
+               const valMeters = minorSegmentMeters * i;
+               if (units === 'mi') {
+                   const valMiles = valMeters / 1609.344;
+                   label.textContent = valMiles.toFixed(valMiles < 10 ? 1 : 0) + ' mi';
+               } else {
+                   const valFt = valMeters / 0.3048;
+                   label.textContent = Math.round(valFt) + ' ft';
+               }
+               label.style.left = (i * minorSegmentPixels) + 'px';
+               labelsContainer.appendChild(label);
+           }
+      }
+  }
+
+function resetPlaybackUI() {
+    const playBtn = document.getElementById("playBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const dateSlider = document.getElementById("dateSlider");
+    const timeSlider = document.getElementById("timeSlider");
+    
+    if (playBtn) {
+        playBtn.classList.remove('playing');
+        playBtn.disabled = false;
+    }
+    if (pauseBtn) pauseBtn.disabled = true;
+    if (dateSlider) dateSlider.disabled = false;
+    if (timeSlider) timeSlider.disabled = false;
+}
+
+function updateIndividualModeLabel() {
+    const label = document.getElementById('individual-mode-label');
+
+    if (!label) {
+        return;
+    }
+
+    if (currentDataProduct === "tempo") {
+        label.textContent = " Individual Pixel";
+    } else if (currentDataProduct === "fusion") {
+        label.textContent = " Individual Grid Cell";
+    } else {
+        label.textContent = " Individual Sensor";
+    }
+}
+
+  // ── SCALEBAR: update on zoom/pan ──
+  map.on('zoomend moveend', updateScaleBar);
+  setTimeout(updateScaleBar, 500);
+
+  function refreshMap() {
+      if (dates.length === 0) {
+          return;
+      }
+      let date = dates[Number(document.getElementById("dateSlider").value)];
+      loadDate(date);
+  }
+
+  // ── V4 COMMUNITY AREA RENDERING ──────────────────────────────────────────────────────
+
+  function drawCommunityAreas(filteredFeatures) {
+      if (!communityData) {
+          console.warn("Community data not loaded");
+          return;
+      }
+
+      let stats = {};
+      communityData.features.forEach(poly => {
+          let props = poly.properties;
+          let name = props.community || props.COMMUNITY || props.community_name || props.name || "Unknown";
+          stats[name] = { sum: 0, count: 0 };
+      });
+
+      filteredFeatures.forEach(f => {
+          let p = f.properties;
+          let no2 = parseFloat(p.no2concindividual_value);
+          if (isNaN(no2)) return;
+          let hour = f._chicagoHour;
+
+          if (TIME_SCALE === "hourly" && hour !== selectedHour) return;
+
+          let point = turf.point([
+              parseFloat(p.longitude),
+              parseFloat(p.latitude)
+          ]);
+
+          communityData.features.forEach(poly => {
+              if (turf.booleanPointInPolygon(point, poly)) {
+                  let props = poly.properties;
+                  let name = props.community || props.COMMUNITY || props.community_name || props.name || "Unknown";
+                  stats[name].sum += no2;
+                  stats[name].count += 1;
+              }
+          });
+      });
+
+      if (communityLayer) {
+          map.removeLayer(communityLayer);
+      }
+
+      communityLayer = L.geoJSON(communityData, {
+          style: function(feature) {
+              let props = feature.properties;
+              let name = props.community || props.COMMUNITY || props.community_name || props.name || "Unknown";
+              let avg = null;
+              if (stats[name].count > 0) {
+                  avg = stats[name].sum / stats[name].count;
+              }
+              return {
+                  color: "#222",
+                  weight: 1,
+                  fillColor: getColor(avg),
+                  fillOpacity: avg === null ? 0 : 0.65
+              };
+          },
+          onEachFeature: function(feature, layer) {
+              let props = feature.properties;
+              let name = props.community || props.COMMUNITY || props.community_name || props.name || "Unknown";
+              let avg = null;
+              if (stats[name].count > 0) {
+                  avg = stats[name].sum / stats[name].count;
+              }
+              layer.bindTooltip(`
+                  <b>${name}</b><br>
+                  Avg NO₂: ${avg === null ? "No Data" : avg.toFixed(1) + " ppb"}<br>
+                  Measurements: ${stats[name].count}
+              `);
+          }
+      });
+
+      communityLayer.addTo(map);
+      hideLoading();
+  }
+
+  function loadDailyCommunities(date) {
+      fetch(`/data/clarity/daily_community_${date}.geojson`)
+      .then(r => r.json())
+=======
   function loadChicagoBorder(){
       fetch("{% static 'dashboard/layers/Chicago.geojson' %}")
       .then(response => response.json())
+>>>>>>> 14055b7f8422a05f5dabfac764e937d71783b0a6
       .then(data => {
           var ChicagoBounds = L.geoJSON(data, {
               style:{

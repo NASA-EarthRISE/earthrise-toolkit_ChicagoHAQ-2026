@@ -50,7 +50,7 @@ body {
 
 .hint {
   font-size: 0.65rem;
-  color: var(--bg);
+  color: var(--text-muted);
   margin-top: 0.2rem;
 }
 
@@ -226,14 +226,14 @@ nav {
 }
 
 .quick-action-btn.primary {
-  background: var(--accent);
+  background: var(--primary);
   color: #fff;
-  border: 2px solid var(--accent);
+  border: 2px solid var(--primary);
 }
 
 .quick-action-btn.primary:hover {
-  background: var(--primary);
-  border-color: var(--primary);
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(49, 130, 206, 0.25);
 }
@@ -546,7 +546,7 @@ footer {
   padding: 1rem 1.5rem;
   text-align: center;
   font-size: .8rem;
-  color: var(--bg);
+  color: var(--text);
   border-top: 1px solid var(--border);
   background: var(--bg-card);
   background-image: url('../images/footer.png');

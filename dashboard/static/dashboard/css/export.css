@@ -93,8 +93,8 @@
 }
 
 .map-type-btn.active {
-  border-color: var(--accent);
-  background: var(--accent);
+  border-color: var(--primary);
+  background: var(--primary);
   color: #ffffff;
 }
 
@@ -162,12 +162,12 @@
 }
 
 .btn-export-primary {
-  background: var(--accent);
+  background: var(--primary);
   color: #ffffff;
 }
 
 .btn-export-primary:hover {
-  background: var(--primary);
+  background: var(--primary-dark);
 }
 
 .btn-export-secondary {
@@ -311,7 +311,7 @@
 
 .file-type-badge.json {
   background: #fff3e0;
-  color: #e65100;
+  color: #7a2800;
 }
 
 .file-type-badge.csv {

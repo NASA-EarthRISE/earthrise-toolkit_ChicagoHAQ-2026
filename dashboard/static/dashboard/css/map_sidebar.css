@@ -121,6 +121,7 @@
 
 .date-panel label {
     font-weight: 600;
+    color: #ffffff !important;
 }
 
 .map-layout .sidebar.retracted {
@@ -183,8 +184,8 @@
 }
 
 .map-type-btn.active {
-  border-color: var(--accent);
-  background: var(--accent);
+  border-color: var(--primary);
+  background: var(--primary);
   color: #ffffff;
 }
 

@@ -80,7 +80,7 @@ function renderFileList(files) {
     const extClass = file.ext === 'geojson' ? 'geojson' : (file.ext === 'csv' ? 'csv' : 'json');
 
     tr.innerHTML = `
-      <td><input type="checkbox" class="file-checkbox" data-index="${index}" data-filename="${file.filename}" onchange="updateSelectionCount()" /></td>
+      <td><input type="checkbox" class="file-checkbox" aria-label="${file.filename}" data-index="${index}" data-filename="${file.filename}" onchange="updateSelectionCount()" /></td>
       <td class="file-name-cell">${file.filename}</td>
       <td><span class="file-type-badge ${extClass}">${file.ext}</span></td>
       <td class="file-size-cell">${formatFileSize(file.size)}</td>
